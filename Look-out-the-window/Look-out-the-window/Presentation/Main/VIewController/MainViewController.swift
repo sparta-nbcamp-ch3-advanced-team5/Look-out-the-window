@@ -17,7 +17,11 @@ final class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
-        print(apiKey)
+        self.view.backgroundColor = .systemBackground
+        
+        guard let apiKeyEncoding = Bundle.main.object(forInfoDictionaryKey: "API_KEY_ENCODING") as? String,
+              let apiKeyDecoding = Bundle.main.object(forInfoDictionaryKey: "API_KEY_DECODING") as? String else { return }
+        print(apiKeyEncoding)
+        print(apiKeyDecoding)
     }
 }
