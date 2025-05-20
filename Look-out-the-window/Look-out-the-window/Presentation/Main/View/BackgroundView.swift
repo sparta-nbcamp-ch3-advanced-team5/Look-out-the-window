@@ -11,13 +11,15 @@ import SnapKit
 import Then
 
 final class BackgroundView: UIView {
+    
+    private(set) var setBackgroundColor: UIColor
         
     // MARK: - UI Components
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
         $0.distribution = .equalSpacing
         $0.alignment = .center
-        $0.spacing = 8
+        $0.spacing = 4
     }
     
     private lazy var city = UILabel().then {
@@ -59,9 +61,11 @@ final class BackgroundView: UIView {
     
     
     // MARK: - Initializer
-    override init(frame: CGRect) {
+    init(frame: CGRect, setBackgroundColor: UIColor) {
+        self.setBackgroundColor = setBackgroundColor
         super.init(frame: frame)
-        self.backgroundColor = UIColor(named: "MainBackground")
+        self.backgroundColor = setBackgroundColor
+        print("배경색: \(self.setBackgroundColor)")
         
         setupUI()
     }
@@ -78,7 +82,7 @@ final class BackgroundView: UIView {
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
         
         infoStackView.snp.makeConstraints {
-            $0.top.equalTo(self.safeAreaLayoutGuide).inset(UIScreen().bounds.height / 10.0)
+            $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
             $0.centerX.equalToSuperview()
         }
     }
