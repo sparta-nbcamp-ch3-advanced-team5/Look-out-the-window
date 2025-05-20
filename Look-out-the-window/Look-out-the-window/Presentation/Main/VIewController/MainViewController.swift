@@ -16,6 +16,9 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .systemBackground
+        
+        let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
+        print(apiKey)
     }
 
 
