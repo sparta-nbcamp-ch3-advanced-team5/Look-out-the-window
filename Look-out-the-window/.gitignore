@@ -144,3 +144,4 @@ xcuserdata
 
 # Start of SNMac custom gitignore
 .xcuserstate
+*.xcconfig
