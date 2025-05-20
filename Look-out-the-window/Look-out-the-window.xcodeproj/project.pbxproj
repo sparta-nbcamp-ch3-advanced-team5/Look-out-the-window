@@ -15,6 +15,8 @@
 		5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B1B02DDC23FC005A2D62 /* Alamofire */; };
 		5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B6D32DDC723F005A2D62 /* RiveRuntime */; };
 		5B8DBC4C2DDC21F600F53723 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5B8DBC4B2DDC21F600F53723 /* .gitignore */; };
+		A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59662DDC9E950055EF9C /* Differentiator */; };
+		A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59682DDC9E950055EF9C /* RxDataSources */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,7 +54,9 @@
 				5B56B1A62DDC23A5005A2D62 /* RxRelay in Frameworks */,
 				5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */,
 				5B56B1A42DDC23A5005A2D62 /* RxCocoa in Frameworks */,
+				A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */,
 				5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */,
+				A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */,
 				5B56B1AB2DDC23B0005A2D62 /* Then in Frameworks */,
 				5B56B1AE2DDC23BC005A2D62 /* SnapKit in Frameworks */,
 			);
@@ -105,6 +109,8 @@
 				5B56B1AD2DDC23BC005A2D62 /* SnapKit */,
 				5B56B1B02DDC23FC005A2D62 /* Alamofire */,
 				5B56B6D32DDC723F005A2D62 /* RiveRuntime */,
+				A52D59662DDC9E950055EF9C /* Differentiator */,
+				A52D59682DDC9E950055EF9C /* RxDataSources */,
 			);
 			productName = "Look-out-the-window";
 			productReference = 5B8DBC312DDC214400F53723 /* Look-out-the-window.app */;
@@ -140,6 +146,7 @@
 				5B56B1AC2DDC23BC005A2D62 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				5B56B1AF2DDC23FC005A2D62 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */,
+				A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5B8DBC322DDC214400F53723 /* Products */;
@@ -428,6 +435,14 @@
 				minimumVersion = 6.8.2;
 			};
 		};
+		A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -465,6 +480,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */;
 			productName = RiveRuntime;
+		};
+		A52D59662DDC9E950055EF9C /* Differentiator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = Differentiator;
+		};
+		A52D59682DDC9E950055EF9C /* RxDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = RxDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
