@@ -24,7 +24,7 @@ class RequestAuthManager: NSObject, CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:  // Location services are available.
             print("위치 권한 허용")
             UserDefaults.standard.set(true, forKey: "isFirstLaunch")
-
+            
             //실패해도 user가 검색을 통해 수동으로 위치를 찾을 수 있음
         case .restricted, .denied:  // Location services currently unavailable.
             print("위치 권한 거절")
