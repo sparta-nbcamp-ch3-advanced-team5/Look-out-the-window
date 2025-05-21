@@ -18,7 +18,7 @@ final class BackgroundView: UIView {
     
     // MARK: - UI Components
     private lazy var riveView = RiveView()
-
+    
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
         $0.distribution = .equalSpacing
@@ -70,16 +70,16 @@ final class BackgroundView: UIView {
         self.riveViewModel = RiveViewModel(fileName: weatherInfo.rive , stateMachineName: "State Machine 1")
         
         super.init(frame: frame)
-
+        
+        applyGradientBackground(time: weatherInfo.time)
+        
         self.riveView = riveViewModel.createRiveView()
-        self.backgroundColor = weatherInfo.color
         city.text = weatherInfo.city
         temperature.text = "\(weatherInfo.temperature)°"
         weather.text = weatherInfo.weather
         highestTemp.text = "H:\(weatherInfo.highestTemp)°"
         lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
         
-         
         setupUI()
     }
     
@@ -87,6 +87,11 @@ final class BackgroundView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        self.layer.sublayers?.first(where: { $0 is CAGradientLayer })?.frame = self.bounds
+    }
     
     // MARK: - UI & Layout
     private func setupUI() {
@@ -104,5 +109,31 @@ final class BackgroundView: UIView {
             $0.top.equalTo(infoStackView.snp.bottom)
             $0.width.height.equalTo(500)
         }
+    }
+    
+    private func applyGradientBackground(time: Double) {
+        let newStartPoint = normalize(time, originMin: 0.0, originMax: 10.0)
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
+        gradientLayer.startPoint = CGPoint(x: newStartPoint, y: newStartPoint)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+//        gradientLayer.locations = [0.4, 0.6]
+        gradientLayer.frame = self.bounds
+        // 배경이니 제일 하단에 위치하도록
+        self.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    private func normalize(_ value: Double, originMin: Double, originMax: Double) -> Double {
+        let targetMin = 0.0
+        let targetMax = 1.0
+        
+        let ratio = (value - originMin) / (originMax - originMin)
+        
+        let scaledValue = targetMin + ratio * (targetMax - targetMin)
+        
+        let clampedValue = max(targetMin, min(scaledValue, targetMax))
+
+        print(value, clampedValue)
+        return clampedValue
     }
 }
