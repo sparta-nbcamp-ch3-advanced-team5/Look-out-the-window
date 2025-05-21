@@ -173,6 +173,8 @@ final class BackgroundViewController: UIViewController {
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
         
+        // 페이지 컨트롤 클릭 시 페이징
+        // 기본적으로 페이지 컨트롤 클릭 시 페이지 값이 변경되어 .valueChaned로 구현
         pageController.rx.controlEvent(.valueChanged)
             .map { [weak self] _ -> Int in
                 guard let self else { return 0 }
