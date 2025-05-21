@@ -16,11 +16,7 @@ final class BackgroundView: UIView {
     private(set) var weatherInfo: WeatherInfo
     private(set) var riveViewModel: RiveViewModel
     
-    // MARK: - UI Components
-    private let dimView = UIView()
-    
-    private let gradientLayer = CAGradientLayer()
-    
+    // MARK: - UI Components        
     private lazy var riveView = RiveView()
     
     private lazy var infoStackView = UIStackView().then {
@@ -75,37 +71,21 @@ final class BackgroundView: UIView {
         
         super.init(frame: frame)
         
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(weatherInfo.time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
-        
-        self.riveView = riveViewModel.createRiveView()
-        city.text = weatherInfo.city
-        temperature.text = "\(weatherInfo.temperature)°"
-        weather.text = weatherInfo.weather
-        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
-        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
-        
         setupUI()
+        configure()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        self.gradientLayer.frame = self.bounds
-    }
-    
     // MARK: - UI & Layout
     private func setupUI() {
-        self.addSubviews(dimView, infoStackView, riveView)
+        self.riveView = riveViewModel.createRiveView()
+
+        self.addSubviews(infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
-        
-        dimView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
         
         infoStackView.snp.makeConstraints {
             $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
@@ -119,33 +99,11 @@ final class BackgroundView: UIView {
         }
     }
     
-    func applyGradientBackground(time: Double) {
-        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
-//        gradientLayer.locations = [0.4, 0.6]
-        gradientLayer.frame = self.bounds
-        // 배경이니 제일 하단에 위치하도록
-        self.layer.addSublayer(gradientLayer)
-    }
-    
-    /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환
-    /// valueMin, valueMax: input 되는 값의 범위
-    /// targetMin, targetMax: return 되는 값의 범위
-    private func normalizeAndClamp(
-        _ value: Double,
-        valueMin: Double,
-        valueMax: Double,
-        targetMin: Double,
-        targetMax: Double) -> Double
-    {
-        let ratio = (value - valueMin) / (valueMax - valueMin)
-        
-        let scaledValue = targetMin + ratio * (targetMax - targetMin)
-        
-        let clampedValue = max(targetMin, min(scaledValue, targetMax))
-
-        print(value, clampedValue)
-        return clampedValue
+    private func configure() {
+        city.text = weatherInfo.city
+        temperature.text = "\(weatherInfo.temperature)°"
+        weather.text = weatherInfo.weather
+        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
+        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
     }
 }

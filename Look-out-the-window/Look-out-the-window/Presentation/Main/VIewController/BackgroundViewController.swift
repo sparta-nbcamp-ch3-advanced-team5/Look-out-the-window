@@ -40,6 +40,10 @@ final class BackgroundViewController: UIViewController {
     let disposeBag = DisposeBag()
     
     // MARK: - UI Components
+    private let dimView = UIView()
+
+    private let gradientLayer = CAGradientLayer()
+
     private lazy var backgroundViewList = [BackgroundView]()
     
     private lazy var scrollView = UIScrollView().then {
@@ -84,24 +88,20 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        applyGradientBackground(time: weatherInfoList[0].time)
         setupUI()
         bind()
-        
-        guard let apiKeyEncoding = Bundle.main.object(forInfoDictionaryKey: "API_KEY_ENCODING") as? String,
-              let apiKeyDecoding = Bundle.main.object(forInfoDictionaryKey: "API_KEY_DECODING") as? String,
-              let clientId = Bundle.main.object(forInfoDictionaryKey: "CLIENT_ID") as? String,
-              let clientSecret = Bundle.main.object(forInfoDictionaryKey: "CLIENT_SECRET") as? String else { return }
-        print(apiKeyEncoding)
-        print(apiKeyDecoding)
-        print(clientId)
-        print(clientSecret)
     }
     
     // MARK: - UI & Layout
     private func setupUI() {
-        view.addSubviews(scrollView, pageController, locationButton, listButton)
+        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
         
         scrollView.addSubview(scrollContentView)
+        
+        dimView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         scrollView.snp.makeConstraints {
             $0.edges.equalToSuperview()
@@ -161,7 +161,42 @@ final class BackgroundViewController: UIViewController {
                 return page
             }
             .distinctUntilChanged() // 중복 방지
+            .do(onNext: { [weak self] in
+                guard let self else { return }
+                self.applyGradientBackground(time: self.weatherInfoList[$0].time)
+            })
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
+    }
+    
+    private func applyGradientBackground(time: Double) {
+        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        //        gradientLayer.locations = [0.4, 0.6]
+        gradientLayer.frame = view.bounds
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
+        // 배경이니 제일 하단에 위치하도록
+        view.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환.
+    /// - valueMin,valueMax: input 되는 값의 범위.
+    /// - targetMin, targetMax: return 되는 값의 범위.
+    private func normalizeAndClamp(
+        _ value: Double,
+        valueMin: Double,
+        valueMax: Double,
+        targetMin: Double,
+        targetMax: Double) -> Double
+    {
+        let ratio = (value - valueMin) / (valueMax - valueMin)
+        
+        let scaledValue = targetMin + ratio * (targetMax - targetMin)
+        
+        let clampedValue = max(targetMin, min(scaledValue, targetMax))
+        
+        print(value, clampedValue)
+        return clampedValue
     }
 }
