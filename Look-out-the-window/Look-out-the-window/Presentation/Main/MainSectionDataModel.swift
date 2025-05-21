@@ -7,25 +7,37 @@
 
 import RxDataSources
 
+/*
+ struct WeatherState: Decodable {
+     let id: Int // 날씨 상태 ID
+     let main: String // 날씨 매개변수 그룹(비,눈 등)
+     let icon: String // 날씨 아이콘 ex) https://openweathermap.org/img/wn/(id)@2x.png
+ }
+ */
+
 // MARK: - 각 섹션 DataModel (수정 필요해 보임)
 struct HourlyModel {
-    let hour: String        // "09:00" 등 (날짜 포맷 변환 필요)
-    let temperature: String // "20℃" 등 (단위 변환 및 포맷팅)
+    let hour: String      // 포맷 수정  ( 12시간 -> Cell 12개 정도)
+    let temperature: String  // 섭씨
+    // weatherState
+    let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
 }
-
 
 struct DailyModel {
-    let day: String      // "월", "화" 등
-    let high: String     // "25℃"
-    let low: String      // "15℃"
+    // 요일, 하늘상태(이미지 -> String), 최저 - 최고 온도
+    let day: String
+    let high: String
+    let low: String
+    let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
 }
-
 
 struct DetailModel {
-    let title: String    // 예) "자외선지수", "일출", "일몰", "바람", "강수량", "체감기온", "습도"
-    let value: String    // 예) "높음", "05:20", "19:45", "3m/s NW", "5mm", "22℃", "70%"
+    // Cell에 UIView 각각 배치 예정
+    let title: String
+    let value: String
+    // TODO: 이미지..
+    
 }
-
 
 enum MainSectionItem {
     case hourly(HourlyModel)
