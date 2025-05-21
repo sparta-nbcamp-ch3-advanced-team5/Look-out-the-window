@@ -27,20 +27,17 @@ final class BackgroundView: UIView {
     }
     
     private lazy var city = UILabel().then {
-        $0.text = "부산광역시"
         $0.numberOfLines = 0
         $0.font = .systemFont(ofSize: 30, weight: .medium)
         $0.textColor = .label
     }
     
     private lazy var temperature = UILabel().then {
-        $0.text = "20°"
         $0.font = .systemFont(ofSize: 90, weight: .light)
         $0.textColor = .label
     }
     
     private lazy var weather = UILabel().then {
-        $0.text = "흐림"
         $0.font = .systemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .secondaryLabel
     }
@@ -52,13 +49,11 @@ final class BackgroundView: UIView {
     }
     
     private lazy var highestTemp = UILabel().then {
-        $0.text = "H:24°"
         $0.font = .systemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .label
     }
     
     private lazy var lowestTemp = UILabel().then {
-        $0.text = "L:18°"
         $0.font = .systemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .label
     }
