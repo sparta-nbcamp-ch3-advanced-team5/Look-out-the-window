@@ -17,9 +17,11 @@ final class BackgroundView: UIView {
     private(set) var riveViewModel: RiveViewModel
     
     // MARK: - UI Components
-    private lazy var riveView = RiveView()
+    private let dimView = UIView()
     
-    private lazy var dimView = UIView()
+    private let gradientLayer = CAGradientLayer()
+    
+    private lazy var riveView = RiveView()
     
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
@@ -74,7 +76,7 @@ final class BackgroundView: UIView {
         super.init(frame: frame)
         
         applyGradientBackground(time: weatherInfo.time)
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(weatherInfo.time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.3, targetMax: 0.7))
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(weatherInfo.time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
         
         self.riveView = riveViewModel.createRiveView()
         city.text = weatherInfo.city
@@ -93,7 +95,7 @@ final class BackgroundView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        self.layer.sublayers?.first(where: { $0 is CAGradientLayer })?.frame = self.bounds
+        self.gradientLayer.frame = self.bounds
     }
     
     // MARK: - UI & Layout
@@ -119,16 +121,13 @@ final class BackgroundView: UIView {
     }
     
     private func applyGradientBackground(time: Double) {
-        let newStartPoint = normalizeAndClamp(time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.3, targetMax: 0.7)
-        let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
-//        gradientLayer.startPoint = CGPoint(x: newStartPoint, y: newStartPoint)
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
 //        gradientLayer.locations = [0.4, 0.6]
         gradientLayer.frame = self.bounds
         // 배경이니 제일 하단에 위치하도록
-        self.layer.insertSublayer(gradientLayer, at: 0)
+        self.layer.addSublayer(gradientLayer)
     }
     
     /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환

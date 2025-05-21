@@ -27,7 +27,7 @@ struct WeatherInfo {
 final class BackgroundViewController: UIViewController {
     
     private let weatherInfoList: [WeatherInfo] = [
-        WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, time: 1.0),
+        WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, time: 0.0),
         WeatherInfo(city: "서울", temperature: 18, weather: "맑음", highestTemp: 21, lowestTemp: 16, rive: Rive.sunny, time: 3.0),
         WeatherInfo(city: "제주", temperature: 21, weather: "눈", highestTemp: 24, lowestTemp: 19, rive: Rive.snow, time: 5.0),
         WeatherInfo(city: "인천", temperature: 19, weather: "비", highestTemp: 20, lowestTemp: 17, rive: Rive.rainy, time: 7.0),
