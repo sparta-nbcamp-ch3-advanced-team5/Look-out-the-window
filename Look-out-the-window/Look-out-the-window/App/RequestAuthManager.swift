@@ -23,7 +23,7 @@ class RequestAuthManager: NSObject, CLLocationManagerDelegate {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:  // Location services are available.
             print("위치 권한 허용")
-//            UserDefaults.standard.set(true, forKey: "isFirstLaunch")
+            UserDefaults.standard.set(true, forKey: "isFirstLaunch")
 
             //실패해도 user가 검색을 통해 수동으로 위치를 찾을 수 있음
         case .restricted, .denied:  // Location services currently unavailable.
@@ -42,7 +42,6 @@ class RequestAuthManager: NSObject, CLLocationManagerDelegate {
     //CLLocationManager().requestWhenInUseAuthorization() 를 호출하면
     //   iOS가 시스템 권한 팝업은 자동으로 띄웁니다 (최초 요청 시 한 번만).
     func showRequestLocationNotice() {
-        UserDefaults.standard.set(false, forKey: "isFirstLaunch")
         let isFirstLaunch = UserDefaults.standard.bool(forKey: "isFirstLaunch")
 
         if !isFirstLaunch {
