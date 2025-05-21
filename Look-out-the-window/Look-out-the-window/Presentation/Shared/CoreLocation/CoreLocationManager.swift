@@ -17,24 +17,45 @@ final class CoreLocationManager: NSObject {
     // MARK: - Properties
     
     static let shared = CoreLocationManager()
-    
     private let locationManager: CLLocationManager
     
+    private let second: UInt64 = 1_000_000_000
+    
+    // 백그라운드
+    private var timer: Timer?
+    
     // MARK: - Initializer
+    
     private override init() {
         locationManager = CLLocationManager()
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+        locationManager.distanceFilter = 500
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.allowsBackgroundLocationUpdates = true
         super.init()
         
         locationManager.delegate = self
     }
-    
-    // MARK: - Methods
-    
-    func startUpdatingLocation() {
+}
+
+// MARK: - Location Update Methods
+
+extension CoreLocationManager {
+    /// 위치 업데이트를 시작하고, 마지막 위치에서 반경 500m를 벗어났을 때 위치를 업데이트하도록 변경하는 메서드
+    func startUpdatingLocationInForeground() {
+        os_log(.debug, log: log, #function)
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestAlwaysAuthorization()
+        
+        locationManager.stopMonitoringSignificantLocationChanges()
         locationManager.startUpdatingLocation()
+    }
+    
+    /// 마지막 위치에서 반경 1km를 벗어났을 때 위치를 업데이트하도록 변경하는 메서드
+    func startUpdatingLocationInBackground() {
+        os_log(.debug, log: log, #function)
+        locationManager.stopUpdatingLocation()
+        locationManager.startMonitoringSignificantLocationChanges()
     }
 }
 
@@ -62,15 +83,14 @@ private extension CoreLocationManager {
         switch status {
         case .authorizedAlways:
             os_log(.debug, log: log, "위치 서비스 권한: 항상 허용됨")
-            startUpdatingLocation()
         case .authorizedWhenInUse:
             os_log(.debug, log: log, "위치 서비스 권한: 사용하는 동안 허용됨")
-            startUpdatingLocation()
-            // TODO: 항상 허용 Alert?
         case .restricted, .denied:
             os_log(.debug, log: log, "위치 서비스 권한: 차단됨")
+            // TODO: 허용 Alert?
         case .notDetermined:
             os_log(.debug, log: log, "위치 서비스 권한: 설정 필요")
+            // TODO: 허용 Alert?
             locationManager.requestAlwaysAuthorization()
         @unknown default:
             break
@@ -83,7 +103,6 @@ private extension CoreLocationManager {
 extension CoreLocationManager: CLLocationManagerDelegate {
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         checkDeviceLocationService()
-        print("locationManagerDidChangeAuthorization")
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -92,6 +111,6 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        
+        os_log(.error, log: log, "\(error.localizedDescription)")
     }
 }
