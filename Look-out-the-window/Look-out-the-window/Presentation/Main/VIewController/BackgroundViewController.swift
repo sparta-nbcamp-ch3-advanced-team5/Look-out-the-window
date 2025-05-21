@@ -45,7 +45,7 @@ final class BackgroundViewController: UIViewController {
     private let dimView = UIView()
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
-
+    
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
     
     private lazy var scrollView = UIScrollView().then {
@@ -114,7 +114,7 @@ final class BackgroundViewController: UIViewController {
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-                
+        
         pageController.snp.makeConstraints {
             $0.centerY.equalTo(locationButton)
             $0.centerX.equalToSuperview()
@@ -153,7 +153,7 @@ final class BackgroundViewController: UIViewController {
             }
         }
     }
-        
+    
     // MARK: - Private Methods
     private func bind() {
         // 스크롤의 감속이 끝났을 때 페이징
@@ -171,6 +171,21 @@ final class BackgroundViewController: UIViewController {
                 self.applyGradientBackground(time: self.weatherInfoList[$0].time)
             })
             .bind(to: pageController.rx.currentPage)
+            .disposed(by: disposeBag)
+        
+        pageController.rx.controlEvent(.valueChanged)
+            .map { [weak self] _ -> Int in
+                guard let self else { return 0 }
+                let page = self.pageController.currentPage
+                return page
+            }
+            .subscribe(onNext: { [weak self] page in
+                guard let self else { return }
+                
+                let offsetX = Int(self.scrollView.frame.width) * page
+                
+                self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+            })
             .disposed(by: disposeBag)
     }
     
