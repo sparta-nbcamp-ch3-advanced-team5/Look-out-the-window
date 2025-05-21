@@ -12,16 +12,35 @@ import RxSwift
 import RxGesture
 import SnapKit
 import Then
+import RiveRuntime
+
+struct WeatherInfo {
+    let city: String
+    let temperature: Int
+    let weather: String
+    let highestTemp: Int
+    let lowestTemp: Int
+    let rive: String
+    let color: UIColor
+}
 
 final class BackgroundViewController: UIViewController {
     
-    private let colorSet = [UIColor.mainBackground, UIColor.secondaryBackground, UIColor.cellStart, UIColor.cellEnd]
+    private let weatherInfoList: [WeatherInfo] = [
+        WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, color: .mainBackground),
+        WeatherInfo(city: "서울", temperature: 18, weather: "맑음", highestTemp: 21, lowestTemp: 16, rive: Rive.sunny, color: .secondaryBackground),
+        WeatherInfo(city: "제주", temperature: 21, weather: "눈", highestTemp: 24, lowestTemp: 19, rive: Rive.snow, color: .cellStart),
+        WeatherInfo(city: "인천", temperature: 19, weather: "비", highestTemp: 20, lowestTemp: 17, rive: Rive.rainy, color: .cellEnd),
+        WeatherInfo(city: "강원", temperature: 19, weather: "천둥", highestTemp: 21, lowestTemp: 18, rive: Rive.thunder, color: .purple),
+        WeatherInfo(city: "광주", temperature: 19, weather: "흐림", highestTemp: 22, lowestTemp: 19, rive: Rive.cloudy, color: .systemPurple),
+    ]
+    private let viewModel: BackgroundViewModel
     
     let disposeBag = DisposeBag()
 
     // MARK: - UI Components
     private lazy var backgroundViewList = [BackgroundView]()
-    private lazy var backgroundView = BackgroundView(frame: .zero, setBackgroundColor: colorSet[0])
+    private lazy var backgroundView = BackgroundView(frame: .zero, weatherInfo: weatherInfoList[0])
     
     private lazy var locationButton = UIButton().then {
         // 버튼의 SFSymbol 이미지 크기 변경 시 사용
@@ -39,13 +58,22 @@ final class BackgroundViewController: UIViewController {
     }
     
     private lazy var pageController = UIPageControl().then {
-        $0.numberOfPages = colorSet.count
+        $0.numberOfPages = weatherInfoList.count
         $0.currentPage = 0
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
     }
     
     // MARK: - Initializers
+    init(viewModel: BackgroundViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -93,8 +121,8 @@ final class BackgroundViewController: UIViewController {
     
     // MARK: - Private Methods
     private func setBackgroundView() {
-        for i in 0..<colorSet.count {
-            backgroundViewList.append(BackgroundView(frame: .zero, setBackgroundColor: colorSet[i]))
+        for i in 0..<weatherInfoList.count {
+            backgroundViewList.append(BackgroundView(frame: .zero, weatherInfo: weatherInfoList[i]))
         }
     }
     

@@ -13,11 +13,12 @@ import RiveRuntime
 
 final class BackgroundView: UIView {
     
-    private(set) var setBackgroundColor: UIColor
-    private let riveViewModel = RiveViewModel(fileName: "Cloudy", stateMachineName: "State Machine 1")
-    var riveView = RiveView()
-        
+    private(set) var weatherInfo: WeatherInfo
+    private(set) var riveViewModel: RiveViewModel
+    
     // MARK: - UI Components
+    private lazy var riveView = RiveView()
+
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
         $0.distribution = .equalSpacing
@@ -64,13 +65,21 @@ final class BackgroundView: UIView {
     
     
     // MARK: - Initializer
-    init(frame: CGRect, setBackgroundColor: UIColor) {
-        self.setBackgroundColor = setBackgroundColor
-        super.init(frame: frame)
-        self.backgroundColor = setBackgroundColor
-        print("배경색: \(self.setBackgroundColor)")
-        riveView = riveViewModel.createRiveView()
+    init(frame: CGRect, weatherInfo: WeatherInfo) {
+        self.weatherInfo = weatherInfo
+        self.riveViewModel = RiveViewModel(fileName: weatherInfo.rive , stateMachineName: "State Machine 1")
         
+        super.init(frame: frame)
+
+        self.riveView = riveViewModel.createRiveView()
+        self.backgroundColor = weatherInfo.color
+        city.text = weatherInfo.city
+        temperature.text = "\(weatherInfo.temperature)°"
+        weather.text = weatherInfo.weather
+        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
+        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
+        
+         
         setupUI()
     }
     
