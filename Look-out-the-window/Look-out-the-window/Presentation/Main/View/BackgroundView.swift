@@ -123,11 +123,17 @@ final class BackgroundView: UIView {
         self.layer.insertSublayer(gradientLayer, at: 0)
     }
     
-    private func normalize(_ value: Double, originMin: Double, originMax: Double) -> Double {
-        let targetMin = 0.0
-        let targetMax = 1.0
-        
-        let ratio = (value - originMin) / (originMax - originMin)
+    /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환
+    /// valueMin, valueMax: input 되는 값의 범위
+    /// targetMin, targetMax: return 되는 값의 범위
+    private func normalizeAndClamp(
+        _ value: Double,
+        valueMin: Double,
+        valueMax: Double,
+        targetMin: Double,
+        targetMax: Double) -> Double
+    {
+        let ratio = (value - valueMin) / (valueMax - valueMin)
         
         let scaledValue = targetMin + ratio * (targetMax - targetMin)
         
