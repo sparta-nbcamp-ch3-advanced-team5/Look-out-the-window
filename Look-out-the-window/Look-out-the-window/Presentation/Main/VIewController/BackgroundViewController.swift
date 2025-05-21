@@ -160,7 +160,6 @@ final class BackgroundViewController: UIViewController {
         scrollView.rx.didEndDecelerating
             .map { [weak self] _ -> Int in
                 guard let scrollView = self?.scrollView else { return 0 }
-                print(scrollView.contentOffset.x, scrollView.frame.width)
                 // scrollView 내부 콘첸트가 수평으로 얼마나 스크롤 됐는지 / scrollView가 화면에 차지하는 너비
                 let page = Int(round(scrollView.contentOffset.x / scrollView.frame.width))
                 return page
@@ -183,10 +182,9 @@ final class BackgroundViewController: UIViewController {
             }
             .subscribe(onNext: { [weak self] page in
                 guard let self else { return }
-                
                 let offsetX = Int(self.scrollView.frame.width) * page
-                
                 self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+                self.applyGradientBackground(time: self.weatherInfoList[page].time)
             })
             .disposed(by: disposeBag)
     }
