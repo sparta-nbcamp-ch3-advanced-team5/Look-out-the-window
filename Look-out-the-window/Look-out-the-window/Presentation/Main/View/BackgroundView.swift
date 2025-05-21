@@ -9,17 +9,20 @@ import UIKit
 
 import SnapKit
 import Then
+import RiveRuntime
 
 final class BackgroundView: UIView {
     
     private(set) var setBackgroundColor: UIColor
+    private let riveViewModel = RiveViewModel(fileName: "Cloudy", stateMachineName: "State Machine 1")
+    var riveView = RiveView()
         
     // MARK: - UI Components
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
         $0.distribution = .equalSpacing
         $0.alignment = .center
-        $0.spacing = 4
+        $0.spacing = 0
     }
     
     private lazy var city = UILabel().then {
@@ -66,6 +69,7 @@ final class BackgroundView: UIView {
         super.init(frame: frame)
         self.backgroundColor = setBackgroundColor
         print("배경색: \(self.setBackgroundColor)")
+        riveView = riveViewModel.createRiveView()
         
         setupUI()
     }
@@ -77,13 +81,19 @@ final class BackgroundView: UIView {
     
     // MARK: - UI & Layout
     private func setupUI() {
-        self.addSubviews(infoStackView)
+        self.addSubviews(infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
         
         infoStackView.snp.makeConstraints {
             $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
             $0.centerX.equalToSuperview()
+        }
+        
+        riveView.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.top.equalTo(infoStackView.snp.bottom)
+            $0.width.height.equalTo(500)
         }
     }
 }
