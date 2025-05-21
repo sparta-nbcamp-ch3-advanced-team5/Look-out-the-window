@@ -12,6 +12,7 @@ import RxSwift
 import RxDataSources
 import SnapKit
 import Then
+import CoreLocation
 
 // TODO: - DetailCell Header, customView 추가
 // TODO: - SF Symbol 컬러 세팅
