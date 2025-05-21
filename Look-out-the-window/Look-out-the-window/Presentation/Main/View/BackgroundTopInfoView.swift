@@ -1,5 +1,5 @@
 //
-//  BackgroundView.swift
+//  BackgroundTopInfoView.swift
 //  Look-out-the-window
 //
 //  Created by 정근호 on 5/20/25.
@@ -11,12 +11,12 @@ import SnapKit
 import Then
 import RiveRuntime
 
-final class BackgroundView: UIView {
+final class BackgroundTopInfoView: UIView {
     
     private(set) var weatherInfo: WeatherInfo
     private(set) var riveViewModel: RiveViewModel
     
-    // MARK: - UI Components        
+    // MARK: - UI Components
     private lazy var riveView = RiveView()
     
     private lazy var infoStackView = UIStackView().then {

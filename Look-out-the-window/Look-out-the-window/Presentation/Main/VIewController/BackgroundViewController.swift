@@ -44,7 +44,7 @@ final class BackgroundViewController: UIViewController {
 
     private let gradientLayer = CAGradientLayer()
 
-    private lazy var backgroundViewList = [BackgroundView]()
+    private lazy var backgroundViewList = [BackgroundTopInfoView]()
     
     private lazy var scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
@@ -112,7 +112,7 @@ final class BackgroundViewController: UIViewController {
         }
         
         for (index, weatherInfo) in weatherInfoList.enumerated() {
-            let backgroundView = BackgroundView(frame: .zero, weatherInfo: weatherInfo)
+            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
             scrollContentView.addSubview(backgroundView)
             backgroundViewList.append(backgroundView)
             
