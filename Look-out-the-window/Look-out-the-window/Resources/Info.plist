@@ -3,7 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>When In Use Description</string>
+	<string>사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.</string>
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
 	<key>API_KEY</key>
