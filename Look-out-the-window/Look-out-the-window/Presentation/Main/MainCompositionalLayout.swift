@@ -44,7 +44,7 @@ struct MainCompositionalLayout {
 
             case .daily:
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                      heightDimension: .absolute(64))
+                                                      heightDimension: .absolute(55))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
@@ -53,7 +53,7 @@ struct MainCompositionalLayout {
 
                 let section = NSCollectionLayoutSection(group: group)
                 section.interGroupSpacing = 2
-                section.contentInsets = NSDirectionalEdgeInsets(top: 46, leading: 16, bottom: 16, trailing: 16)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 46, leading: 16, bottom: 0, trailing: 16)
 
                 // ✅ Decoration View 적용
                 let decorationItem = NSCollectionLayoutDecorationItem.background(elementKind: "rounded-background")
@@ -66,7 +66,7 @@ struct MainCompositionalLayout {
                                                       heightDimension: .fractionalWidth(0.5))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
-                item.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+                item.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 8, bottom: 12, trailing: 8)
 
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                        heightDimension: .estimated(180))
@@ -76,7 +76,7 @@ struct MainCompositionalLayout {
 
                 let section = NSCollectionLayoutSection(group: group)
                 section.interGroupSpacing = 12
-                section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 32, trailing: 16)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 0, bottom: 32, trailing: 0)
 
                 return section
             }

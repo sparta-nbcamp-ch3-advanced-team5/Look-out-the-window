@@ -31,12 +31,12 @@ struct DailyModel {
     let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
 }
 
+// TODO: - DetailModel은 종류가 많으니까 enum으로 하는 것도 IDEA
 struct DetailModel {
     // Cell에 UIView 각각 배치 예정
     let title: String
     let value: String
-    // TODO: 이미지..
-    
+    // TODO: 이미지..? 필요한가
 }
 
 enum MainSectionItem {

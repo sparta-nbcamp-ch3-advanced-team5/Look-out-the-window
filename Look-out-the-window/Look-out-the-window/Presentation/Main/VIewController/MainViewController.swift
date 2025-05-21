@@ -13,6 +13,8 @@ import RxDataSources
 import SnapKit
 import Then
 
+// TODO: - 상세 정보 섹션에는 Decoration View 적용하면 안될 거 같음... compositional layout 포기해야할지도?
+
 final class MainViewController: UIViewController {
     
     private let mainView = MainView()
@@ -29,6 +31,7 @@ final class MainViewController: UIViewController {
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
                 // cell에 model 데이터 바인딩
+//                cell.bind(model: model)
                 return cell
             case .detail(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
@@ -46,7 +49,7 @@ final class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .white
         
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
                else { return }
@@ -65,12 +68,22 @@ extension MainViewController: UICollectionViewDelegate {
         // 예시 데이터
         let sections = Observable.just([
             MainSection(items: [
-                .hourly(HourlyModel(hour: "09:00", temperature: "20'C")),
-                .hourly(HourlyModel(hour: "10:00", temperature: "21'C"))
+                .hourly(HourlyModel(hour: "09:00", temperature: "20'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10:00", temperature: "21'C", weatherInfo: "sun.min"))
             ]),
             MainSection(items: [
-                .daily(DailyModel(day: "월", high: "25'C", low: "15'C")),
-                .daily(DailyModel(day: "화", high: "26'C", low: "16'C"))
+                .daily(DailyModel(day: "월", high: "25'C", low: "15'C", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "26'C", low: "16'C", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "26'C", low: "16'C", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "26'C", low: "16'C", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "26'C", low: "16'C", weatherInfo: "sun.min"))
             ]),
             MainSection(items: [
                 .detail(DetailModel(title: "자외선지수", value: "높음")),

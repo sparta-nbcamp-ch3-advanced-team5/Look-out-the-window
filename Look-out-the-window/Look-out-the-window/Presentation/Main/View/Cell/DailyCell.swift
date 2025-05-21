@@ -14,24 +14,33 @@ class DailyCell: UICollectionViewCell {
     private let dayLabel = UILabel().then {
         $0.text = "Now"
         $0.textAlignment = .center
-        $0.font = .systemFont(ofSize: 14)
+        $0.font = .boldSystemFont(ofSize: 18)
+        $0.textColor = .white
     }
     
     private let weatherIcon = UIImageView().then {
-        $0.contentMode = .scaleAspectFit
+        $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
+        $0.image = UIImage(systemName: "sun.max")
+        $0.tintColor = .white
     }
     
     private let lowTempLabel = UILabel().then {
-        $0.text = "@'C - Temp"
+        $0.text = "18'C"
         $0.textAlignment = .center
-        $0.font = .systemFont(ofSize: 16)
+        $0.font = .boldSystemFont(ofSize: 16)
+        $0.textColor = .white
     }
     
     private let highTempLabel = UILabel().then {
-        $0.text = "@'C - Temp"
+        $0.text = "30'C"
         $0.textAlignment = .center
-        $0.font = .systemFont(ofSize: 16)
+        $0.font = .boldSystemFont(ofSize: 16)
+        $0.textColor = .white
+    }
+    
+    private let separatorView = UIView().then {
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.2)
     }
     
     override init(frame: CGRect) {
@@ -60,35 +69,42 @@ private extension DailyCell {
     }
     
     func setAppearance() {
-//        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
-        self.backgroundColor = .red
+        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
     }
     
     func setViewHierarchy() {
-        self.addSubviews(dayLabel, weatherIcon, lowTempLabel, highTempLabel)
+        self.addSubviews(dayLabel, weatherIcon, lowTempLabel, highTempLabel, separatorView)
     }
     
     func setConstraints() {
         dayLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(safeAreaLayoutGuide).offset(4)
+            $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
         }
         
         weatherIcon.snp.makeConstraints{
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(dayLabel.snp.trailing).offset(4)
+            $0.size.equalTo(30)
+            $0.leading.equalTo(dayLabel.snp.trailing).offset(20)
         }
         
         lowTempLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(weatherIcon.snp.trailing).offset(4)
+            $0.leading.equalTo(weatherIcon.snp.trailing).offset(12)
         }
         
         // TODO: Progress Bar
         
         highTempLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(4)
+            $0.trailing.equalTo(safeAreaLayoutGuide).inset(12)
+        }
+        
+        separatorView.snp.makeConstraints {
+            $0.height.equalTo(1)
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().offset(10)
+            $0.trailing.equalToSuperview().inset(10)
         }
     }
 }
