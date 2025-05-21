@@ -128,27 +128,26 @@ final class BackgroundViewController: UIViewController {
     }
     
     private func bind() {
-                
-        Observable
-            .merge(
-                self.view.rx.gesture(.swipe(direction: .left)).asObservable(),
-                self.view.rx.gesture(.swipe(direction: .right)).asObservable()
-            )
-            .bind { [weak self] gesture in
-                guard let self = self else { return }
-                guard let gesture = gesture as? UISwipeGestureRecognizer else { return }
-                switch gesture.direction {
-                case .left:
-                    self.pageController.currentPage += 1
-                case .right:
-                    self.pageController.currentPage -= 1
-                default:
-                    break
-                }
-                resetBackground()
-            }
-            .disposed(by: self.disposeBag)
         
+        self.view.rx.panGesture()
+            .when(.recognized)
+            .bind { [weak self] gesture in
+                guard let self else { return }
+                
+                let velocity = gesture.velocity(in: self.view)
+                debugPrint(velocity)
+                
+                if velocity.x.magnitude > 300 {
+                    if velocity.x < 0 { // 왼쪽으로 스와이프
+                        self.pageController.currentPage += 1
+                    } else { // 오른쪽으로 스와이프
+                        self.pageController.currentPage -= 1
+                    }
+                    resetBackground()
+                } else {
+                    UIView.transition(from: self.backgroundView, to: backgroundViewList[self.pageController.currentPage+1], duration: 2)
+                }
+            }.disposed(by: disposeBag)
     }
     
     private func resetBackground() {
