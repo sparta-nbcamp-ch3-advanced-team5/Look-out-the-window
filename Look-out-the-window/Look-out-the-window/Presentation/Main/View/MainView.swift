@@ -33,10 +33,12 @@ private extension MainView {
         setAppearance()
         setViewHierarchy()
         setConstraints()
+        registerCells()
     }
     
     func setAppearance() {
-        self.backgroundColor = .mainBackground
+        self.backgroundColor = .white
+        collectionView.backgroundColor = .white
     }
     
     func setViewHierarchy() {

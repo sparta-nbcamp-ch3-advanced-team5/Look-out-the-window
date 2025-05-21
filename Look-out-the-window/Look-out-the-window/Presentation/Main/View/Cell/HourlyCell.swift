@@ -12,6 +12,7 @@ class HourlyCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.backgroundColor = .brown
     }
 
     @available(*, unavailable)
