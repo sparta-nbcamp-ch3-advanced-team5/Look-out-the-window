@@ -38,10 +38,16 @@ final class BackgroundViewController: UIViewController {
     private let viewModel: BackgroundViewModel
     
     let disposeBag = DisposeBag()
-
+    
     // MARK: - UI Components
     private lazy var backgroundViewList = [BackgroundView]()
-    private lazy var backgroundView = BackgroundView(frame: .zero, weatherInfo: weatherInfoList[0])
+    
+    private lazy var scrollView = UIScrollView().then {
+        $0.isPagingEnabled = true
+        $0.showsHorizontalScrollIndicator = false
+    }
+    
+    private let scrollContentView = UIView()
     
     private lazy var locationButton = UIButton().then {
         // 버튼의 SFSymbol 이미지 크기 변경 시 사용
@@ -79,7 +85,6 @@ final class BackgroundViewController: UIViewController {
         super.viewDidLoad()
         
         setupUI()
-        setBackgroundView()
         bind()
         
         guard let apiKeyEncoding = Bundle.main.object(forInfoDictionaryKey: "API_KEY_ENCODING") as? String,
@@ -94,12 +99,36 @@ final class BackgroundViewController: UIViewController {
     
     // MARK: - UI & Layout
     private func setupUI() {
-        view.addSubviews(backgroundView, pageController, locationButton, listButton)
+        view.addSubviews(scrollView, pageController, locationButton, listButton)
         
-        backgroundView.snp.makeConstraints {
+        scrollView.addSubview(scrollContentView)
+        
+        scrollView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         
+        scrollContentView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        
+        for (index, weatherInfo) in weatherInfoList.enumerated() {
+            let backgroundView = BackgroundView(frame: .zero, weatherInfo: weatherInfo)
+            scrollContentView.addSubview(backgroundView)
+            backgroundViewList.append(backgroundView)
+            
+            backgroundView.snp.makeConstraints {
+                $0.verticalEdges.equalToSuperview()
+                $0.width.equalTo(view.snp.width)
+                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+            }
+        }
+        
+        if let lastBackgroundView = backgroundViewList.last {
+            lastBackgroundView.snp.makeConstraints {
+                $0.trailing.equalToSuperview()
+            }
+        }
+                
         pageController.snp.makeConstraints {
             $0.centerY.equalTo(locationButton)
             $0.centerX.equalToSuperview()
@@ -121,48 +150,18 @@ final class BackgroundViewController: UIViewController {
     
     
     // MARK: - Private Methods
-    private func setBackgroundView() {
-        for i in 0..<weatherInfoList.count {
-            backgroundViewList.append(BackgroundView(frame: .zero, weatherInfo: weatherInfoList[i]))
-        }
-    }
-    
     private func bind() {
         
-        self.view.rx.panGesture()
-            .when(.recognized)
-            .bind { [weak self] gesture in
-                guard let self else { return }
-                
-                let velocity = gesture.velocity(in: self.view)
-                debugPrint(velocity)
-                
-                if velocity.x.magnitude > 300 {
-                    if velocity.x < 0 { // 왼쪽으로 스와이프
-                        self.pageController.currentPage += 1
-                    } else { // 오른쪽으로 스와이프
-                        self.pageController.currentPage -= 1
-                    }
-                    resetBackground()
-                } else {
-                    UIView.transition(from: self.backgroundView, to: backgroundViewList[self.pageController.currentPage+1], duration: 2)
-                }
-            }.disposed(by: disposeBag)
-    }
-    
-    private func resetBackground() {
-        // 기존 배경 뷰 제거
-        self.backgroundView.removeFromSuperview()
-        
-        // 새 배경 뷰 할당
-        self.backgroundView = self.backgroundViewList[self.pageController.currentPage]
-        
-        // 새 배경 뷰 맨뒤에 추가
-        self.view.insertSubview(self.backgroundView, at: 0)
-        
-        self.backgroundView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
+        scrollView.rx.didEndDecelerating
+            .map { [weak self] _ -> Int in
+                guard let scrollView = self?.scrollView else { return 0 }
+                print(scrollView.contentOffset.x, scrollView.frame.width)
+                // scrollView 내부 콘첸트가 수평으로 얼마나 스크롤 됐는지 / scrollView가 화면에 차지하는 너비
+                let page = Int(round(scrollView.contentOffset.x / scrollView.frame.width))
+                return page
+            }
+            .distinctUntilChanged() // 중복 방지
+            .bind(to: pageController.rx.currentPage)
+            .disposed(by: disposeBag)
     }
 }
-

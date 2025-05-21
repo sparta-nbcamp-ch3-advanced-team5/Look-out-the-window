@@ -75,7 +75,6 @@ final class BackgroundView: UIView {
         
         super.init(frame: frame)
         
-        applyGradientBackground(time: weatherInfo.time)
         dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(weatherInfo.time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
         
         self.riveView = riveViewModel.createRiveView()
@@ -120,7 +119,7 @@ final class BackgroundView: UIView {
         }
     }
     
-    private func applyGradientBackground(time: Double) {
+    func applyGradientBackground(time: Double) {
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
