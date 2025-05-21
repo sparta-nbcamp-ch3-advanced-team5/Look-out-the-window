@@ -19,6 +19,8 @@ final class BackgroundView: UIView {
     // MARK: - UI Components
     private lazy var riveView = RiveView()
     
+    private lazy var dimView = UIView()
+    
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
         $0.distribution = .equalSpacing
@@ -72,6 +74,7 @@ final class BackgroundView: UIView {
         super.init(frame: frame)
         
         applyGradientBackground(time: weatherInfo.time)
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(weatherInfo.time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.3, targetMax: 0.7))
         
         self.riveView = riveViewModel.createRiveView()
         city.text = weatherInfo.city
@@ -95,9 +98,13 @@ final class BackgroundView: UIView {
     
     // MARK: - UI & Layout
     private func setupUI() {
-        self.addSubviews(infoStackView, riveView)
+        self.addSubviews(dimView, infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
+        
+        dimView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         infoStackView.snp.makeConstraints {
             $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
@@ -112,10 +119,11 @@ final class BackgroundView: UIView {
     }
     
     private func applyGradientBackground(time: Double) {
-        let newStartPoint = normalize(time, originMin: 0.0, originMax: 10.0)
+        let newStartPoint = normalizeAndClamp(time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.3, targetMax: 0.7)
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
-        gradientLayer.startPoint = CGPoint(x: newStartPoint, y: newStartPoint)
+//        gradientLayer.startPoint = CGPoint(x: newStartPoint, y: newStartPoint)
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
 //        gradientLayer.locations = [0.4, 0.6]
         gradientLayer.frame = self.bounds
