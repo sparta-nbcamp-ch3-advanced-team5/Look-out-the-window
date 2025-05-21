@@ -101,7 +101,7 @@ final class BackgroundViewController: UIViewController {
         }
         
         pageController.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(UIScreen().bounds.height / 35.0)
+            $0.centerY.equalTo(locationButton)
             $0.centerX.equalToSuperview()
         }
         
