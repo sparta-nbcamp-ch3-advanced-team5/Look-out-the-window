@@ -26,6 +26,7 @@ struct WeatherInfo {
 
 final class BackgroundViewController: UIViewController {
     
+    // Mock Model
     private let weatherInfoList: [WeatherInfo] = [
         WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, time: 0.0),
         WeatherInfo(city: "서울", temperature: 18, weather: "맑음", highestTemp: 21, lowestTemp: 16, rive: Rive.sunny, time: 3.0),
@@ -40,8 +41,9 @@ final class BackgroundViewController: UIViewController {
     let disposeBag = DisposeBag()
     
     // MARK: - UI Components
+    /// 밝기관련 뷰 시간에 따라 어두워짐.
     private let dimView = UIView()
-
+    /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
 
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
@@ -88,8 +90,10 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // 리스트의 초기값으로 첫 화면 설정
         applyGradientBackground(time: weatherInfoList[0].time)
         setupUI()
+        setupBackgroundViews()
         bind()
     }
     
@@ -110,24 +114,6 @@ final class BackgroundViewController: UIViewController {
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-        
-        for (index, weatherInfo) in weatherInfoList.enumerated() {
-            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
-            scrollContentView.addSubview(backgroundView)
-            backgroundViewList.append(backgroundView)
-            
-            backgroundView.snp.makeConstraints {
-                $0.verticalEdges.equalToSuperview()
-                $0.width.equalTo(view.snp.width)
-                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-            }
-        }
-        
-        if let lastBackgroundView = backgroundViewList.last {
-            lastBackgroundView.snp.makeConstraints {
-                $0.trailing.equalToSuperview()
-            }
-        }
                 
         pageController.snp.makeConstraints {
             $0.centerY.equalTo(locationButton)
@@ -147,11 +133,30 @@ final class BackgroundViewController: UIViewController {
         }
     }
     
-    
-    
+    /// backgroundView 레이아웃 설정
+    private func setupBackgroundViews() {
+        for (index, weatherInfo) in weatherInfoList.enumerated() {
+            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
+            scrollContentView.addSubview(backgroundView)
+            backgroundViewList.append(backgroundView)
+            
+            backgroundView.snp.makeConstraints {
+                $0.verticalEdges.equalToSuperview()
+                $0.width.equalTo(view.snp.width)
+                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+            }
+        }
+        
+        if let lastBackgroundView = backgroundViewList.last {
+            lastBackgroundView.snp.makeConstraints {
+                $0.trailing.equalToSuperview()
+            }
+        }
+    }
+        
     // MARK: - Private Methods
     private func bind() {
-        
+        // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
             .map { [weak self] _ -> Int in
                 guard let scrollView = self?.scrollView else { return 0 }
@@ -169,6 +174,7 @@ final class BackgroundViewController: UIViewController {
             .disposed(by: disposeBag)
     }
     
+    /// Gradient, 밝기 설정
     private func applyGradientBackground(time: Double) {
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)

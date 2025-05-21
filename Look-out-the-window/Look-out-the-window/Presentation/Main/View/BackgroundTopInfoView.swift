@@ -11,12 +11,14 @@ import SnapKit
 import Then
 import RiveRuntime
 
+/// 상단 날씨 요약 정보, Rive 날씨 아이콘
 final class BackgroundTopInfoView: UIView {
     
     private(set) var weatherInfo: WeatherInfo
     private(set) var riveViewModel: RiveViewModel
     
     // MARK: - UI Components
+    /// Rive 날씨 아이콘
     private lazy var riveView = RiveView()
     
     private lazy var infoStackView = UIStackView().then {
@@ -62,6 +64,7 @@ final class BackgroundTopInfoView: UIView {
     // MARK: - Initializer
     init(frame: CGRect, weatherInfo: WeatherInfo) {
         self.weatherInfo = weatherInfo
+        // riveViewModel 생성, stateMachineName: Rive 파일의 애니메이션 네임
         self.riveViewModel = RiveViewModel(fileName: weatherInfo.rive , stateMachineName: "State Machine 1")
         
         super.init(frame: frame)
@@ -76,6 +79,7 @@ final class BackgroundTopInfoView: UIView {
     
     // MARK: - UI & Layout
     private func setupUI() {
+        // riveView 생성
         self.riveView = riveViewModel.createRiveView()
 
         self.addSubviews(infoStackView, riveView)
@@ -94,6 +98,7 @@ final class BackgroundTopInfoView: UIView {
         }
     }
     
+    // text값 설정
     private func configure() {
         city.text = weatherInfo.city
         temperature.text = "\(weatherInfo.temperature)°"
