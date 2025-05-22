@@ -55,4 +55,24 @@ extension Int {
         
         return (startUnix: startUnix, endUnix: endUnix)
     }
+    /// 유닉스 타임스탬프(Int)를 "h:mm a" 형식의 문자열로 변환합니다.
+    /// - Returns: 오전/오후 표시가 포함된 시간 문자열 (예: "8:15 AM").
+    ///
+    /// 이 메서드는 내부적으로 `convertUnixTimeToDate()`를 사용하여 `Date` 객체로 변환한 후,
+    /// `DateFormatter`를 통해 시간과 AM/PM 형식으로 출력합니다.
+    ///
+    /// 사용 예:
+    /// ```swift
+    /// let timestamp: Int = 1684752000
+    /// let timeString = timestamp.convertUnixToHourMinuteAndMark()
+    /// print(timeString) // "6:00 AM"
+    /// ```
+    func convertUnixToHourMinuteAndMark() -> String {
+        let date = self.convertUnixTimeToDate()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "h:mm a"
+        
+        return dateFormatter.string(from: date)
+    }
+
 }
