@@ -17,7 +17,6 @@
 		5B8DBC4C2DDC21F600F53723 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5B8DBC4B2DDC21F600F53723 /* .gitignore */; };
 		A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59662DDC9E950055EF9C /* Differentiator */; };
 		A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59682DDC9E950055EF9C /* RxDataSources */; };
-		66DED5A72DDC90C6003316DC /* RxGesture in Frameworks */ = {isa = PBXBuildFile; productRef = 66DED5A62DDC90C6003316DC /* RxGesture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,7 +31,6 @@
 				Presentation/RegionList/ViewController/.gitkeep,
 				Presentation/RegionList/ViewModel/.gitkeep,
 				Presentation/Register/View/.gitkeep,
-				Presentation/Register/ViewController/.gitkeep,
 				Presentation/Register/ViewModel/.gitkeep,
 				Resources/Info.plist,
 			);
@@ -58,15 +56,12 @@
 			files = (
 				5B56B1A82DDC23A5005A2D62 /* RxSwift in Frameworks */,
 				5B56B1A62DDC23A5005A2D62 /* RxRelay in Frameworks */,
-				66DED5A72DDC90C6003316DC /* RxGesture in Frameworks */,
-				665887E02DDD67350082F1BF /* RxDataSources in Frameworks */,
 				5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */,
 				5B56B1A42DDC23A5005A2D62 /* RxCocoa in Frameworks */,
 				A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */,
 				5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */,
 				A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */,
 				5B56B1AB2DDC23B0005A2D62 /* Then in Frameworks */,
-				665887DE2DDD67350082F1BF /* Differentiator in Frameworks */,
 				5B56B1AE2DDC23BC005A2D62 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -120,9 +115,6 @@
 				5B56B6D32DDC723F005A2D62 /* RiveRuntime */,
 				A52D59662DDC9E950055EF9C /* Differentiator */,
 				A52D59682DDC9E950055EF9C /* RxDataSources */,
-				66DED5A62DDC90C6003316DC /* RxGesture */,
-				665887DD2DDD67350082F1BF /* Differentiator */,
-				665887DF2DDD67350082F1BF /* RxDataSources */,
 			);
 			productName = "Look-out-the-window";
 			productReference = 5B8DBC312DDC214400F53723 /* Look-out-the-window.app */;
@@ -159,8 +151,6 @@
 				5B56B1AF2DDC23FC005A2D62 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */,
 				A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */,
-				66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */,
-				665887DC2DDD67350082F1BF /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5B8DBC322DDC214400F53723 /* Products */;
@@ -457,14 +447,6 @@
 				minimumVersion = 5.0.2;
 			};
 		};
-		66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RxSwiftCommunity/RxGesture.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.4;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -512,11 +494,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
 			productName = RxDataSources;
-		};
-		66DED5A62DDC90C6003316DC /* RxGesture */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */;
-			productName = RxGesture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
