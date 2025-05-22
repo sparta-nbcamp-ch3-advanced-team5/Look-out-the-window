@@ -10,7 +10,7 @@ import UIKit
 final class RegionCellBGView: UIView {
     
     override func draw(_ rect: CGRect) {
-        let cornerRadius: CGFloat = self.frame.height / 10
+        let cornerRadius: CGFloat = self.frame.height / 8
         let shapeYOffset = self.frame.height * 0.4
         
         let path = UIBezierPath()
@@ -18,10 +18,10 @@ final class RegionCellBGView: UIView {
         // top left point
         path.move(to: CGPoint(x: 0, y: cornerRadius))
         // top left corner
-        path.addQuadCurve(to: CGPoint(x: cornerRadius, y: 0), controlPoint: CGPoint(x: 0, y: 0))
+        path.addQuadCurve(to: CGPoint(x: cornerRadius, y: cornerRadius / 4), controlPoint: CGPoint(x: 0, y: 0))
         
         // top right point
-        path.addLine(to: CGPoint(x: self.frame.width - cornerRadius, y: self.frame.height - shapeYOffset - cornerRadius))
+        path.addLine(to: CGPoint(x: self.frame.width - cornerRadius, y: self.frame.height - shapeYOffset - cornerRadius / 4))
         // top right corner
         path.addQuadCurve(to: CGPoint(x: self.frame.width, y: self.frame.height - shapeYOffset + cornerRadius), controlPoint: CGPoint(x: self.frame.width, y: self.frame.height - shapeYOffset))
         
