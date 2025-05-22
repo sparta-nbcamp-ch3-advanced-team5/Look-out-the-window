@@ -36,8 +36,8 @@ final class BackgroundViewController: UIViewController {
     ]
     
     private let viewModel: BackgroundViewModel
-    
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
+    private var previousPage = 0
     
     // MARK: - UI Components
     /// 밝기관련 뷰 시간에 따라 어두워짐.
@@ -148,18 +148,24 @@ private extension BackgroundViewController {
     }
     
     func bind() {
+        
         // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
             .map { [weak self] _ -> Int in
-                guard let scrollView = self?.scrollView else { return 0 }
+                guard let self else { return 0 }
+                let currentPage = self.pageController.currentPage
                 // scrollView 내부 콘첸트가 수평으로 얼마나 스크롤 됐는지 / scrollView가 화면에 차지하는 너비
                 let page = Int(round(scrollView.contentOffset.x / scrollView.frame.width))
+                // 페이징 직전 페이지 rive 중지
+                backgroundViewList[currentPage].riveViewModel.pause()
                 return page
             }
             .distinctUntilChanged() // 중복 방지
-            .do(onNext: { [weak self] in
+            .do(onNext: { [weak self] page in
                 guard let self else { return }
-                self.applyGradientBackground(time: self.weatherInfoList[$0].time)
+                self.applyGradientBackground(time: self.weatherInfoList[page].time)
+                // 페이징 후 페이지 rive 재생
+                backgroundViewList[page].riveViewModel.play()
             })
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
@@ -169,14 +175,22 @@ private extension BackgroundViewController {
         pageController.rx.controlEvent(.valueChanged)
             .map { [weak self] _ -> Int in
                 guard let self else { return 0 }
-                let page = self.pageController.currentPage
-                return page
+                let currentPage = self.pageController.currentPage
+                return currentPage
             }
-            .subscribe(onNext: { [weak self] page in
+            .subscribe(onNext: { [weak self] currentPage in
                 guard let self else { return }
-                let offsetX = Int(self.scrollView.frame.width) * page
+                
+                // 이전 페이지 정지, 현재 페이지 재생
+                backgroundViewList[previousPage].riveViewModel.pause()
+                backgroundViewList[currentPage].riveViewModel.play()
+                
+                let offsetX = Int(self.scrollView.frame.width) * currentPage
                 self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: self.weatherInfoList[page].time)
+                self.applyGradientBackground(time: self.weatherInfoList[currentPage].time)
+                
+                // 이전 페이지 업데이트
+                self.previousPage = currentPage
             })
             .disposed(by: disposeBag)
     }
@@ -200,6 +214,9 @@ private extension BackgroundViewController {
                 $0.trailing.equalToSuperview()
             }
         }
+        
+        // 첫번째 뷰 rive play
+        backgroundViewList[0].riveViewModel.play()
     }
     
     /// Gradient, 밝기 설정

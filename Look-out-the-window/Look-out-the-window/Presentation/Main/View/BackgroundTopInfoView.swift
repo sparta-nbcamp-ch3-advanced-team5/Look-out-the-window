@@ -65,7 +65,8 @@ final class BackgroundTopInfoView: UIView {
     init(frame: CGRect, weatherInfo: WeatherInfo) {
         self.weatherInfo = weatherInfo
         // riveViewModel 생성, stateMachineName: Rive 파일의 애니메이션 네임
-        self.riveViewModel = RiveViewModel(fileName: weatherInfo.rive , stateMachineName: "State Machine 1")
+        // 자동재생 false
+        self.riveViewModel = RiveViewModel(fileName: weatherInfo.rive , stateMachineName: "State Machine 1", autoPlay: false)
         
         super.init(frame: frame)
         
@@ -96,7 +97,8 @@ private extension BackgroundTopInfoView {
     func setViewHiearchy() {
         // riveView 생성
         self.riveView = riveViewModel.createRiveView()
-        self.riveView.preferredFramesPerSecond = 30
+        self.riveView.preferredFramesPerSecond = 15
+        self.riveView.isUserInteractionEnabled = false
         self.addSubviews(infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
