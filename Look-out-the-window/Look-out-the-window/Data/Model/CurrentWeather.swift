@@ -41,9 +41,7 @@ struct CurrentWeather {
     /// 풍향 정보 (예: "북동풍", "270°")
     let windDeg: String
     /// 일출 또는 일몰 여부 (예: "일출", "일몰") — 상황에 따라 설정됨
-    let rive: String?
-    /// 일출 또는 일몰 시간 (Unix Time 또는 시간 단위) — `rive`와 함께 사용
-    let riveTime: Double?
+    let rive: String
     /// 시간별 날씨 정보 배열
     let hourlyModel: [HourlyModel]
     /// 일별 날씨 정보 배열
