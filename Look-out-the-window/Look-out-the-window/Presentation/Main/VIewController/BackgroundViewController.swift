@@ -126,6 +126,7 @@ private extension BackgroundViewController {
         
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
+            $0.height.equalTo(scrollView.snp.height)
         }
         
         pageController.snp.makeConstraints {
