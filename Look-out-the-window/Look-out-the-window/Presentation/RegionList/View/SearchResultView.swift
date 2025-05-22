@@ -1,8 +1,8 @@
 //
-//  RegionListView.swift
+//  SearchResultView.swift
 //  Look-out-the-window
 //
-//  Created by 서동환 on 5/21/25.
+//  Created by 서동환 on 5/22/25.
 //
 
 import UIKit
@@ -10,16 +10,16 @@ import UIKit
 import SnapKit
 import Then
 
-final class RegionListView: UIView {
+final class SearchResultView: UIView {
     
     // MARK: - UI Components
     
-    private let regionListTableView = UITableView()
+    private let searchResultTableView = UITableView()
     
     // MARK: - Getter
     
     var getTableView: UITableView {
-        return regionListTableView
+        return searchResultTableView
     }
     
     // MARK: - Initializer
@@ -36,7 +36,7 @@ final class RegionListView: UIView {
 
 // MARK: - UI Methods
 
-private extension RegionListView {
+private extension SearchResultView {
     func setupUI() {
         setAppearance()
         setViewHierarchy()
@@ -45,16 +45,15 @@ private extension RegionListView {
     
     func setAppearance() {
         self.backgroundColor = .clear
-        
-        regionListTableView.backgroundColor = .clear
+        searchResultTableView.backgroundColor = .clear
     }
     
     func setViewHierarchy() {
-        self.addSubview(regionListTableView)
+        self.addSubview(searchResultTableView)
     }
     
     func setConstraints() {
-        regionListTableView.snp.makeConstraints {
+        searchResultTableView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }
