@@ -13,7 +13,7 @@ struct WeatherResponseDTO: Decodable {
     /// 요청된 위치의 위도
     let lat: Double
     /// 요청된 위치의 경도
-    let lon: Double
+    let lng: Double
     /// 요청된 위치의 시간대 이름 (예: "Asia/Seoul")
     let timeZone: String
     /// UTC와의 시차 (초 단위, 예: +9시간 → 32400)
@@ -28,7 +28,8 @@ struct WeatherResponseDTO: Decodable {
     let dailyWeathers: [DailyWeatherDTO]
     
     enum CodingKeys: String, CodingKey {
-        case lat, lon
+        case lat
+        case lng = "lon"
         case timeZone = "timezone"
         case timeZoneOffset = "timezone_offset"
         case currentWeather = "current"
