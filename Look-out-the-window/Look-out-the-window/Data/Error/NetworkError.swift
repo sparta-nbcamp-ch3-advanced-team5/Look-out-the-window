@@ -12,6 +12,7 @@ enum NetworkError: Error {
     case invalidURL
     case noData
     case requestFailed
+    case serverError(Int)
 }
 
 extension NetworkError: LocalizedError {
@@ -23,6 +24,8 @@ extension NetworkError: LocalizedError {
             return "데이터 없음"
         case .requestFailed:
             return "요청 실패"
+        case .serverError(let code):
+            return "서버 에러 \(code)"
         }
     }
 }
