@@ -39,6 +39,27 @@ struct WeatherResponseDTO: Decodable {
 }
 
 extension WeatherResponseDTO {
+    /// 현재 날씨 상태 코드를 기반으로 하늘 상태를 설명하는 한글 문자열을 반환합니다.
+    ///
+    /// 이 함수는 `currentWeather.weatherState` 배열의 첫 번째 날씨 상태 코드(`id`)를 판별하여
+    /// 사람이 이해할 수 있는 한글 표현으로 하늘 상태(기상 상태)를 설명하는 문자열을 반환합니다.
+    ///
+    /// - 반환값:
+    ///   - 날씨 상태에 해당하는 하늘 상태 설명 문자열을 반환합니다.
+    ///   - 예: `"맑음"`, `"비"`, `"눈"`, `"천둥"` 등
+    ///   - `weatherState`가 비어 있을 경우, 오류 로그를 출력하고 빈 문자열을 반환합니다.
+    ///
+    /// - 매핑 기준:
+    ///   - `200~299`: 천둥번개 → `"천둥"`
+    ///   - `300~321`: 이슬비 → `"이슬비"`
+    ///   - `500~531`: 비 → `"비"`
+    ///   - `600~621`: 눈 → `"눈"`
+    ///   - `700~799`: 안개/연무 등 → `"안개"`
+    ///   - `800`: 맑음 → `"맑음"`
+    ///   - 그 외 또는 명시되지 않은 코드: 기본값 `"구름"`
+    ///
+    /// - 주의사항:
+    ///   - `weatherState` 배열이 비어 있을 경우 `"currentWeather WeatherState is not exist"` 로그를 출력하고 빈 문자열을 반환합니다.
     func toSkyInfoString() -> String {
         guard let weatherState = self.currentWeather.weatherState.first else {
             print("ERROR:: currentWeather WeatherState is not exist")
@@ -63,6 +84,29 @@ extension WeatherResponseDTO {
         return str
     }
     
+    /// 현재 날씨 상태 코드를 기반으로 Rive 애니메이션 리소스에 해당하는 문자열을 반환합니다.
+    ///
+    /// 이 함수는 `currentWeather.weatherState`의 첫 번째 날씨 상태 코드를 참조하여
+    /// 그에 대응되는 Rive 애니메이션 이름(`Rive` 열거형 또는 상수)을 반환합니다.
+    /// 반환된 문자열은 Rive 애니메이션 뷰를 로드할 때 사용됩니다.
+    ///
+    /// - 반환값:
+    ///   - 날씨 상태에 해당하는 Rive 애니메이션 리소스 이름을 문자열로 반환합니다.
+    ///   - 예: `Rive.sunny`, `Rive.rainy`, `Rive.thunder` 등
+    ///   - `weatherState`가 비어 있을 경우, 오류 로그를 출력하고 빈 문자열을 반환합니다.
+    ///
+    /// - 매핑 기준:
+    ///   - `200~299`: 천둥번개 → `Rive.thunder`
+    ///   - `300~321`: 이슬비 → `Rive.rainy`
+    ///   - `500~531`: 비 → `Rive.rainy`
+    ///   - `600~621`: 눈 → `Rive.snow`
+    ///   - `700~799`: 안개/먼지 등 → `Rive.fog`
+    ///   - `800`: 맑음 → `Rive.sunny`
+    ///   - `801`: 약간 흐림 → `Rive.partlyCloudy`
+    ///   - 그 외 또는 명시되지 않은 코드: 기본값 `Rive.cloudy`
+    ///
+    /// - 주의사항:
+    ///   - `weatherState` 배열이 비어 있을 경우 `"currentWeather WeatherState is not exist"` 로그를 출력하고 빈 문자열을 반환합니다.
     func toRiveString() -> String {
         guard let weatherState = self.currentWeather.weatherState.first else {
             print("ERROR:: currentWeather WeatherState is not exist")
