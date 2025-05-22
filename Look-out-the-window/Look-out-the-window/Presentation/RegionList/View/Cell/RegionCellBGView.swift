@@ -7,11 +7,18 @@
 
 import UIKit
 
+/// `RegionCell`에 사용되는 사다리꼴 모양 배경 `UIView`
 final class RegionCellBGView: UIView {
     
+    // MARK: - Lifecycle
+    
     override func draw(_ rect: CGRect) {
-        let cornerRadius: CGFloat = self.frame.height / 8
-        let shapeYOffset = self.frame.height * 0.6
+        super.draw(rect)
+        
+        let width = rect.width
+        let height = rect.height
+        let cornerRadius: CGFloat = height / 8
+        let shapeYOffset = height * 0.6
         
         let path = UIBezierPath()
                 
@@ -21,26 +28,28 @@ final class RegionCellBGView: UIView {
         path.addQuadCurve(to: CGPoint(x: cornerRadius * 2, y: cornerRadius / 2), controlPoint: CGPoint(x: 0, y: 0))
         
         // top right point
-        path.addLine(to: CGPoint(x: self.frame.width - cornerRadius, y: self.frame.height - shapeYOffset - cornerRadius / 4))
+        path.addLine(to: CGPoint(x: width - cornerRadius, y: height - shapeYOffset - cornerRadius / 4))
         // top right corner
-        path.addQuadCurve(to: CGPoint(x: self.frame.width, y: self.frame.height - shapeYOffset + cornerRadius), controlPoint: CGPoint(x: self.frame.width, y: self.frame.height - shapeYOffset))
+        path.addQuadCurve(to: CGPoint(x: width, y: height - shapeYOffset + cornerRadius), controlPoint: CGPoint(x: width, y: height - shapeYOffset))
         
         // bottom right point
-        path.addLine(to: CGPoint(x: self.frame.width, y: self.frame.height - cornerRadius))
+        path.addLine(to: CGPoint(x: width, y: height - cornerRadius))
         // bottom right corner
-        path.addQuadCurve(to: CGPoint(x: self.frame.width - cornerRadius, y: self.frame.height), controlPoint: CGPoint(x: self.frame.width, y: self.frame.height))
+        path.addQuadCurve(to: CGPoint(x: width - cornerRadius, y: height), controlPoint: CGPoint(x: width, y: height))
         
         // bottom left point
-        path.addLine(to: CGPoint(x: cornerRadius, y: self.frame.height))
+        path.addLine(to: CGPoint(x: cornerRadius, y: height))
         // bottom left corner
-        path.addQuadCurve(to: CGPoint(x: 0, y: self.frame.height - cornerRadius), controlPoint: CGPoint(x: 0, y: self.frame.height))
+        path.addQuadCurve(to: CGPoint(x: 0, y: height - cornerRadius), controlPoint: CGPoint(x: 0, y: height))
         
         let shapeLayer = CAShapeLayer()
-        shapeLayer.frame = self.bounds
+        shapeLayer.frame = rect
         
         self.layer.mask = shapeLayer
         shapeLayer.path = path.cgPath
     }
+    
+    // MARK: - Initializer
     
     override init(frame: CGRect) {
         super.init(frame: frame)
