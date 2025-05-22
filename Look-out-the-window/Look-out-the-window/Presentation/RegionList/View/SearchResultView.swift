@@ -10,6 +10,7 @@ import UIKit
 import SnapKit
 import Then
 
+/// 검색 결과 View
 final class SearchResultView: UIView {
     
     // MARK: - UI Components

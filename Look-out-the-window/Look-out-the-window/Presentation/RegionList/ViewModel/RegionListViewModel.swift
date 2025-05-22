@@ -9,6 +9,7 @@ import Foundation
 
 import RxSwift
 
+/// 지역 리스트 ViewModel
 final class RegionListViewModel: ViewModelProtocol {
     
     // MARK: - Properties

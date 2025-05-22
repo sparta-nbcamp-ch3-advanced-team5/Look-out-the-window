@@ -9,6 +9,7 @@ import Foundation
 
 import RxSwift
 
+/// 검색 결과 ViewModel
 final class SearchResultViewModel: ViewModelProtocol {
     
     // MARK: - Properties

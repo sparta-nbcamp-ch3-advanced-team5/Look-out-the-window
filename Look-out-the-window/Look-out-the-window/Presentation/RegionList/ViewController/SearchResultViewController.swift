@@ -9,6 +9,7 @@ import UIKit
 
 import SnapKit
 
+/// 검색 결과 ViewController
 final class SearchResultViewController: UIViewController {
     
     // MARK: - Properties

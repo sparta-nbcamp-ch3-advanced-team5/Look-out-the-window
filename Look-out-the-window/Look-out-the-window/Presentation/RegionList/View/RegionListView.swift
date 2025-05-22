@@ -10,6 +10,7 @@ import UIKit
 import SnapKit
 import Then
 
+/// 지역 리스트 View
 final class RegionListView: UIView {
     
     // MARK: - UI Components
@@ -47,6 +48,8 @@ private extension RegionListView {
         self.backgroundColor = .clear
         
         regionListTableView.backgroundColor = .clear
+        regionListTableView.rowHeight = 200
+        regionListTableView.separatorStyle = .none
     }
     
     func setViewHierarchy() {
@@ -55,7 +58,8 @@ private extension RegionListView {
     
     func setConstraints() {
         regionListTableView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.top.bottom.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(24)
         }
     }
 }

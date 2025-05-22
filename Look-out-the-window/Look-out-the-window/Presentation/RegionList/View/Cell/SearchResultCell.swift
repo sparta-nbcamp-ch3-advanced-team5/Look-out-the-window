@@ -12,6 +12,10 @@ import Then
 
 final class SearchResultCell: UITableViewCell {
     
+    // MARK: - Properties
+    
+    static let identifier = "SearchResultCell"
+    
     // MARK: - UI Components
     
     private let addressLabel = UILabel().then {
@@ -51,7 +55,7 @@ private extension SearchResultCell {
     }
     
     func setViewHierarchy() {
-        self.addSubview(addressLabel)
+        self.contentView.addSubview(addressLabel)
     }
     
     func setConstraints() {

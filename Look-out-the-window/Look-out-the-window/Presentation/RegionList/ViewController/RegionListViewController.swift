@@ -11,6 +11,7 @@ import MapKit
 import SnapKit
 import Then
 
+/// 지역 리스트 ViewController
 final class RegionListViewController: UIViewController {
     
     // MARK: - Properties
@@ -41,6 +42,7 @@ final class RegionListViewController: UIViewController {
         super.viewDidLoad()
         
         setupUI()
+        configureTableView()
         Task {
             await CoreLocationManager.shared.convertCurrCoordToAddress()
             await CoreLocationManager.shared.searchAddress(of: "반송동")
@@ -70,6 +72,9 @@ private extension RegionListViewController {
     
     func setDelegates() {
         searchController.searchBar.delegate = searchResultVC
+        
+        regionListView.getTableView.delegate = self
+        regionListView.getTableView.dataSource = self
     }
     
     func setViewHierarchy() {
@@ -80,5 +85,36 @@ private extension RegionListViewController {
         regionListView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+    }
+}
+
+// MARK: - UITableView Methods
+
+private extension RegionListViewController {
+    func configureTableView() {
+        regionListView.getTableView.register(RegionCell.self, forCellReuseIdentifier: RegionCell.identifier)
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension RegionListViewController: UITableViewDelegate {
+    
+}
+
+// MARK: - UITableViewDataSource
+
+extension RegionListViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionCell.identifier, for: indexPath) as? RegionCell else {
+            return UITableViewCell()
+        }
+        
+        cell.configure()
+        return cell
     }
 }
