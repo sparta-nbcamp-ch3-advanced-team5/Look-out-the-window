@@ -50,8 +50,8 @@ private extension SearchResultView {
         searchResultTableView.backgroundColor = .clear
         searchResultTableView.rowHeight = 50
         searchResultTableView.separatorColor = .lightGray
-        searchResultTableView.separatorInset.left = 15
-        searchResultTableView.separatorInset.right = 15
+        searchResultTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        searchResultTableView.tableHeaderView = UIView()
     }
     
     func setViewHierarchy() {

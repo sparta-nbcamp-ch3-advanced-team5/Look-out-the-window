@@ -7,6 +7,7 @@
 
 import UIKit
 import MapKit
+import OSLog
 
 import RxCocoa
 import RxRelay
@@ -17,6 +18,8 @@ import SnapKit
 final class SearchResultViewController: UIViewController {
     
     // MARK: - Properties
+    
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     private let viewModel = SearchResultViewModel()
     private let disposeBag = DisposeBag()
@@ -51,11 +54,11 @@ private extension SearchResultViewController {
     
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
+        searchCompleter.resultTypes = .address
     }
     
     func setDelegates() {
         searchCompleter.delegate = self
-        searchCompleter.resultTypes = .address
     }
     
     func setViewHierarchy() {
@@ -85,15 +88,15 @@ private extension SearchResultViewController {
     }
 }
 
-extension SearchResultViewController: UITableViewDelegate {
-    
-}
-
 // MARK: - UISearchBarDelegate
 
 extension SearchResultViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         searchCompleter.queryFragment = searchText
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchResults.accept([])
     }
 }
 
@@ -102,8 +105,9 @@ extension SearchResultViewController: UISearchBarDelegate {
 extension SearchResultViewController: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         searchResults.accept(completer.results)
-        searchResultView.getTableView.reloadData()
+    }
+    
+    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {
+        os_log(.error, log: log, "\(error.localizedDescription)")
     }
 }
-
-
