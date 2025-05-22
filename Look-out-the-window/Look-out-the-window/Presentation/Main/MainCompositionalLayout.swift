@@ -57,6 +57,7 @@ struct MainCompositionalLayout {
                 return section
                 
             case .daily:
+                // 레이아웃 개선
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                       heightDimension: .absolute(55))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)

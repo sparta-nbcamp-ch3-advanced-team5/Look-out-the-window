@@ -37,8 +37,8 @@ private extension MainView {
     }
     
     func setAppearance() {
-        self.backgroundColor = .white
-        collectionView.backgroundColor = .white
+        self.backgroundColor = UIColor(named: "MainBackground")
+        collectionView.backgroundColor = UIColor(named: "MainBackground")
     }
     
     func setViewHierarchy() {
@@ -53,10 +53,12 @@ private extension MainView {
         }
     }
     
-    // MainVC에서 사용
     func registerCells() {
         collectionView.register(HourlyCell.self, forCellWithReuseIdentifier: "HourlyCell")
         collectionView.register(DailyCell.self, forCellWithReuseIdentifier: "DailyCell")
         collectionView.register(DetailCell.self, forCellWithReuseIdentifier: "DetailCell")
+        collectionView.register(MainHeaderView.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: MainHeaderView.id)
     }
 }
