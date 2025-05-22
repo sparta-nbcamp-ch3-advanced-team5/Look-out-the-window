@@ -160,7 +160,6 @@ private extension BackgroundViewController {
                 backgroundViewList[currentPage].riveViewModel.pause()
                 return page
             }
-            .distinctUntilChanged() // 중복 방지
             .do(onNext: { [weak self] page in
                 guard let self else { return }
                 self.applyGradientBackground(time: self.weatherInfoList[page].time)
