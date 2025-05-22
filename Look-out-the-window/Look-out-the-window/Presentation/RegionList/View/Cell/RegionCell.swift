@@ -162,10 +162,8 @@ private extension RegionCell {
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds
         let colors: [CGColor] = [
-//            UIColor.cellStart.cgColor,
-//            UIColor.cellEnd.cgColor
-            UIColor.white.cgColor,
-            UIColor.white.cgColor
+            UIColor.cellStart.cgColor,
+            UIColor.cellEnd.cgColor
         ]
         gradientLayer.colors = colors
         gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.0)
