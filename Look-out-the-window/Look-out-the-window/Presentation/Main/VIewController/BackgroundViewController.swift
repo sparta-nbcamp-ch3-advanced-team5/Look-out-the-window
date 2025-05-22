@@ -7,9 +7,7 @@
 
 import UIKit
 
-import RxCocoa
 import RxSwift
-import RxGesture
 import SnapKit
 import Then
 import RiveRuntime
@@ -90,19 +88,33 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // 리스트의 초기값으로 첫 화면 설정
-        applyGradientBackground(time: weatherInfoList[0].time)
         setupUI()
-        setupBackgroundViews()
         bind()
     }
+}
+
+// MARK: - Setting Methods
+private extension BackgroundViewController {
+    func setupUI() {
+        setAppearance()
+        setViewHiearchy()
+        setConstraints()
+        
+        setBackgroundViews()
+    }
     
-    // MARK: - UI & Layout
-    private func setupUI() {
+    func setAppearance() {
+        // 리스트의 초기값으로 첫 화면 설정
+        applyGradientBackground(time: weatherInfoList[0].time)
+    }
+    
+    func setViewHiearchy() {
         view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
         
         scrollView.addSubview(scrollContentView)
-        
+    }
+    
+    func setConstraints() {
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
@@ -133,29 +145,7 @@ final class BackgroundViewController: UIViewController {
         }
     }
     
-    /// backgroundView 레이아웃 설정
-    private func setupBackgroundViews() {
-        for (index, weatherInfo) in weatherInfoList.enumerated() {
-            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
-            scrollContentView.addSubview(backgroundView)
-            backgroundViewList.append(backgroundView)
-            
-            backgroundView.snp.makeConstraints {
-                $0.verticalEdges.equalToSuperview()
-                $0.width.equalTo(view.snp.width)
-                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-            }
-        }
-        
-        if let lastBackgroundView = backgroundViewList.last {
-            lastBackgroundView.snp.makeConstraints {
-                $0.trailing.equalToSuperview()
-            }
-        }
-    }
-    
-    // MARK: - Private Methods
-    private func bind() {
+    func bind() {
         // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
             .map { [weak self] _ -> Int in
@@ -189,8 +179,29 @@ final class BackgroundViewController: UIViewController {
             .disposed(by: disposeBag)
     }
     
+    /// backgroundView 레이아웃 설정
+    func setBackgroundViews() {
+        for (index, weatherInfo) in weatherInfoList.enumerated() {
+            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
+            scrollContentView.addSubview(backgroundView)
+            backgroundViewList.append(backgroundView)
+            
+            backgroundView.snp.makeConstraints {
+                $0.verticalEdges.equalToSuperview()
+                $0.width.equalTo(view.snp.width)
+                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+            }
+        }
+        
+        if let lastBackgroundView = backgroundViewList.last {
+            lastBackgroundView.snp.makeConstraints {
+                $0.trailing.equalToSuperview()
+            }
+        }
+    }
+    
     /// Gradient, 밝기 설정
-    private func applyGradientBackground(time: Double) {
+    func applyGradientBackground(time: Double) {
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
@@ -204,7 +215,7 @@ final class BackgroundViewController: UIViewController {
     /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환.
     /// - valueMin,valueMax: input 되는 값의 범위.
     /// - targetMin, targetMax: return 되는 값의 범위.
-    private func normalizeAndClamp(
+    func normalizeAndClamp(
         _ value: Double,
         valueMin: Double,
         valueMax: Double,

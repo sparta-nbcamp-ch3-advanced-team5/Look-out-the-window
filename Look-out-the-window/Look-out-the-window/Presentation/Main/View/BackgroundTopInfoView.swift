@@ -70,22 +70,38 @@ final class BackgroundTopInfoView: UIView {
         super.init(frame: frame)
         
         setupUI()
-        configure()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+}
+
+// MARK: - Setting Methods
+private extension BackgroundTopInfoView {
+    func setupUI() {
+        setAppearance()
+        setViewHiearchy()
+        setConstraints()
+    }
     
-    // MARK: - UI & Layout
-    private func setupUI() {
+    func setAppearance() {
+        city.text = weatherInfo.city
+        temperature.text = "\(weatherInfo.temperature)°"
+        weather.text = weatherInfo.weather
+        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
+        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
+    }
+    
+    func setViewHiearchy() {
         // riveView 생성
         self.riveView = riveViewModel.createRiveView()
-
         self.addSubviews(infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
         tempStackView.addArrangedSubviews(highestTemp, lowestTemp)
-        
+    }
+    
+    func setConstraints() {
         infoStackView.snp.makeConstraints {
             $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
             $0.centerX.equalToSuperview()
@@ -96,14 +112,5 @@ final class BackgroundTopInfoView: UIView {
             $0.top.equalTo(infoStackView.snp.bottom)
             $0.width.height.equalTo(500)
         }
-    }
-    
-    // text값 설정
-    private func configure() {
-        city.text = weatherInfo.city
-        temperature.text = "\(weatherInfo.temperature)°"
-        weather.text = weatherInfo.weather
-        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
-        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
     }
 }
