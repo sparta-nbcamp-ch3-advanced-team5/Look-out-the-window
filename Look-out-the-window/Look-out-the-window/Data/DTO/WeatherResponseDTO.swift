@@ -86,6 +86,44 @@ extension WeatherResponseDTO {
         
         return str
     }
+    /// 현재 시간과 타임존 오프셋을 기반으로 하루 중 중심 시점(정오)과의 상대적인 거리값을 계산합니다.
+    ///
+    /// 이 함수는 하루(24시간)를 기준으로 정오를 중심으로 하여 현재 시간이 정오에서 얼마나 떨어져 있는지를
+    /// 0.0에서 0.5 사이의 실수(Double) 값으로 반환합니다.
+    ///
+    /// - 반환값:
+    ///   - 정오(중간 시점)에 가까울수록 0.0에 가까운 값이 반환됩니다.
+    ///   - 자정에 가까울수록 0.5에 가까운 값이 반환됩니다.
+    ///   - 이 값은 하루의 흐름을 정규화하여 시간 기반 그래픽 표현 등에 활용할 수 있습니다.
+    ///
+    /// - 내부 동작:
+    ///   - `currentTime`에 `timeZoneOffset`을 더하고, 기준 타임존(UTC+9, 즉 32400초)을 보정합니다.
+    ///   - 해당 시간의 하루 시작 시점(Unix Range)을 구한 후, 현재 시간에서 하루 시작 시점을 뺀 값을 기준으로 정오와의 상대 위치를 계산합니다.
+    ///   - 정오 전/후인지에 따라 계산 방식이 달라지며, 결과는 소수 둘째 자리까지 반올림됩니다.
+    ///
+    /// - 주의사항:
+    ///   - `getUnixRange(unixTime:)`가 실패할 경우, 오류 로그를 출력하고 기본값 `0.0`을 반환합니다.
+    func toMomentValue() -> Double {
+        let time = self.currentWeather.currentTime + self.timeZoneOffset - 32400
+        guard let (startUnix, _) = time.getUnixRange(unixTime: TimeInterval(time)) else {
+            print("ERROR \(#function)")
+            return 0.0
+        }
+        var current = TimeInterval(time) - startUnix
+        let digit: Double = pow(10, 2)
+        let middle = 86400.0 / 2
+        
+        if current < middle {
+            var value = Double(current / middle / 2)
+            if value >= 0.5 { value = 0.5 }
+            return round((0.5 - value) * digit) / digit
+        } else {
+            current -= middle
+            var value = Double( current / middle / 2)
+            if value >= 0.5 { value = 0.5 }
+            return round(value * digit) / digit
+        }
+    }
     
     func toCurrentWeather() -> CurrentWeather {
         return CurrentWeather(
