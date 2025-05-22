@@ -15,7 +15,6 @@
 		5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B1B02DDC23FC005A2D62 /* Alamofire */; };
 		5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B6D32DDC723F005A2D62 /* RiveRuntime */; };
 		5B8DBC4C2DDC21F600F53723 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5B8DBC4B2DDC21F600F53723 /* .gitignore */; };
-		66DED5A72DDC90C6003316DC /* RxGesture in Frameworks */ = {isa = PBXBuildFile; productRef = 66DED5A62DDC90C6003316DC /* RxGesture */; };
 		A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59662DDC9E950055EF9C /* Differentiator */; };
 		A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59682DDC9E950055EF9C /* RxDataSources */; };
 /* End PBXBuildFile section */
@@ -151,7 +150,6 @@
 				5B56B1AC2DDC23BC005A2D62 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				5B56B1AF2DDC23FC005A2D62 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */,
-				A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5B8DBC322DDC214400F53723 /* Products */;
@@ -440,14 +438,6 @@
 				minimumVersion = 6.8.2;
 			};
 		};
-		66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RxSwiftCommunity/RxGesture.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.4;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -486,19 +476,12 @@
 			package = 5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */;
 			productName = RiveRuntime;
 		};
-		66DED5A62DDC90C6003316DC /* RxGesture */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */;
-			productName = RxGesture;
-		};
 		A52D59662DDC9E950055EF9C /* Differentiator */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
 			productName = Differentiator;
 		};
 		A52D59682DDC9E950055EF9C /* RxDataSources */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
 			productName = RxDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
