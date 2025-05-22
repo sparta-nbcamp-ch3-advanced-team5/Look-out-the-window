@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreLocation
+import MapKit
 import OSLog
 
 import RxRelay
@@ -19,20 +20,23 @@ final class CoreLocationManager: NSObject {
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "CoreLocationManager")
     
     static let shared = CoreLocationManager()
-    private let locationManager: CLLocationManager
     
-    /// 사용자 현재 위치 좌표(기본값: 광화문 광장)
-    var currCoord = BehaviorRelay<CLLocationCoordinate2D>(value: CLLocationCoordinate2D(latitude: 37.574187, longitude: 126.976882))
+    /// Core Location Manager
+    private let locationManager = CLLocationManager()
+    /// Geocoder
+    private let geocoder = CLGeocoder()
+    /// 사용자 국가
+    private let locale = Locale(identifier: "Ko-kr")
+    /// 사용자 현재 위치 좌표 (기본값: 광화문 광장)
+    var currCoord = CLLocation(latitude: 37.574187, longitude: 126.976882)
     
     // MARK: - Initializer
     
     private override init() {
-        locationManager = CLLocationManager()
         locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         locationManager.distanceFilter = 500
         locationManager.allowsBackgroundLocationUpdates = true
         super.init()
-        
         locationManager.delegate = self
     }
 }
@@ -55,6 +59,33 @@ extension CoreLocationManager {
         os_log(.debug, log: log, #function)
         locationManager.stopUpdatingLocation()
         locationManager.startMonitoringSignificantLocationChanges()
+    }
+}
+
+// MARK: - Geocoding/Reverse Geocoding Methods
+
+extension CoreLocationManager {
+    /// 주소를 좌표로 변환(Geocoding)
+    func convertAddressToCoord() {
+        
+    }
+    
+    /// 좌표를 주소로 변환(Reverse Geocoding)
+    func convertCoordToAddress() async -> [String]? {
+        do {
+            let placeList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
+            guard let placemark = placeList.last,
+                  let administrativeArea = placemark.administrativeArea,
+                  let locality = placemark.locality,
+                  let subLocality = placemark.subLocality ?? placemark.thoroughfare else { return nil }
+            
+            let address = [administrativeArea, locality, subLocality]
+            print(address)
+            return address
+        } catch {
+            os_log(.error, log: log, "\(error.localizedDescription)")
+            return nil
+        }
     }
 }
 
@@ -105,9 +136,9 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let coord = locations.last?.coordinate else { return }
-        os_log(.debug, log: log, "lat: \(coord.latitude), lng: \(coord.longitude)")
-        currCoord.accept(coord)
+        guard let location = locations.last else { return }
+        os_log(.debug, log: log, "lat: \(location.coordinate.latitude), lng: \(location.coordinate.longitude)")
+        currCoord = location
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
