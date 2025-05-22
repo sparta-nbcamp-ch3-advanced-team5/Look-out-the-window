@@ -14,4 +14,5 @@ enum Rive {
     static let rainy = "Rainy"
     static let snow = "Snow"
     static let thunder = "Thunderbolt"
+    static let fog = "Fog"
 }

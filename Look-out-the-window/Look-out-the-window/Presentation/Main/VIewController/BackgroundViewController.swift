@@ -31,7 +31,8 @@ final class BackgroundViewController: UIViewController {
         WeatherInfo(city: "제주", temperature: 21, weather: "눈", highestTemp: 24, lowestTemp: 19, rive: Rive.snow, time: 5.0),
         WeatherInfo(city: "인천", temperature: 19, weather: "비", highestTemp: 20, lowestTemp: 17, rive: Rive.rainy, time: 7.0),
         WeatherInfo(city: "강원", temperature: 19, weather: "천둥", highestTemp: 21, lowestTemp: 18, rive: Rive.thunder, time: 9.0),
-        WeatherInfo(city: "광주", temperature: 19, weather: "흐림", highestTemp: 22, lowestTemp: 19, rive: Rive.cloudy, time: 10.0)
+        WeatherInfo(city: "광주", temperature: 19, weather: "흐림", highestTemp: 22, lowestTemp: 19, rive: Rive.cloudy, time: 9.5),
+        WeatherInfo(city: "뉴욕", temperature: 17, weather: "안개", highestTemp: 19, lowestTemp: 15, rive: Rive.fog, time: 10.0)
     ]
     
     private let viewModel: BackgroundViewModel
