@@ -78,6 +78,7 @@ final class RegionCell: UITableViewCell {
     // MARK: - Initializer
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        // TODO: - 임시 fileName
         self.riveViewModel = RiveViewModel(fileName: Rive.cloudy)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -105,8 +106,14 @@ final class RegionCell: UITableViewCell {
 
 private extension RegionCell {
     func setupUI() {
+        setAppearance()
         setViewHierarchy()
         setConstraints()
+    }
+    
+    func setAppearance() {
+        self.backgroundColor = .clear
+        self.selectionStyle = .none
     }
     
     func setViewHierarchy() {

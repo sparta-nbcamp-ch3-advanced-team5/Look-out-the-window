@@ -53,6 +53,7 @@ private extension SearchResultCell {
     
     func setAppearance() {
         self.backgroundColor = .clear
+        self.selectionStyle = .none
     }
     
     func setViewHierarchy() {
