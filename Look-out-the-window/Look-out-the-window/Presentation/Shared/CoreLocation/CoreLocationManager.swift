@@ -19,18 +19,12 @@ final class CoreLocationManager: NSObject {
     static let shared = CoreLocationManager()
     private let locationManager: CLLocationManager
     
-    private let second: UInt64 = 1_000_000_000
-    
-    // 백그라운드
-    private var timer: Timer?
-    
     // MARK: - Initializer
     
     private override init() {
         locationManager = CLLocationManager()
         locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         locationManager.distanceFilter = 500
-        locationManager.pausesLocationUpdatesAutomatically = false
         locationManager.allowsBackgroundLocationUpdates = true
         super.init()
         
@@ -41,7 +35,7 @@ final class CoreLocationManager: NSObject {
 // MARK: - Location Update Methods
 
 extension CoreLocationManager {
-    /// 위치 업데이트를 시작하고, 마지막 위치에서 반경 500m를 벗어났을 때 위치를 업데이트하도록 변경하는 메서드
+    /// 위치 업데이트를 시작하고, 마지막 위치에서 500m 이상 이동했을 때 위치를 업데이트하도록 변경하는 메서드
     func startUpdatingLocationInForeground() {
         os_log(.debug, log: log, #function)
         locationManager.requestWhenInUseAuthorization()
@@ -51,7 +45,7 @@ extension CoreLocationManager {
         locationManager.startUpdatingLocation()
     }
     
-    /// 마지막 위치에서 반경 1km를 벗어났을 때 위치를 업데이트하도록 변경하는 메서드
+    /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
     func startUpdatingLocationInBackground() {
         os_log(.debug, log: log, #function)
         locationManager.stopUpdatingLocation()
