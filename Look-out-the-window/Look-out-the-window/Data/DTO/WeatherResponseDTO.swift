@@ -79,13 +79,16 @@ extension WeatherResponseDTO {
         } else if (600..<622).contains(id) {
             str = Rive.snow
         } else if (700..<800).contains(id) {
-            str = Rive.partlyCloudy
+            str = Rive.fog
         } else if id == 800 {
             str = Rive.sunny
+        } else if id == 801 {
+            str = Rive.partlyCloudy
         }
         
         return str
     }
+    
     /// 현재 시간과 타임존 오프셋을 기반으로 하루 중 중심 시점(정오)과의 상대적인 거리값을 계산합니다.
     ///
     /// 이 함수는 하루(24시간)를 기준으로 정오를 중심으로 하여 현재 시간이 정오에서 얼마나 떨어져 있는지를
@@ -128,8 +131,8 @@ extension WeatherResponseDTO {
     func toCurrentWeather() -> CurrentWeather {
         return CurrentWeather(
             address: nil,
-            currentTime: self.currentWeather.currentTime,
-            currentMomentValue: 0.0,
+            currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,
+            currentMomentValue: toMomentValue(),
             temperature: String(Int(self.currentWeather.temperature)),
             maxTemp: String(Int(self.dailyWeathers[0].temperature.maxTemperature)),
             minTemp: String(Int(self.dailyWeathers[0].temperature.minTemperature)),
@@ -147,26 +150,4 @@ extension WeatherResponseDTO {
             dailyModel: self.dailyWeathers.map{ $0.toDailyModel() }
         )
     }
-}
-
-struct HourlyModel {
-    let hour: String      // 포맷 수정  ( 12시간 -> Cell 12개 정도)
-    let temperature: String  // 섭씨
-    let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
-}
-
-struct DailyModel {
-    // 요일, 하늘상태(이미지 -> String), 최저 - 최고 온도
-    let day: String
-    let high: String
-    let low: String
-    let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
-}
-
-struct DetailModel {
-    // Cell에 UIView 각각 배치 예정
-    let title: String
-    let value: String
-    // TODO: 이미지..
-    
 }
