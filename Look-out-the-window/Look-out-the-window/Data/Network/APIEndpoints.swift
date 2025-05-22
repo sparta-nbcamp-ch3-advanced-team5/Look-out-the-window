@@ -79,7 +79,7 @@ struct WeatherParameters {
     func makeParameterDict() -> [String: String] {
         var dict = [String: String]()
         dict["lat"] = String(lat)
-        dict["lng"] = String(lng)
+        dict["lon"] = String(lng)
         dict["appid"] = appid
         dict["units"] = units
         return dict
