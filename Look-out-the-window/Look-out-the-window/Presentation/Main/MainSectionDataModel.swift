@@ -37,6 +37,7 @@ struct DetailModel {
     let title: String
     let value: String
     // TODO: 이미지..? 필요한가
+    let weatherInfo: String // 임시 -> 아이콘용
 }
 
 enum MainSectionItem {

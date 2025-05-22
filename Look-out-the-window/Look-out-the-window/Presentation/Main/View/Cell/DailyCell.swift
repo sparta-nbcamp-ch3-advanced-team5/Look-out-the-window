@@ -8,6 +8,8 @@
 import UIKit
 import Then
 
+// TODO: - SF Symbol 컬러
+
 final class DailyCell: UICollectionViewCell {
     static let id = "DailyCell"
     
@@ -43,6 +45,8 @@ final class DailyCell: UICollectionViewCell {
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.7)
     }
     
+    private let progressBar = ProgressBarView()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -53,11 +57,21 @@ final class DailyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: DailyModel) {
-        dayLabel.text = model.day
-        weatherIcon.image = UIImage(systemName: model.weatherInfo)
-        lowTempLabel.text = model.low
-        highTempLabel.text = model.high
+    func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
+        dayLabel.text = model.day // 요일
+        weatherIcon.image = UIImage(systemName: model.weatherInfo) // icon
+        lowTempLabel.text = "\(model.low)'C" // minTemp
+        highTempLabel.text = "\(model.high)'C" // maxTemp
+        separatorView.isHidden = isBottom // 구분선 hidden 처리 여부
+        
+        let minTemp = Int(model.low)
+        let maxTemp = Int(model.high)
+        
+        progressBar.minTemp = minTemp ?? 0
+        progressBar.maxTemp = maxTemp ?? 0
+        progressBar.totalMinTemp = totalMin
+        progressBar.totalMaxTemp = totalMax
+        progressBar.updateProgress()
     }
 }
 
@@ -73,7 +87,7 @@ private extension DailyCell {
     }
     
     func setViewHierarchy() {
-        self.addSubviews(dayLabel, weatherIcon, lowTempLabel, highTempLabel, separatorView)
+        self.addSubviews(dayLabel, weatherIcon, lowTempLabel, highTempLabel, separatorView, progressBar)
     }
     
     func setConstraints() {
@@ -81,13 +95,13 @@ private extension DailyCell {
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
             // width값 추가
-            $0.width.equalTo(50)
+            $0.width.equalTo(35)
         }
         
         weatherIcon.snp.makeConstraints{
             $0.centerY.equalToSuperview()
             $0.size.equalTo(30)
-            $0.leading.equalTo(dayLabel.snp.trailing).offset(20)
+            $0.leading.equalTo(dayLabel.snp.trailing).offset(12)
         }
         
         lowTempLabel.snp.makeConstraints{
@@ -96,6 +110,12 @@ private extension DailyCell {
         }
         
         // TODO: Progress Bar
+        progressBar.snp.makeConstraints{
+            $0.height.equalTo(5)
+            $0.centerY.equalToSuperview()
+            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(6)
+            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-6)
+        }
         
         highTempLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()

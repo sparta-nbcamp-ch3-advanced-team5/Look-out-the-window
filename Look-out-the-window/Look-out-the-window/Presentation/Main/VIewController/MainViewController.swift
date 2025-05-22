@@ -13,10 +13,8 @@ import RxDataSources
 import SnapKit
 import Then
 
-// cell.configure메서드에 isBottom
-// 온도 변경 될때마다 layout이 변경될 여지가 있음 -> monospacedDigitSystemFont(ofSize: , weight:) 시스템 폰트 대신
-
-// TODO: - DetailCell Header, customView 추가 // Daily Header 추가, 레이아웃 수정
+// TODO: - DetailCell Header, customView 추가
+// TODO: - SF Symbol 컬러 세팅
 final class MainViewController: UIViewController {
     
     private let mainView = MainView()
@@ -32,17 +30,16 @@ final class MainViewController: UIViewController {
                 return cell
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
-                cell.bind(model: model)
+                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
+                cell.bind(model: model, isBottom: isLast, totalMin: 10, totalMax: 40)
                 return cell
             case .detail(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
-                
+                cell.bind(model: model)
                 return cell
             }
         },
-        // TODO: - Daily Section Header 추가
         configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
-            
             if indexPath.section == 0 {
                 let header = collectionView.dequeueReusableSupplementaryView(
                     ofKind: UICollectionView.elementKindSectionHeader,
@@ -99,21 +96,21 @@ extension MainViewController: UICollectionViewDelegate {
                 .hourly(HourlyModel(hour: "17시", temperature: "28'C", weatherInfo: "sun.min"))
             ]),
             MainSection(items: [
-                .daily(DailyModel(day: "오늘", high: "20'C", low: "30'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "화", high: "21'C", low: "31'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "수", high: "22'C", low: "32'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "목", high: "23'C", low: "33'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "금", high: "24'C", low: "34'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "토", high: "25'C", low: "35'C", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "일", high: "26'C", low: "36'C", weatherInfo: "sun.min"))
+                .daily(DailyModel(day: "오늘", high: "35", low: "11", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "35", low: "30", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "수", high: "32", low: "27", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "목", high: "29", low: "24", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "금", high: "24", low: "19", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "토", high: "19", low: "14", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "일", high: "16", low: "11", weatherInfo: "sun.min"))
             ]),
             MainSection(items: [
-                .detail(DetailModel(title: "자외선지수", value: "높음")),
-                .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45")),
-                .detail(DetailModel(title: "바람", value: "3m/s NW")),
-                .detail(DetailModel(title: "강수량", value: "5mm")),
-                .detail(DetailModel(title: "체감기온", value: "20℃")),
-                .detail(DetailModel(title: "습도", value: "70%"))
+                .detail(DetailModel(title: "자외선지수", value: "높음", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "바람", value: "3m/s NW", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "강수량", value: "5mm", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "체감기온", value: "20℃", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "습도", value: "70%", weatherInfo: "sun.min"))
             ])
         ])
         
