@@ -33,7 +33,6 @@ final class RegionCell: UITableViewCell {
         $0.font = .monospacedDigitSystemFont(ofSize: 64, weight: .regular)
     }
     
-    
     private let highTempLabel = UILabel().then {
         $0.text = "H: -10°"
         $0.textColor = .secondaryLabel
@@ -64,10 +63,10 @@ final class RegionCell: UITableViewCell {
         $0.spacing = 2
     }
     
-    private let weatherImageView = UIImageView().then {
-        $0.image = UIImage(systemName: "cloud.sun.rain.fill", withConfiguration: UIImage.SymbolConfiguration.preferringMulticolor())
-        $0.contentMode = .scaleAspectFit
-    }
+//    private let weatherImageView = UIImageView().then {
+//        $0.image = UIImage(systemName: "cloud.sun.rain.fill", withConfiguration: UIImage.SymbolConfiguration.preferringMulticolor())
+//        $0.contentMode = .scaleAspectFit
+//    }
     
     private let windLabel = UILabel().then {
         $0.text = "Fast Wind"
@@ -112,8 +111,8 @@ private extension RegionCell {
     }
     
     func setAppearance() {
-        self.backgroundColor = .clear
         self.selectionStyle = .none
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {

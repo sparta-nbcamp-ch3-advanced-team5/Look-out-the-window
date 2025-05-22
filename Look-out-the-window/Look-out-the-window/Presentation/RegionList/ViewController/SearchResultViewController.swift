@@ -7,7 +7,6 @@
 
 import UIKit
 import MapKit
-import OSLog
 
 import RxCocoa
 import RxRelay
@@ -19,13 +18,11 @@ final class SearchResultViewController: UIViewController {
     
     // MARK: - Properties
     
-    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
-    
     private let viewModel = SearchResultViewModel()
     private let disposeBag = DisposeBag()
     
-    private let searchCompleter = MKLocalSearchCompleter()
-    private var searchResults = PublishRelay<[MKLocalSearchCompletion]>()
+    /// 검색어 `PublishRelay`
+    private let searchTextRelay = PublishRelay<String>()
     
     // MARK: - UI Components
     
@@ -38,7 +35,6 @@ final class SearchResultViewController: UIViewController {
         
         setupUI()
         configureTableView()
-        bind()
     }
 }
 
@@ -47,18 +43,13 @@ final class SearchResultViewController: UIViewController {
 private extension SearchResultViewController {
     func setupUI() {
         setAppearance()
-        setDelegates()
         setViewHierarchy()
         setConstraints()
+        bind()
     }
     
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
-        searchCompleter.resultTypes = .address
-    }
-    
-    func setDelegates() {
-        searchCompleter.delegate = self
     }
     
     func setViewHierarchy() {
@@ -72,10 +63,23 @@ private extension SearchResultViewController {
     }
     
     func bind() {
-        // ViewController ➡️ View
-        searchResults.asDriver(onErrorJustReturn: [])
+        // ViewController ➡️ ViewModel
+        searchTextRelay.asInfallible()
+            .debounce(.milliseconds(300), scheduler: MainScheduler.asyncInstance)
+            .distinctUntilChanged()
+            .subscribe(with: self) { owner, text in
+                owner.viewModel.action.onNext(.searchText(text: text))
+            }.disposed(by: disposeBag)
+        
+        // ViewModel ➡️ ViewController
+        viewModel.state.searchResults.asDriver(onErrorJustReturn: [])
             .drive(searchResultView.getTableView.rx.items(cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
                 cell.configure(address: result.title)
+            }.disposed(by: disposeBag)
+        
+        searchResultView.getTableView.rx.itemSelected
+            .bind(with: self) { owner, indexPath in
+//                owner.searchResults.value[indexPath.row]
             }.disposed(by: disposeBag)
     }
 }
@@ -92,22 +96,10 @@ private extension SearchResultViewController {
 
 extension SearchResultViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        searchCompleter.queryFragment = searchText
+        searchTextRelay.accept(searchText)
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        searchResults.accept([])
-    }
-}
-
-// MARK: - MKLocalSearchCompleterDelegate
-
-extension SearchResultViewController: MKLocalSearchCompleterDelegate {
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        searchResults.accept(completer.results)
-    }
-    
-    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {
-        os_log(.error, log: log, "\(error.localizedDescription)")
+        searchTextRelay.accept("")
     }
 }

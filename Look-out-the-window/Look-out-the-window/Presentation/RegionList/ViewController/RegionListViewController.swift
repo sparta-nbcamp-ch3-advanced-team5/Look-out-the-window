@@ -7,8 +7,9 @@
 
 import UIKit
 
+import RxCocoa
+import RxSwift
 import SnapKit
-import Then
 
 /// 지역 리스트 ViewController
 final class RegionListViewController: UIViewController {
@@ -16,6 +17,7 @@ final class RegionListViewController: UIViewController {
     // MARK: - Properties
     
     private let viewModel = RegionListViewModel()
+    private let disposeBag = DisposeBag()
     
     // MARK: - UI Components
     
@@ -57,6 +59,7 @@ private extension RegionListViewController {
         setDelegates()
         setViewHierarchy()
         setConstraints()
+        bind()
     }
     
     func setAppearance() {
@@ -67,6 +70,7 @@ private extension RegionListViewController {
         
         searchController.searchBar.placeholder = "도시 또는 공항 검색"
         searchController.hidesNavigationBarDuringPresentation = true
+        searchController.obscuresBackgroundDuringPresentation = true
     }
     
     func setDelegates() {
@@ -84,6 +88,13 @@ private extension RegionListViewController {
         regionListView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+    }
+    
+    func bind() {
+        regionListView.getTableView.rx.itemSelected
+            .bind(with: self) { owner, indexPath in
+                print(indexPath)
+            }.disposed(by: disposeBag)
     }
 }
 
