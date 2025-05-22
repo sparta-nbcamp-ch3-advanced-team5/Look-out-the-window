@@ -9,15 +9,20 @@ import Foundation
 import CoreLocation
 import OSLog
 
+import RxRelay
+
 /// `CoreLocation`의 싱글톤 매니저
 final class CoreLocationManager: NSObject {
     
-    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "CoreLocationManager")
-    
     // MARK: - Properties
+    
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "CoreLocationManager")
     
     static let shared = CoreLocationManager()
     private let locationManager: CLLocationManager
+    
+    /// 사용자 현재 위치 좌표(기본값: 광화문 광장)
+    var currCoord = BehaviorRelay<CLLocationCoordinate2D>(value: CLLocationCoordinate2D(latitude: 37.574187, longitude: 126.976882))
     
     // MARK: - Initializer
     
@@ -102,6 +107,7 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let coord = locations.last?.coordinate else { return }
         os_log(.debug, log: log, "lat: \(coord.latitude), lng: \(coord.longitude)")
+        currCoord.accept(coord)
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
