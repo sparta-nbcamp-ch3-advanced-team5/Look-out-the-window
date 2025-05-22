@@ -41,7 +41,7 @@ struct WeatherResponseDTO: Decodable {
 extension WeatherResponseDTO {
     func toSkyInfoString() -> String {
         guard let weatherState = self.currentWeather.weatherState.first else {
-            print("ERROR:: DailyWeatherDTO WeatherState is not exist")
+            print("ERROR:: currentWeather WeatherState is not exist")
             return ""
         }
         let id = weatherState.id
@@ -63,9 +63,35 @@ extension WeatherResponseDTO {
         return str
     }
     
+    func toRiveString() -> String {
+        guard let weatherState = self.currentWeather.weatherState.first else {
+            print("ERROR:: currentWeather WeatherState is not exist")
+            return ""
+        }
+        let id = weatherState.id
+        var str = Rive.cloudy
+        if (200..<300).contains(id) {
+            str = Rive.thunder
+        } else if (300..<322).contains(id) {
+            str = Rive.rainy
+        } else if (500..<532).contains(id) {
+            str = Rive.rainy
+        } else if (600..<622).contains(id) {
+            str = Rive.snow
+        } else if (700..<800).contains(id) {
+            str = Rive.partlyCloudy
+        } else if id == 800 {
+            str = Rive.sunny
+        }
+        
+        return str
+    }
+    
     func toCurrentWeather() -> CurrentWeather {
         return CurrentWeather(
             address: nil,
+            currentTime: self.currentWeather.currentTime,
+            currentMomentValue: 0.0,
             temperature: String(Int(self.currentWeather.temperature)),
             maxTemp: String(Int(self.dailyWeathers[0].temperature.maxTemperature)),
             minTemp: String(Int(self.dailyWeathers[0].temperature.minTemperature)),
@@ -78,8 +104,7 @@ extension WeatherResponseDTO {
             visibility: String(self.currentWeather.visibility),
             windSpeed: String(Int(self.currentWeather.windSpeed)),
             windDeg: String(self.currentWeather.windDeg),
-            rive: nil,
-            riveTime: nil,
+            rive: toRiveString(),
             hourlyModel: self.hourlyWeathers.map{ $0.toHourlyModel() },
             dailyModel: self.dailyWeathers.map{ $0.toDailyModel() }
         )
