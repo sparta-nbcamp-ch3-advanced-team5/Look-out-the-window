@@ -10,6 +10,7 @@ import UIKit
 import SnapKit
 import Then
 
+/// 검색 결과 `UITableViewCell`
 final class SearchResultCell: UITableViewCell {
     
     // MARK: - Properties

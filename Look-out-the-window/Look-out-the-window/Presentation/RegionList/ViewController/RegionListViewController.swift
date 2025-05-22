@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import MapKit
 
 import SnapKit
 import Then
@@ -88,15 +87,13 @@ private extension RegionListViewController {
     }
 }
 
-// MARK: - UITableView Methods
+// MARK: - UITableViewDelegate & Methods
 
 private extension RegionListViewController {
     func configureTableView() {
         regionListView.getTableView.register(RegionCell.self, forCellReuseIdentifier: RegionCell.identifier)
     }
 }
-
-// MARK: - UITableViewDelegate
 
 extension RegionListViewController: UITableViewDelegate {
     

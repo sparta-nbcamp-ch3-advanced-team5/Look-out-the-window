@@ -12,6 +12,7 @@ import Then
 
 import RiveRuntime
 
+/// 지역 리스트 `UITableViewCell`
 final class RegionCell: UITableViewCell {
     
     // MARK: - Properties

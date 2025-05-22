@@ -15,7 +15,7 @@ final class SearchResultView: UIView {
     
     // MARK: - UI Components
     
-    private let searchResultTableView = UITableView()
+    private let searchResultTableView = UITableView(frame: .zero, style: .plain)
     
     // MARK: - Getter
     
@@ -46,7 +46,12 @@ private extension SearchResultView {
     
     func setAppearance() {
         self.backgroundColor = .clear
+        
         searchResultTableView.backgroundColor = .clear
+        searchResultTableView.rowHeight = 50
+        searchResultTableView.separatorColor = .lightGray
+        searchResultTableView.separatorInset.left = 15
+        searchResultTableView.separatorInset.right = 15
     }
     
     func setViewHierarchy() {

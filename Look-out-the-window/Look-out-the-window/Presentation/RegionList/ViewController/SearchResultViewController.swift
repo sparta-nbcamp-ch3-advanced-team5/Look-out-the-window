@@ -6,7 +6,11 @@
 //
 
 import UIKit
+import MapKit
 
+import RxCocoa
+import RxRelay
+import RxSwift
 import SnapKit
 
 /// 검색 결과 ViewController
@@ -15,6 +19,10 @@ final class SearchResultViewController: UIViewController {
     // MARK: - Properties
     
     private let viewModel = SearchResultViewModel()
+    private let disposeBag = DisposeBag()
+    
+    private let searchCompleter = MKLocalSearchCompleter()
+    private var searchResults = PublishRelay<[MKLocalSearchCompletion]>()
     
     // MARK: - UI Components
     
@@ -26,6 +34,7 @@ final class SearchResultViewController: UIViewController {
         super.viewDidLoad()
         
         setupUI()
+        configureTableView()
         bind()
     }
 }
@@ -45,8 +54,8 @@ private extension SearchResultViewController {
     }
     
     func setDelegates() {
-        searchResultView.getTableView.delegate = self
-//        searchResultView.getTableView.dataSource = self
+        searchCompleter.delegate = self
+        searchCompleter.resultTypes = .address
     }
     
     func setViewHierarchy() {
@@ -60,30 +69,41 @@ private extension SearchResultViewController {
     }
     
     func bind() {
-        
+        // ViewController ➡️ View
+        searchResults.asDriver(onErrorJustReturn: [])
+            .drive(searchResultView.getTableView.rx.items(cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
+                cell.configure(address: result.title)
+            }.disposed(by: disposeBag)
     }
 }
 
-// MARK: - UISearchBarDelegate
+// MARK: - UITableViewDelegate & Methods
 
-extension SearchResultViewController: UISearchBarDelegate {
-    
+private extension SearchResultViewController {
+    func configureTableView() {
+        searchResultView.getTableView.register(SearchResultCell.self, forCellReuseIdentifier: SearchResultCell.identifier)
+    }
 }
-
-// MARK: - UITableViewDelegate
 
 extension SearchResultViewController: UITableViewDelegate {
     
 }
 
-// MARK: - UITableViewDelegate
+// MARK: - UISearchBarDelegate
 
-//extension SearchResultViewController: UITableViewDataSource {
-//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        <#code#>
-//    }
-//    
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        <#code#>
-//    }
-//}
+extension SearchResultViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchCompleter.queryFragment = searchText
+    }
+}
+
+// MARK: - MKLocalSearchCompleterDelegate
+
+extension SearchResultViewController: MKLocalSearchCompleterDelegate {
+    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+        searchResults.accept(completer.results)
+        searchResultView.getTableView.reloadData()
+    }
+}
+
+
