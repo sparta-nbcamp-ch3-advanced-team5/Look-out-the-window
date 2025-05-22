@@ -8,13 +8,13 @@
 import UIKit
 import Then
 
-class DailyCell: UICollectionViewCell {
+final class DailyCell: UICollectionViewCell {
     static let id = "DailyCell"
     
     private let dayLabel = UILabel().then {
         $0.text = "Now"
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 18)
+        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
     }
     
@@ -22,25 +22,25 @@ class DailyCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .white
+        $0.tintColor = .yellow
     }
     
     private let lowTempLabel = UILabel().then {
         $0.text = "18'C"
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 16)
+        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
     }
     
     private let highTempLabel = UILabel().then {
         $0.text = "30'C"
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 16)
+        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
     }
     
     private let separatorView = UIView().then {
-        $0.backgroundColor = UIColor.white.withAlphaComponent(0.2)
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.7)
     }
     
     override init(frame: CGRect) {
@@ -55,7 +55,7 @@ class DailyCell: UICollectionViewCell {
     
     func bind(model: DailyModel) {
         dayLabel.text = model.day
-        weatherIcon.image = UIImage(named: model.weatherInfo)
+        weatherIcon.image = UIImage(systemName: model.weatherInfo)
         lowTempLabel.text = model.low
         highTempLabel.text = model.high
     }
@@ -80,6 +80,8 @@ private extension DailyCell {
         dayLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
+            // width값 추가
+            $0.width.equalTo(50)
         }
         
         weatherIcon.snp.makeConstraints{
@@ -102,9 +104,9 @@ private extension DailyCell {
         
         separatorView.snp.makeConstraints {
             $0.height.equalTo(1)
-            $0.top.equalToSuperview()
-            $0.leading.equalToSuperview().offset(10)
-            $0.trailing.equalToSuperview().inset(10)
+            $0.bottom.equalToSuperview()
+            $0.leading.equalToSuperview().offset(4)
+            $0.trailing.equalToSuperview().inset(4)
         }
     }
 }

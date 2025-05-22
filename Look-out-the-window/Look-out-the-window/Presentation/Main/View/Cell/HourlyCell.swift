@@ -7,27 +7,27 @@
 
 import UIKit
 
-class HourlyCell: UICollectionViewCell {
+final class HourlyCell: UICollectionViewCell {
     static let id = "HourlyCell"
     
     private let hourLabel = UILabel().then {
         $0.text = "9PM"
         $0.textColor = .white
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 16)
+        $0.font = .monospacedDigitSystemFont(ofSize: 16, weight: .bold)
     }
     
     private let weatherIcon = UIImageView().then {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .white
+        $0.tintColor = .yellow
     }
     
     private let tempLabel = UILabel().then {
         $0.text = "18'C"
         $0.textAlignment = .center
-        $0.font = .boldSystemFont(ofSize: 18)
+        $0.font = .monospacedDigitSystemFont(ofSize: 18, weight: .bold)
         $0.textColor = .white
     }
     
@@ -42,7 +42,9 @@ class HourlyCell: UICollectionViewCell {
     }
     
     func bind(model: HourlyModel) {
-        
+        hourLabel.text = model.hour
+        weatherIcon.image = UIImage(systemName: model.weatherInfo)
+        tempLabel.text = model.temperature
     }
 }
 
@@ -64,7 +66,7 @@ private extension HourlyCell {
     func setConstraints() {
         hourLabel.snp.makeConstraints{
             $0.centerX.equalToSuperview()
-            $0.top.equalToSuperview().offset(4)
+            $0.top.equalToSuperview()
         }
         
         weatherIcon.snp.makeConstraints {
