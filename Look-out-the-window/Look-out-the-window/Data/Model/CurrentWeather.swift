@@ -12,6 +12,10 @@ import Foundation
 struct CurrentWeather {
     /// 위치 또는 주소 정보 (예: "서울특별시 강남구")
     let address: String?
+    /// 현재 시간 Unix
+    let currentTime: Int
+    /// 현재 순간(새벽, 아침, 낮, 오후, 밤) 기준 투명값 (0.0 ~ 0.5)
+    let currentMomentValue: Double
     /// 현재 기온 (예: "23°C")
     let temperature: String
     /// 최고 기온 (예: "25°C")
