@@ -1,5 +1,5 @@
 //
-//  Location.swift
+//  LocationModel.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/22/25.
@@ -15,7 +15,7 @@ import Foundation
 /// - `areasOfInterest`: 장소 이름(없으면 빈 값)
 /// - `lat`: 위도(없으면 기본값)
 /// - `lng`: 경도(없으면 기본값)
-struct Location {
+struct LocationModel {
     let administrativeArea: String
     let locality: String
     let subLocality: String

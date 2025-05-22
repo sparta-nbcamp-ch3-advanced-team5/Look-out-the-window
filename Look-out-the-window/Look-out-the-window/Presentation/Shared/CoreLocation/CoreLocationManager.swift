@@ -9,9 +9,7 @@ import Foundation
 import CoreLocation
 import OSLog
 
-import RxRelay
-
-/// `CoreLocation`의 싱글톤 매니저
+/// `CoreLocation`을 관리하는 싱글톤 매니저
 final class CoreLocationManager: NSObject {
     
     // MARK: - Properties
@@ -27,9 +25,9 @@ final class CoreLocationManager: NSObject {
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
     
-    private let defaultLocation = Location(administrativeArea: "서울특별시", locality: "세종로", subLocality: "세종로", areasOfInterest: "", lat: 37.574187, lng: 126.976882)
+    private let defaultLocation = LocationModel(administrativeArea: "서울특별시", locality: "세종로", subLocality: "세종로", areasOfInterest: "", lat: 37.574187, lng: 126.976882)
     /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
-    private var currLocation: Location
+    private var currLocation: LocationModel
     
     // MARK: - Initializer
     
@@ -67,14 +65,14 @@ extension CoreLocationManager {
 // MARK: - Geocoding/Reverse Geocoding Methods
 
 extension CoreLocationManager {
-    /// 주어진 검색어와 관련된 위치 정보(`Location`)들을 반환하는 비동기 메서드
+    /// 주어진 검색어와 관련된 위치 정보(`LocationInfo`)들을 반환하는 비동기 메서드
     ///
     /// - Parameter address: 검색어(주소)
-    /// - Returns: 관련 위치 정보 배열 `[Location]`
-    func searchAddress(of address: String) async -> [Location] {
+    /// - Returns: 관련 위치 정보 배열 `[LocationInfo]`
+    func searchAddress(of address: String) async -> [LocationModel] {
         do {
             let placemarkList = try await geocoder.geocodeAddressString(address)
-            var results = [Location]()
+            var results = [LocationModel]()
             placemarkList.forEach {
                 guard let administrativeArea = $0.administrativeArea,
                       let locality = $0.locality else { return }
@@ -82,7 +80,7 @@ extension CoreLocationManager {
                 let areasOfInterest = $0.areasOfInterest?.first ?? ""
                 let coord = $0.location?.coordinate
                 
-                let location = Location(administrativeArea: administrativeArea,
+                let location = LocationModel(administrativeArea: administrativeArea,
                                         locality: locality,
                                         subLocality: subLocality,
                                         areasOfInterest: areasOfInterest,
@@ -108,10 +106,10 @@ extension CoreLocationManager {
         
     }
     
-    /// 사용자 현재 위치 좌표를 위치 정보(`Location`)으로 변환(Reverse Geocoding)하는 비동기 메서드
+    /// 사용자 현재 위치 좌표를 위치 정보(`LocationInfo`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
-    /// - Returns: 변환된 위치 정보 `Location`
-    func convertCurrCoordToAddress() async -> Location? {
+    /// - Returns: 변환된 위치 정보 `LocationInfo`
+    func convertCurrCoordToAddress() async -> LocationModel? {
         do {
             let currCoord = CLLocation(latitude: currLocation.lat, longitude: currLocation.lng)
             let placemarkList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
@@ -121,7 +119,7 @@ extension CoreLocationManager {
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
             let areasOfInterest = placemark.areasOfInterest?.first ?? ""
             let coord = placemark.location?.coordinate
-            currLocation = Location(administrativeArea: administrativeArea,
+            currLocation = LocationModel(administrativeArea: administrativeArea,
                                    locality: locality,
                                    subLocality: subLocality,
                                    areasOfInterest: areasOfInterest,
@@ -135,7 +133,7 @@ extension CoreLocationManager {
     }
 }
 
-// MARK: - Private Methods
+// MARK: - Location Auth Methods
 
 private extension CoreLocationManager {
     /// 디바이스 위치 서비스가 활성화 상태인지 확인

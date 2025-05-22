@@ -16,7 +16,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         UNUserNotificationCenter.current().delegate = self
         if let _ = launchOptions?[.location] {
-            CoreLocationManager.shared.startUpdatingLocationInBackground()
+            LocationManager.shared.startUpdatingLocationInBackground()
         }
         
         return true
