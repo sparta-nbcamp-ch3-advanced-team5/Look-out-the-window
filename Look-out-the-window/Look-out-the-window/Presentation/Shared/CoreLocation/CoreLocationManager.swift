@@ -7,7 +7,6 @@
 
 import Foundation
 import CoreLocation
-import MapKit
 import OSLog
 
 import RxRelay
@@ -27,8 +26,10 @@ final class CoreLocationManager: NSObject {
     private let geocoder = CLGeocoder()
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
-    /// 사용자 현재 위치 좌표 (기본값: 광화문 광장)
-    var currCoord = CLLocation(latitude: 37.574187, longitude: 126.976882)
+    
+    private let defaultLocation = Location(administrativeArea: "서울특별시", locality: "세종로", subLocality: "세종로", areasOfInterest: "", lat: 37.574187, lng: 126.976882)
+    /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
+    private var currLocation: Location
     
     // MARK: - Initializer
     
@@ -36,6 +37,7 @@ final class CoreLocationManager: NSObject {
         locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         locationManager.distanceFilter = 500
         locationManager.allowsBackgroundLocationUpdates = true
+        currLocation = defaultLocation
         super.init()
         locationManager.delegate = self
     }
@@ -54,7 +56,7 @@ extension CoreLocationManager {
         locationManager.startUpdatingLocation()
     }
     
-    /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
+    /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(GPS 사용 X, 대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
     func startUpdatingLocationInBackground() {
         os_log(.debug, log: log, #function)
         locationManager.stopUpdatingLocation()
@@ -65,27 +67,71 @@ extension CoreLocationManager {
 // MARK: - Geocoding/Reverse Geocoding Methods
 
 extension CoreLocationManager {
-    /// 주소를 좌표로 변환(Geocoding)
-    func convertAddressToCoord() {
+    /// 주어진 검색어와 관련된 위치 정보(`Location`)들을 반환하는 비동기 메서드
+    ///
+    /// - Parameter address: 검색어(주소)
+    /// - Returns: 관련 위치 정보 배열 `[Location]`
+    func searchAddress(of address: String) async -> [Location] {
+        do {
+            let placemarkList = try await geocoder.geocodeAddressString(address)
+            var results = [Location]()
+            placemarkList.forEach {
+                guard let administrativeArea = $0.administrativeArea,
+                      let locality = $0.locality else { return }
+                let subLocality = $0.subLocality ?? $0.thoroughfare ?? ""
+                let areasOfInterest = $0.areasOfInterest?.first ?? ""
+                let coord = $0.location?.coordinate
+                
+                let location = Location(administrativeArea: administrativeArea,
+                                        locality: locality,
+                                        subLocality: subLocality,
+                                        areasOfInterest: areasOfInterest,
+                                        lat: coord?.latitude ?? defaultLocation.lat,
+                                        lng: coord?.longitude ?? defaultLocation.lng)
+                
+                results.append(location)
+            }
+            
+            os_log(.debug, log: log, "\(results)")
+            return results
+        } catch {
+            os_log(.error, log: log, "\(error.localizedDescription)")
+            return []
+        }
+    }
+    
+    /// 주어진 주소를 좌표로 변환(Geocoding)하는 메서드
+    ///
+    ///- Parameter address: 좌표로 변환할 주소
+    ///- Returns:
+    func convertAddressToCoord(of address: String) {
         
     }
     
-    /// 좌표를 주소로 변환(Reverse Geocoding)
-    func convertCoordToAddress() async -> [String]? {
+    /// 사용자 현재 위치 좌표를 위치 정보(`Location`)으로 변환(Reverse Geocoding)하는 비동기 메서드
+    ///
+    /// - Returns: 변환된 위치 정보 `Location`
+    func convertCurrCoordToAddress() async -> Location? {
         do {
-            let placeList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
-            guard let placemark = placeList.last,
+            let currCoord = CLLocation(latitude: currLocation.lat, longitude: currLocation.lng)
+            let placemarkList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
+            guard let placemark = placemarkList.last,
                   let administrativeArea = placemark.administrativeArea,
-                  let locality = placemark.locality,
-                  let subLocality = placemark.subLocality ?? placemark.thoroughfare else { return nil }
-            
-            let address = [administrativeArea, locality, subLocality]
-            print(address)
-            return address
+                  let locality = placemark.locality else { return currLocation }
+            let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
+            let areasOfInterest = placemark.areasOfInterest?.first ?? ""
+            let coord = placemark.location?.coordinate
+            currLocation = Location(administrativeArea: administrativeArea,
+                                   locality: locality,
+                                   subLocality: subLocality,
+                                   areasOfInterest: areasOfInterest,
+                                   lat: coord?.latitude ?? currLocation.lat,
+                                   lng: coord?.longitude ?? currLocation.lng)
+            os_log(.debug, log: log, "\(administrativeArea), \(locality), \(subLocality)")
         } catch {
             os_log(.error, log: log, "\(error.localizedDescription)")
-            return nil
         }
+        return currLocation
     }
 }
 
@@ -138,7 +184,7 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         os_log(.debug, log: log, "lat: \(location.coordinate.latitude), lng: \(location.coordinate.longitude)")
-        currCoord = location
+        
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
