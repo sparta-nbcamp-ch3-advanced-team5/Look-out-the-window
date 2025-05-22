@@ -37,7 +37,7 @@ struct MainCompositionalLayout {
                 
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                        heightDimension: .absolute(35)
+                    heightDimension: .absolute(35)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,
@@ -46,7 +46,7 @@ struct MainCompositionalLayout {
                 )
                 header.pinToVisibleBounds = false
                 header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-
+                
                 section.boundarySupplementaryItems = [header]
                 
                 // ✅ Decoration View 적용
@@ -67,12 +67,12 @@ struct MainCompositionalLayout {
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
-                section.interGroupSpacing = 2
+                section.interGroupSpacing = 0
                 section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
                 
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                        heightDimension: .absolute(40)
+                    heightDimension: .absolute(40)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,
@@ -81,7 +81,7 @@ struct MainCompositionalLayout {
                 )
                 header.pinToVisibleBounds = false
                 header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-
+                
                 section.boundarySupplementaryItems = [header]
                 
                 // ✅ Decoration View 적용
@@ -91,20 +91,31 @@ struct MainCompositionalLayout {
                 return section
                 
             case .detail:
-                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5),
-                                                      heightDimension: .fractionalWidth(0.5))
-                let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                let itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(0.5),
+                    heightDimension: .fractionalWidth(0.5)
+                )
                 
-                item.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 8, bottom: 12, trailing: 8)
+                // Left Cell
+                let leftItem = NSCollectionLayoutItem(layoutSize: itemSize)
+                leftItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 8)
                 
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .estimated(180))
+                // Right Cell
+                let rightItem = NSCollectionLayoutItem(layoutSize: itemSize)
+                rightItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 0)
                 
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                let groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .fractionalWidth(0.5)
+                )
+                let group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: groupSize,
+                    subitems: [leftItem, rightItem]
+                )
                 
                 let section = NSCollectionLayoutSection(group: group)
-                section.interGroupSpacing = 12
-                section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 0, bottom: 32, trailing: 0)
+                section.interGroupSpacing = 15
+                section.contentInsets = NSDirectionalEdgeInsets(top: 30, leading: 0, bottom: 0, trailing: 0)
                 
                 return section
             }

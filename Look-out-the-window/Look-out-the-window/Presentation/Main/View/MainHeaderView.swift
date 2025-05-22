@@ -40,6 +40,7 @@ final class MainHeaderView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // TODO: - Icon, Title 데이터 바인딩
     func bind(icon: String, title: String) {
         headerIcon.image = UIImage(systemName: icon)
         titleLabel.text = title
