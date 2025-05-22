@@ -229,7 +229,6 @@ private extension BackgroundViewController {
         
         let clampedValue = max(targetMin, min(scaledValue, targetMax))
         
-        print(value, clampedValue)
         return clampedValue
     }
 }
