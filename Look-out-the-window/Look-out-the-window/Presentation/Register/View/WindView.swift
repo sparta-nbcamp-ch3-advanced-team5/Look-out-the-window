@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Then
 
 /// 바람의 방향과 속도를 시각적으로 나타내는 원형 컴퍼스 뷰입니다.
 /// - 중심에는 풍속이 표시되고, 원형 점선과 방향 선, 화살표가 함께 표시됩니다.
@@ -19,56 +20,44 @@ final class WindView: UIView {
     var radius: CGFloat = 0
     
     // MARK: 방향 표시 레이블 (동서남북)
-    private let eastLabel: UILabel = {
-        let label = UILabel()
-        label.text = "E"
-        label.font = .systemFont(ofSize: 16, weight: .bold)
-        label.textColor = .gray
-        return label
-    }()
+    private let eastLabel = UILabel().then {
+        $0.text = "E"
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .gray
+    }
     
-    private let westLabel: UILabel = {
-        let label = UILabel()
-        label.text = "W"
-        label.font = .systemFont(ofSize: 16, weight: .bold)
-        label.textColor = .gray
-        return label
-    }()
+    private let westLabel = UILabel().then {
+        $0.text = "W"
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .gray
+    }
     
-    private let southLabel: UILabel = {
-        let label = UILabel()
-        label.text = "S"
-        label.font = .systemFont(ofSize: 16, weight: .bold)
-        label.textColor = .gray
-        return label
-    }()
+    private let southLabel = UILabel().then {
+        $0.text = "S"
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .gray
+    }
     
-    private let northLabel: UILabel = {
-        let label = UILabel()
-        label.text = "N"
-        label.font = .systemFont(ofSize: 16, weight: .bold)
-        label.textColor = .gray
-        return label
-    }()
+    private let northLabel = UILabel().then {
+        $0.text = "N"
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .gray
+    }
     
     /// 중심에 표시되는 풍속 레이블 (예: 9 km/h)
-    private let windSpeedLabel: UILabel = {
-        let label = UILabel()
-        label.numberOfLines = 2
-        label.font = .systemFont(ofSize: 20, weight: .regular)
-        label.textColor = .gray
-        label.textAlignment = .center
-        return label
-    }()
+    private let windSpeedLabel = UILabel().then {
+        $0.numberOfLines = 2
+        $0.font = .systemFont(ofSize: 20, weight: .regular)
+        $0.textColor = .gray
+        $0.textAlignment = .center
+    }
     
-    private let unitLabel: UILabel = {
-        let label = UILabel()
-        label.text = "km/h"
-        label.font = .systemFont(ofSize: 20, weight: .regular)
-        label.textColor = .gray
-        label.textAlignment = .center
-        return label
-    }()
+    private let unitLabel = UILabel().then {
+        $0.text = "km/h"
+        $0.font = .systemFont(ofSize: 20, weight: .regular)
+        $0.textColor = .gray
+        $0.textAlignment = .center
+    }
     
     /// degree 및 radius 값을 초기 설정하고 뷰를 다시 그립니다.
     convenience init(degree: CGFloat, radius: CGFloat, speed: Double) {
