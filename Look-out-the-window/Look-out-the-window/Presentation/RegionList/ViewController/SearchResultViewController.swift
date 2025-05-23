@@ -122,6 +122,16 @@ extension SearchResultViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return .leastNonzeroMagnitude
     }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
+    }
 }
 
 // MARK: - UISearchBarDelegate

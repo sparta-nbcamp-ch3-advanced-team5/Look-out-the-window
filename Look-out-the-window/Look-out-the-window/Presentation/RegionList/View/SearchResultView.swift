@@ -57,7 +57,8 @@ private extension SearchResultView {
     
     func setConstraints() {
         searchResultTableView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.top.leading.trailing.equalToSuperview()
+            $0.bottom.equalTo(self.keyboardLayoutGuide.snp.top)
         }
     }
 }
