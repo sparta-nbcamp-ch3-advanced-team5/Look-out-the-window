@@ -78,7 +78,7 @@ final class RegionCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         // TODO: - 임시 fileName
-        self.riveViewModel = RiveViewModel(fileName: Rive.cloudy)
+        self.riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.riveView = riveViewModel.createRiveView()
         
@@ -115,6 +115,7 @@ private extension RegionCell {
     func setAppearance() {
         self.selectionStyle = .none
         self.backgroundColor = .clear
+//        self.layer.masksToBounds = true
         self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
     }
@@ -145,9 +146,9 @@ private extension RegionCell {
 //        }
         
         riveView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(5)
-            $0.trailing.equalToSuperview().inset(20)
-            $0.width.height.equalTo(150)
+            $0.top.equalToSuperview().inset(-85)
+            $0.trailing.equalToSuperview().inset(-80)
+            $0.width.height.equalTo(350)
         }
         
         tempAndLocationStack.snp.makeConstraints {

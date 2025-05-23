@@ -14,7 +14,7 @@ final class CoreLocationManager: NSObject {
     
     // MARK: - Properties
     
-    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: "CoreLocationManager")
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     static let shared = CoreLocationManager()
     
@@ -25,7 +25,6 @@ final class CoreLocationManager: NSObject {
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
     
-    private let defaultLocation = LocationModel(administrativeArea: "서울특별시", locality: "세종로", subLocality: "세종로", areasOfInterest: "", lat: 37.574187, lng: 126.976882)
     /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
     private var currLocation: LocationModel
     
@@ -35,7 +34,7 @@ final class CoreLocationManager: NSObject {
         locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
         locationManager.distanceFilter = 500
         locationManager.allowsBackgroundLocationUpdates = true
-        currLocation = defaultLocation
+        currLocation = LocationModel()
         super.init()
         locationManager.delegate = self
     }
@@ -65,10 +64,10 @@ extension CoreLocationManager {
 // MARK: - Geocoding/Reverse Geocoding Methods
 
 extension CoreLocationManager {
-    /// 주어진 검색어와 관련된 위치 정보(`LocationInfo`)들을 반환하는 비동기 메서드
+    /// 주어진 검색어와 관련된 위치 정보(`LocationModel`)들을 반환하는 비동기 메서드
     ///
     /// - Parameter address: 검색어(주소)
-    /// - Returns: 관련 위치 정보 배열 `[LocationInfo]`
+    /// - Returns: 관련 위치 정보 배열 `[LocationModel]`
     func searchAddress(of address: String) async -> [LocationModel] {
         do {
             let placemarkList = try await geocoder.geocodeAddressString(address)
@@ -84,8 +83,8 @@ extension CoreLocationManager {
                                         locality: locality,
                                         subLocality: subLocality,
                                         areasOfInterest: areasOfInterest,
-                                        lat: coord?.latitude ?? defaultLocation.lat,
-                                        lng: coord?.longitude ?? defaultLocation.lng)
+                                        lat: coord?.latitude ?? 37.574187,
+                                        lng: coord?.longitude ?? 126.976882)
                 
                 results.append(location)
             }
@@ -93,7 +92,7 @@ extension CoreLocationManager {
             os_log(.debug, log: log, "\(results)")
             return results
         } catch {
-            os_log(.error, log: log, "\(error.localizedDescription)")
+            os_log(.error, log: log, "Geocoding error: \(error.localizedDescription)")
             return []
         }
     }
@@ -106,9 +105,9 @@ extension CoreLocationManager {
         
     }
     
-    /// 사용자 현재 위치 좌표를 위치 정보(`LocationInfo`)으로 변환(Reverse Geocoding)하는 비동기 메서드
+    /// 사용자 현재 위치 좌표를 위치 정보(`LocationModel`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
-    /// - Returns: 변환된 위치 정보 `LocationInfo`
+    /// - Returns: 변환된 위치 정보 `LocationModel`
     func convertCurrCoordToAddress() async -> LocationModel? {
         do {
             let currCoord = CLLocation(latitude: currLocation.lat, longitude: currLocation.lng)
@@ -127,7 +126,7 @@ extension CoreLocationManager {
                                    lng: coord?.longitude ?? currLocation.lng)
             os_log(.debug, log: log, "\(administrativeArea), \(locality), \(subLocality)")
         } catch {
-            os_log(.error, log: log, "\(error.localizedDescription)")
+            os_log(.error, log: log, "Reverse Geocoding error: \(error.localizedDescription)")
         }
         return currLocation
     }
@@ -186,6 +185,6 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-        os_log(.error, log: log, "\(error.localizedDescription)")
+        os_log(.error, log: log, "CLLocationManager: \(error.localizedDescription)")
     }
 }

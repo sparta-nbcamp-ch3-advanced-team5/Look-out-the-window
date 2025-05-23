@@ -68,7 +68,7 @@ private extension RegionListViewController {
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
         
-        searchController.searchBar.placeholder = "도시 또는 공항 검색"
+        searchController.searchBar.placeholder = "도시 또는 주소 검색"
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.obscuresBackgroundDuringPresentation = true
     }

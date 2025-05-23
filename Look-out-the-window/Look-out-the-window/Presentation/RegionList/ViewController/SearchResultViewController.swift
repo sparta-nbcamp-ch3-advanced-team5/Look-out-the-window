@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import MapKit
+import OSLog
 
 import RxCocoa
 import RxRelay
@@ -17,6 +17,8 @@ import SnapKit
 final class SearchResultViewController: UIViewController {
     
     // MARK: - Properties
+    
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     private let viewModel = SearchResultViewModel()
     private let disposeBag = DisposeBag()
@@ -68,26 +70,37 @@ private extension SearchResultViewController {
             .debounce(.milliseconds(300), scheduler: MainScheduler.asyncInstance)
             .distinctUntilChanged()
             .subscribe(with: self) { owner, text in
-                owner.viewModel.action.onNext(.searchText(text: text))
+                owner.viewModel.action.onNext(.searchLocation(text: text))
             }.disposed(by: disposeBag)
         
+        searchResultView.getTableView.rx.itemSelected
+            .bind(with: self) { owner, indexPath in
+                if let cell = owner.searchResultView.getTableView.cellForRow(at: indexPath) as? SearchResultCell {
+                    owner.viewModel.action.onNext(.localSearch(location: cell.getLocationLabel.text ?? ""))
+                }
+            }.disposed(by: disposeBag)
+
         
         // ViewModel ➡️ ViewController
         viewModel.state.searchResults.asDriver(onErrorJustReturn: [])
             .drive(searchResultView.getTableView.rx.items(cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
-                cell.configure(address: result.title)
+                if result.subtitle.isEmpty {
+                    cell.configure(location: "\(result.title)")
+                } else {
+                    cell.configure(location: "\(result.title) \(result.subtitle)")
+                }
+            }.disposed(by: disposeBag)
+        
+        viewModel.state.localSearchResult.asDriver(onErrorJustReturn: LocationModel())
+            .drive(with: self) { owner, location in
+                // TODO: - Register 화면 present
+                dump(location)
             }.disposed(by: disposeBag)
         
         
         // View ➡️ ViewController
         searchResultView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
-        
-        searchResultView.getTableView.rx.itemSelected
-            .bind(with: self) { owner, indexPath in
-                print(indexPath)
-//                owner.searchResults.value[indexPath.row]
-            }.disposed(by: disposeBag)
     }
 }
 
