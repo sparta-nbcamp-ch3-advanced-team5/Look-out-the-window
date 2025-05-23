@@ -47,15 +47,17 @@ final class CoreDataManager {
         weather.windSpeed = current.windSpeed
         weather.windDeg = current.windDeg
         weather.rive = current.rive
-        weather.currentMomentValue = String(current.currentMomentValue) // String으로 변환
+        weather.currentMomentValue = current.currentMomentValue
         weather.timestamp = Date()
 
+
+        //모델에 속성명 맞게 수정
         // 시간별 날씨 저장 (HourlyWeatherEntity)
         current.hourlyModel.forEach { hour in
             let hourly = HourlyWeatherEntity(context: context)
-            hourly.time = hourly.time
-            hourly.temperature = hourly.temperature
-            hourly.skyInfo = hourly.skyInfo
+            hourly.time = hour.hour
+            hourly.temperature = hour.temperature
+            hourly.skyInfo = hour.weatherInfo
             hourly.weather = weather
             weather.addToHourly(hourly)
         }
@@ -63,10 +65,10 @@ final class CoreDataManager {
         // 일별 날씨 저장 (DailyWeatherEntity)
         current.dailyModel.forEach { day in
             let daily = DailyWeatherEntity(context: context)
-            daily.date = daily.date
-            daily.minTemp = daily.minTemp
-            daily.maxTemp = daily.maxTemp
-            daily.skyInfo = daily.skyInfo
+            daily.day = day.day
+            daily.minTemp = day.low
+            daily.maxTemp = day.high
+            daily.skyInfo = day.weatherInfo
             daily.weather = weather
             weather.addToDaily(daily)
         }
