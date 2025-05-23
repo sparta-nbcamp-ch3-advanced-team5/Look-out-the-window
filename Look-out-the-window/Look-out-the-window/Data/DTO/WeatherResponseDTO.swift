@@ -178,6 +178,8 @@ extension WeatherResponseDTO {
             address: nil,
             currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,
             currentMomentValue: toMomentValue(),
+            sunriseTime: self.currentWeather.sunriseTime + self.timeZoneOffset - 32400,
+            sunsetTime: self.currentWeather.sunsetTime + self.timeZoneOffset - 32400,
             temperature: String(Int(self.currentWeather.temperature)),
             maxTemp: String(Int(self.dailyWeathers[0].temperature.maxTemperature)),
             minTemp: String(Int(self.dailyWeathers[0].temperature.minTemperature)),

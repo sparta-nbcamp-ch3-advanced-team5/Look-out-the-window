@@ -16,6 +16,10 @@ struct CurrentWeather {
     let currentTime: Int
     /// 현재 순간(새벽, 아침, 낮, 오후, 밤) 기준 투명값 (0.0 ~ 0.5)
     let currentMomentValue: Double
+    /// 일출시간
+    let sunriseTime: Int
+    /// 일몰시간
+    let sunsetTime: Int
     /// 현재 기온 (예: "23°C")
     let temperature: String
     /// 최고 기온 (예: "25°C")
