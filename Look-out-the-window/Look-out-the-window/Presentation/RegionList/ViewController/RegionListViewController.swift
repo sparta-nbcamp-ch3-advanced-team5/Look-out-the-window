@@ -75,6 +75,8 @@ private extension RegionListViewController {
     func setDelegates() {
         searchController.searchBar.delegate = searchResultVC
         
+        searchResultVC.delegate = self
+        
         regionListView.getTableView.dataSource = self
     }
     
@@ -133,5 +135,13 @@ extension RegionListViewController: UITableViewDataSource {
         
         cell.configure()
         return cell
+    }
+}
+
+// MARK: - SearchResultViewControllerDelegate
+
+extension RegionListViewController: SearchResultViewControllerDelegate {
+    func cellDidTapped() {
+        searchController.searchBar.resignFirstResponder()
     }
 }
