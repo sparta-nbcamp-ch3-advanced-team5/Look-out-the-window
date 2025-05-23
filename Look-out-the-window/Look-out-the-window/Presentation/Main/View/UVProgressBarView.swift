@@ -7,12 +7,48 @@
 
 import UIKit
 import SnapKit
+import Then
+
+// Network에서 자외선지수( uvi ) 받아오고 -> 해당 자외선지수가 어느 범위인지 체크하는 조건문 -> UVProgressBar에 적용
+
+// 자외선 지수 분류
+enum UVIndexLevel: String {
+    case low = "낮음"
+    case moderate = "보통"
+    case high = "높음"
+    case veryHigh = "매우 높음"
+    case extreme = "위험"
+
+    static func level(for uvi: Int) -> UVIndexLevel {
+        switch uvi {
+        case 0...2:      return .low
+        case 3...5:      return .moderate
+        case 6...7:      return .high
+        case 8...10:     return .veryHigh
+        default:         return .extreme
+        }
+    }
+}
 
 final class UVProgressBarView: UIView {
+    
+    private let numberLabel = UILabel().then {
+        $0.text = "0 ~ 100"
+        $0.textAlignment = .center
+        $0.textColor = .white
+        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .bold)
+    }
+    private let stateLabel = UILabel().then {
+        $0.text = "낮음"
+        $0.textAlignment = .center
+        $0.textColor = .white
+        $0.font = .monospacedDigitSystemFont(ofSize: 18, weight: .semibold)
+    }
     
     private let backgroundBar = UIView()
     private let indicator = UIView()
     
+    // indicator의 leading 위치를 제어하는 Constraint 객체를 저장 - Snapkit 활용
     private var indicatorLeadingConstraint: Constraint?
     
     var progress: CGFloat = 0 {
@@ -43,7 +79,16 @@ final class UVProgressBarView: UIView {
         let clampedProgress = max(0, min(progress, 1))
         let indicatorX = clampedProgress * totalWidth - 3  // 반지름 고려해서 offset 보정
 
+        // indicator의 leading 제약조건 update -> indicatorX
         indicatorLeadingConstraint?.update(offset: indicatorX)
+    }
+    
+    func updateUI(with uvi: Int) {
+        let level = UVIndexLevel.level(for: uvi)
+        numberLabel.text = String(uvi)
+        stateLabel.text = level.rawValue
+        let maxUVI: CGFloat = 11.0
+        progress = CGFloat(min(max(Double(uvi) / 11.0, 0), 1))
     }
 }
 
@@ -80,18 +125,30 @@ private extension UVProgressBarView {
     }
     
     func viewHierarchy() {
-        addSubviews(backgroundBar, indicator)
+        addSubviews(numberLabel, stateLabel, backgroundBar, indicator)
     }
     
     func viewConstraints() {
-        backgroundBar.snp.makeConstraints{
-            $0.edges.equalToSuperview()
+        numberLabel.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(4)
+            $0.leading.equalToSuperview().offset(4)
+        }
+        
+        stateLabel.snp.makeConstraints {
+            $0.top.equalTo(numberLabel.snp.bottom).offset(4)
+            $0.left.equalToSuperview().offset(4)
+        }
+        
+        backgroundBar.snp.makeConstraints {
+            $0.top.equalTo(stateLabel.snp.bottom).offset(10)
+            $0.directionalHorizontalEdges.equalToSuperview().inset(4)
             $0.height.equalTo(4)
         }
         
         indicator.snp.makeConstraints {
             $0.centerY.equalTo(backgroundBar)
             $0.size.equalTo(6)
+            // 저장된 leading 제약조건 적용
             self.indicatorLeadingConstraint = $0.leading.equalToSuperview().constraint
         }
     }
