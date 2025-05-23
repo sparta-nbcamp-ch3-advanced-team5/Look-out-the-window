@@ -51,3 +51,16 @@ struct CurrentWeather {
     /// 일별 날씨 정보 배열
     let dailyModel: [DailyModel]
 }
+
+struct DailyModel {
+    let date: String
+    let minTemp: String
+    let maxTemp: String
+    let skyInfo: String
+}
+
+struct HourlyModel {
+    let time: String
+    let temp: String
+    let skyInfo: String
+}
