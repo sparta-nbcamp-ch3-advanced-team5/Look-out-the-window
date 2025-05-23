@@ -50,7 +50,7 @@ final class DetailCell: UICollectionViewCell {
         uvProgressBar?.removeFromSuperview()
         uvProgressBar = nil
         
-        if model.title == "자외선지수" {
+        if model.title == "자외선지수", let uvi = Int(model.value) {
             let progressBar = UVProgressBarView()
             containerView.addSubview(progressBar)
             self.uvProgressBar = progressBar
@@ -60,7 +60,7 @@ final class DetailCell: UICollectionViewCell {
                 $0.centerY.equalToSuperview()
                 $0.height.equalTo(6)
             }
-            progressBar.progress = uvIndexProgress(from: model.value)
+            progressBar.updateUI(with: uvi)
         }
     }
     

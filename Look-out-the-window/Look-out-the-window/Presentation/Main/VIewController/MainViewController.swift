@@ -15,6 +15,11 @@ import Then
 
 // TODO: - DetailCell Header, customView 추가
 // TODO: - SF Symbol 컬러 세팅
+
+/*
+ 데이터 종류
+ temperature: "22", maxTemp: "28", minTemp: "21", tempFeelLike: "23", skyInfo: "구름", pressure: "1006", humidity: "83", clouds: "75", uvi: "0", visibility: "10000", windSpeed: "2", windDeg: "320"
+ */
 final class MainViewController: UIViewController {
     
     private let mainView = MainView()
@@ -105,7 +110,12 @@ extension MainViewController: UICollectionViewDelegate {
                 .daily(DailyModel(day: "일", high: "16", low: "11", weatherInfo: "sun.min"))
             ]),
             MainSection(items: [
-                .detail(DetailModel(title: "자외선지수", value: "높음", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "1", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "4", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "6", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "10", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "11", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "15", weatherInfo: "sun.min")),
                 .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45", weatherInfo: "sun.min")),
                 .detail(DetailModel(title: "바람", value: "3m/s NW", weatherInfo: "sun.min")),
                 .detail(DetailModel(title: "강수량", value: "5mm", weatherInfo: "sun.min")),
