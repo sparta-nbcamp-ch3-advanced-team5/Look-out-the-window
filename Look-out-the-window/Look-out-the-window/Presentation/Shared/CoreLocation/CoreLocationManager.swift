@@ -18,6 +18,9 @@ final class CoreLocationManager: NSObject {
     
     static let shared = CoreLocationManager()
     
+    private let second = UInt64(1_000_000_000)
+    private var sleepTask: Task<Void, Error>?
+    
     /// Core Location Manager
     private let locationManager = CLLocationManager()
     /// Geocoder
@@ -31,8 +34,6 @@ final class CoreLocationManager: NSObject {
     // MARK: - Initializer
     
     private override init() {
-        locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
-        locationManager.distanceFilter = 500
         locationManager.allowsBackgroundLocationUpdates = true
         currLocation = LocationModel()
         super.init()
@@ -43,20 +44,33 @@ final class CoreLocationManager: NSObject {
 // MARK: - Location Update Methods
 
 extension CoreLocationManager {
-    /// 위치 업데이트를 시작하고, 마지막 위치에서 500m 이상 이동했을 때 위치를 업데이트하도록 변경하는 메서드
+    /// 일회성 위치 업데이트 메서드
+    func requestLocationOneTime() {
+        locationManager.requestLocation()
+    }
+    
+    /// 1분마다 위치 업데이트를 수행하는 메서드
     func startUpdatingLocationInForeground() {
         os_log(.debug, log: log, #function)
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestAlwaysAuthorization()
         
         locationManager.stopMonitoringSignificantLocationChanges()
-        locationManager.startUpdatingLocation()
+        
+        sleepTask = Task {
+            repeat {
+                do {
+                    locationManager.requestLocation()
+                    try await Task.sleep(nanoseconds: second * 60)
+                }
+            } while !Task.isCancelled
+        }
     }
     
     /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(GPS 사용 X, 대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
     func startUpdatingLocationInBackground() {
         os_log(.debug, log: log, #function)
-        locationManager.stopUpdatingLocation()
+        sleepTask?.cancel()
         locationManager.startMonitoringSignificantLocationChanges()
     }
 }
@@ -64,9 +78,9 @@ extension CoreLocationManager {
 // MARK: - Geocoding/Reverse Geocoding Methods
 
 extension CoreLocationManager {
-    /// 주어진 검색어와 관련된 위치 정보(`LocationModel`)들을 반환하는 비동기 메서드
+    /// 주어진 주소를 관련된 위치 정보(`LocationModel`)로 변환(Geocoding)하는 비동기 메서드
     ///
-    /// - Parameter address: 검색어(주소)
+    /// - Parameter address: 주소
     /// - Returns: 관련 위치 정보 배열 `[LocationModel]`
     func convertAddressToCoord(of address: String) async -> [LocationModel] {
         do {
