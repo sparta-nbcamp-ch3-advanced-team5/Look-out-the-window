@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Then
 
 /// `SunriseView`는 일출, 일몰, 현재 시간을 기반으로 태양의 위치를 시각적으로 표시하는 커스텀 뷰입니다.
 /// - 일출 전(`dawn`), 낮(`day`), 일몰 후(`night`)를 각각 다른 곡선으로 표현
@@ -38,26 +39,21 @@ final class SunriseView: UIView {
     private lazy var currentSunPoint = CGPoint(x: 0, y: self.bounds.maxY / 1.5 + 10)
     
     /// 일출 시간 라벨
-    private let sunriseLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .systemFont(ofSize: 32, weight: .regular)
-        return label
-    }()
+    private let sunriseLabel = UILabel().then {
+        $0.textColor = .white
+        $0.font = .systemFont(ofSize: 32, weight: .regular)
+    }
+    
     /// AM/PM 등 시간 마크 라벨
-    private let timeMarkLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .systemFont(ofSize: 20, weight: .regular)
-        return label
-    }()
+    private let timeMarkLabel = UILabel().then {
+        $0.textColor = .white
+        $0.font = .systemFont(ofSize: 20, weight: .regular)
+    }
     /// 일몰 시간 라벨
-    private let sunsetLabel: UILabel = {
-        let label = UILabel()
-        label.textColor = .white
-        label.font = .systemFont(ofSize: 18, weight: .regular)
-        return label
-    }()
+    private let sunsetLabel = UILabel().then {
+        $0.textColor = .white
+        $0.font = .systemFont(ofSize: 18, weight: .regular)
+    }
     /// 생성자 - 현재 시간, 일출, 일몰 시간을 받아 초기 설정을 수행합니다
     convenience init(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
         self.init(frame: .zero)
