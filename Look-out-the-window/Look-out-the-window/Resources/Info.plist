@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>When In Use Description</string>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
 	<key>API_KEY</key>
 	<string>$(API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
@@ -25,5 +21,9 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 </dict>
 </plist>
