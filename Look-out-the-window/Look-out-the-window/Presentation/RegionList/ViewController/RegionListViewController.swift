@@ -45,8 +45,7 @@ final class RegionListViewController: UIViewController {
         setupUI()
         configureTableView()
         Task {
-            await CoreLocationManager.shared.convertCurrCoordToAddress()
-            await CoreLocationManager.shared.searchAddress(of: "반송동")
+            await CoreLocationManager.shared.convertAddressToCoord(of: "반송동")
         }
     }
 }

@@ -26,7 +26,7 @@ final class CoreLocationManager: NSObject {
     private let locale = Locale(identifier: "Ko-kr")
     
     /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
-    private var currLocation: LocationModel
+    var currLocation: LocationModel
     
     // MARK: - Initializer
     
@@ -68,7 +68,7 @@ extension CoreLocationManager {
     ///
     /// - Parameter address: 검색어(주소)
     /// - Returns: 관련 위치 정보 배열 `[LocationModel]`
-    func searchAddress(of address: String) async -> [LocationModel] {
+    func convertAddressToCoord(of address: String) async -> [LocationModel] {
         do {
             let placemarkList = try await geocoder.geocodeAddressString(address)
             var results = [LocationModel]()
@@ -97,20 +97,12 @@ extension CoreLocationManager {
         }
     }
     
-    /// 주어진 주소를 좌표로 변환(Geocoding)하는 메서드
-    ///
-    ///- Parameter address: 좌표로 변환할 주소
-    ///- Returns:
-    func convertAddressToCoord(of address: String) {
-        
-    }
-    
     /// 사용자 현재 위치 좌표를 위치 정보(`LocationModel`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
     /// - Returns: 변환된 위치 정보 `LocationModel`
-    func convertCurrCoordToAddress() async -> LocationModel? {
+    func convertCoordToAddress(lat: CLLocationDegrees, lng: CLLocationDegrees) async -> LocationModel? {
         do {
-            let currCoord = CLLocation(latitude: currLocation.lat, longitude: currLocation.lng)
+            let currCoord = CLLocation(latitude: lat, longitude: lng)
             let placemarkList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
             guard let placemark = placemarkList.last,
                   let administrativeArea = placemark.administrativeArea,
@@ -118,13 +110,17 @@ extension CoreLocationManager {
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
             let areasOfInterest = placemark.areasOfInterest?.first ?? ""
             let coord = placemark.location?.coordinate
-            currLocation = LocationModel(administrativeArea: administrativeArea,
-                                   locality: locality,
-                                   subLocality: subLocality,
-                                   areasOfInterest: areasOfInterest,
-                                   lat: coord?.latitude ?? currLocation.lat,
-                                   lng: coord?.longitude ?? currLocation.lng)
-            os_log(.debug, log: log, "\(administrativeArea), \(locality), \(subLocality)")
+            
+            let location = LocationModel(administrativeArea: administrativeArea,
+                                         locality: locality,
+                                         subLocality: subLocality,
+                                         areasOfInterest: areasOfInterest,
+                                         lat: coord?.latitude ?? 37.574187,
+                                         lng: coord?.longitude ?? 126.976882)
+            
+            dump(location)
+            return location
+            
         } catch {
             os_log(.error, log: log, "Reverse Geocoding error: \(error.localizedDescription)")
         }
@@ -180,8 +176,13 @@ extension CoreLocationManager: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        os_log(.debug, log: log, "lat: \(location.coordinate.latitude), lng: \(location.coordinate.longitude)")
+        let lat = location.coordinate.latitude
+        let lng = location.coordinate.longitude
+        os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
         
+        Task {
+            await currLocation = convertCoordToAddress(lat: lat, lng: lng) ?? currLocation
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
