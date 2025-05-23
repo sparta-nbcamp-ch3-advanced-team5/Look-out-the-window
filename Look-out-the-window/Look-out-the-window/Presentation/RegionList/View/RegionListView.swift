@@ -15,7 +15,7 @@ final class RegionListView: UIView {
     
     // MARK: - UI Components
     
-    private let regionListTableView = UITableView()
+    private let regionListTableView = UITableView(frame: .zero, style: .insetGrouped)
     
     // MARK: - Getter
     
@@ -45,11 +45,10 @@ private extension RegionListView {
     }
     
     func setAppearance() {
-        self.backgroundColor = .clear
-        
         regionListTableView.backgroundColor = .clear
         regionListTableView.rowHeight = 200
         regionListTableView.separatorStyle = .none
+        regionListTableView.showsVerticalScrollIndicator = false
     }
     
     func setViewHierarchy() {
@@ -58,8 +57,7 @@ private extension RegionListView {
     
     func setConstraints() {
         regionListTableView.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview()
-            $0.leading.trailing.equalToSuperview().inset(24)
+            $0.edges.equalToSuperview()
         }
     }
 }

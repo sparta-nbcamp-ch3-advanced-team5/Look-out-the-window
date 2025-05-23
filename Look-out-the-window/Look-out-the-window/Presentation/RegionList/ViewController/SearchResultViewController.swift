@@ -71,14 +71,21 @@ private extension SearchResultViewController {
                 owner.viewModel.action.onNext(.searchText(text: text))
             }.disposed(by: disposeBag)
         
+        
         // ViewModel ➡️ ViewController
         viewModel.state.searchResults.asDriver(onErrorJustReturn: [])
             .drive(searchResultView.getTableView.rx.items(cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
                 cell.configure(address: result.title)
             }.disposed(by: disposeBag)
         
+        
+        // View ➡️ ViewController
+        searchResultView.getTableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
         searchResultView.getTableView.rx.itemSelected
             .bind(with: self) { owner, indexPath in
+                print(indexPath)
 //                owner.searchResults.value[indexPath.row]
             }.disposed(by: disposeBag)
     }
@@ -89,6 +96,18 @@ private extension SearchResultViewController {
 private extension SearchResultViewController {
     func configureTableView() {
         searchResultView.getTableView.register(SearchResultCell.self, forCellReuseIdentifier: SearchResultCell.identifier)
+    }
+}
+
+extension SearchResultViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
     }
 }
 

@@ -80,6 +80,8 @@ final class RegionCell: UITableViewCell {
         // TODO: - 임시 fileName
         self.riveViewModel = RiveViewModel(fileName: Rive.cloudy)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.riveView = riveViewModel.createRiveView()
+        
         setupUI()
     }
     
@@ -113,10 +115,11 @@ private extension RegionCell {
     func setAppearance() {
         self.selectionStyle = .none
         self.backgroundColor = .clear
+        self.riveView.preferredFramesPerSecond = 10
+        self.riveView.isUserInteractionEnabled = false
     }
     
     func setViewHierarchy() {
-        self.riveView = riveViewModel.createRiveView()
 //        self.contentView.addSubviews(currTempLabel, weatherImageView,
 //                         tempAndLocationStack, windLabel)
         

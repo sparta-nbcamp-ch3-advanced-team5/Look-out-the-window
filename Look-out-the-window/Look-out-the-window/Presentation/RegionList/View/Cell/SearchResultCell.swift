@@ -35,6 +35,7 @@ final class SearchResultCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
     // MARK: - Methods
     
     func configure(address: String) {
@@ -62,7 +63,7 @@ private extension SearchResultCell {
     
     func setConstraints() {
         addressLabel.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.leading.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
     }

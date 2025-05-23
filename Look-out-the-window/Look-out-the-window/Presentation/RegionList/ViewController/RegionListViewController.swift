@@ -76,7 +76,6 @@ private extension RegionListViewController {
     func setDelegates() {
         searchController.searchBar.delegate = searchResultVC
         
-        regionListView.getTableView.delegate = self
         regionListView.getTableView.dataSource = self
     }
     
@@ -91,6 +90,9 @@ private extension RegionListViewController {
     }
     
     func bind() {
+        regionListView.getTableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
         regionListView.getTableView.rx.itemSelected
             .bind(with: self) { owner, indexPath in
                 print(indexPath)
@@ -107,7 +109,15 @@ private extension RegionListViewController {
 }
 
 extension RegionListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
     
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
+    }
 }
 
 // MARK: - UITableViewDataSource

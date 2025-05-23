@@ -15,7 +15,7 @@ final class SearchResultView: UIView {
     
     // MARK: - UI Components
     
-    private let searchResultTableView = UITableView(frame: .zero, style: .plain)
+    private let searchResultTableView = UITableView(frame: .zero, style: .insetGrouped)
     
     // MARK: - Getter
     
@@ -45,13 +45,10 @@ private extension SearchResultView {
     }
     
     func setAppearance() {
-        self.backgroundColor = .clear
-        
         searchResultTableView.backgroundColor = .clear
         searchResultTableView.rowHeight = 50
+        searchResultTableView.separatorInset = .zero
         searchResultTableView.separatorColor = .lightGray
-        searchResultTableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        searchResultTableView.tableHeaderView = UIView()
     }
     
     func setViewHierarchy() {
