@@ -94,11 +94,11 @@ extension CoreLocationManager {
                 let coord = $0.location?.coordinate
                 
                 let location = LocationModel(administrativeArea: administrativeArea,
-                                        locality: locality,
-                                        subLocality: subLocality,
-                                        areasOfInterest: areasOfInterest,
-                                        lat: coord?.latitude ?? 37.574187,
-                                        lng: coord?.longitude ?? 126.976882)
+                                             locality: locality,
+                                             subLocality: subLocality,
+                                             areasOfInterest: areasOfInterest,
+                                             lat: coord?.latitude ?? 37.574187,
+                                             lng: coord?.longitude ?? 126.976882)
                 
                 results.append(location)
             }
@@ -146,23 +146,23 @@ extension CoreLocationManager {
 
 private extension CoreLocationManager {
     /// 디바이스 위치 서비스가 활성화 상태인지 확인
-    func checkDeviceLocationService() {
-        Task.detached { [weak self] in
-            guard let self else { return }
-            if CLLocationManager.locationServicesEnabled() {
-                os_log(.debug, log: self.log, "디바이스 위치 서비스: On")
-                
-                let status = locationManager.authorizationStatus
-                checkUserLocationServiceAuthorization(status: status)
-            } else {
-                os_log(.debug, log: self.log, "디바이스 위치 서비스: Off")
-            }
+    func checkDeviceLocationService() -> Bool {
+        if CLLocationManager.locationServicesEnabled() {
+            os_log(.debug, log: log, "디바이스 위치 서비스: On")
+            return true
+        } else {
+            os_log(.debug, log: log, "디바이스 위치 서비스: Off")
+            return false
         }
     }
-    
-    /// 앱 위치 접근 권한 확인
-    func checkUserLocationServiceAuthorization(status: CLAuthorizationStatus) {
-        let status = locationManager.authorizationStatus
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension CoreLocationManager: CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        // 앱 위치 접근 권한 확인
+        let status = manager.authorizationStatus
         switch status {
         case .authorizedAlways:
             os_log(.debug, log: log, "위치 서비스 권한: 항상 허용됨")
@@ -178,14 +178,6 @@ private extension CoreLocationManager {
         @unknown default:
             break
         }
-    }
-}
-
-// MARK: - CLLocationManagerDelegate
-
-extension CoreLocationManager: CLLocationManagerDelegate {
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        checkDeviceLocationService()
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

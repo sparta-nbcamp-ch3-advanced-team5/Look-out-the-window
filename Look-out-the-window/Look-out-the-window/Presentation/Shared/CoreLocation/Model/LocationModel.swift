@@ -23,6 +23,7 @@ struct LocationModel {
     let lat: Double
     let lng: Double
     
+    /// 매개변수 인자 미입력시 기본값(광화문 광장)으로 생성됨
     init(
         administrativeArea: String = "서울특별시",
         locality: String = "세종로",
