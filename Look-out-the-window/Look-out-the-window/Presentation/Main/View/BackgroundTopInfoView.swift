@@ -97,7 +97,7 @@ private extension BackgroundTopInfoView {
     func setViewHiearchy() {
         // riveView 생성
         self.riveView = riveViewModel.createRiveView()
-        self.riveView.preferredFramesPerSecond = 15
+        self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
         self.addSubviews(infoStackView, riveView)
         infoStackView.addArrangedSubviews(city, temperature, weather, tempStackView)
