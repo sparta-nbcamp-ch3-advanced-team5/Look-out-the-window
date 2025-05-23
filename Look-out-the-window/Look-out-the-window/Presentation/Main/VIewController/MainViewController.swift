@@ -77,6 +77,8 @@ final class MainViewController: UIViewController {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
                else { return }
         print(apiKey)
+        
+        setRxDataSource()
     }
     
     
