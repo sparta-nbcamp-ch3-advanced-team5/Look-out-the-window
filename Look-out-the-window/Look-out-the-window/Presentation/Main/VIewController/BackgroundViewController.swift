@@ -47,6 +47,8 @@ final class BackgroundViewController: UIViewController {
     
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
     
+    private lazy var notificationView = NotificationTest()
+    
     private lazy var scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
@@ -110,7 +112,7 @@ private extension BackgroundViewController {
     }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
+        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton, notificationView)
         
         scrollView.addSubview(scrollContentView)
     }
@@ -127,6 +129,13 @@ private extension BackgroundViewController {
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalTo(scrollView.snp.height)
+        }
+        
+        notificationView.snp.makeConstraints {
+            $0.centerX.equalToSuperview()
+            $0.bottom.equalTo(pageController.snp.top).offset(-10)
+            $0.horizontalEdges.equalToSuperview().inset(100)
+            $0.width.height.equalTo(100)
         }
         
         pageController.snp.makeConstraints {
