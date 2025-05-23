@@ -14,9 +14,6 @@ import Then
 final class DetailCell: UICollectionViewCell {
     static let id = "DetailCell"
     
-    var leadingConstraint: Constraint?
-    var trailingConstraint: Constraint?
-    
     let containerView = UIView()
     
     private let cellIcon = UIImageView().then {
@@ -33,10 +30,12 @@ final class DetailCell: UICollectionViewCell {
         $0.font = .systemFont(ofSize: 16)
     }
     
+    private var uvProgressBar: UVProgressBarView?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
-        containerView.backgroundColor = .blue // test
+//        containerView.backgroundColor = .blue // test
     }
 
     @available(*, unavailable)
@@ -48,6 +47,35 @@ final class DetailCell: UICollectionViewCell {
         cellIcon.image = UIImage(systemName: model.weatherInfo)
         titleLabel.text = model.title
         
+        uvProgressBar?.removeFromSuperview()
+        uvProgressBar = nil
+        
+        if model.title == "자외선지수" {
+            let progressBar = UVProgressBarView()
+            containerView.addSubview(progressBar)
+            self.uvProgressBar = progressBar
+            
+            progressBar.snp.makeConstraints {
+                $0.directionalHorizontalEdges.equalToSuperview().inset(8)
+                $0.centerY.equalToSuperview()
+                $0.height.equalTo(6)
+            }
+            progressBar.progress = uvIndexProgress(from: model.value)
+        }
+    }
+    
+    private func uvIndexProgress(from value: String) ->CGFloat {
+        let uvState: [String: CGFloat] = ["낮음" : 0.2,
+                                          "보통" : 0.5,
+                                          "높음" : 0.8,
+                                          "매우높음" : 1.0]
+        if let progress = uvState[value] {
+            return progress
+        } else if let intValue = Int(value) {
+            return min(max(CGFloat(intValue) / 11.0, 0), 1.0)
+        } else {
+            return 0.0
+        }
     }
 }
 
@@ -81,11 +109,11 @@ private extension DetailCell {
         }
         
         containerView.snp.makeConstraints{
-//            $0.top.equalTo(cellIcon.snp.bottom).offset(4)
-//            $0.directionalHorizontalEdges.equalToSuperview()
-//            $0.bottom.equalTo(safeAreaLayoutGuide).inset(10) //범위 확인용 inset 10
-            $0.size.equalTo(10)
-            $0.center.equalToSuperview()
+            $0.top.equalTo(cellIcon.snp.bottom).offset(4)
+            $0.directionalHorizontalEdges.equalToSuperview()
+            $0.bottom.equalTo(safeAreaLayoutGuide).inset(10) //범위 확인용 inset 10
+//            $0.size.equalTo(100)
+//            $0.center.equalToSuperview()
         }
     }
 }

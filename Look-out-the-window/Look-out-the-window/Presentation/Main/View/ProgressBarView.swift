@@ -7,7 +7,6 @@
 
 import UIKit
 import SnapKit
-import Then
 
 // 오늘 날씨에만 현재 온도 위치 마크해주기
 final class ProgressBarView: UIView {
@@ -35,7 +34,7 @@ final class ProgressBarView: UIView {
     
     func updateProgress() {
         layoutIfNeeded() // 레이아웃 변경사항 즉시 적용
-        let totalRange = CGFloat(totalMaxTemp - totalMinTemp) // 전제 범위
+        let totalRange = CGFloat(totalMaxTemp - totalMinTemp) // 전체 범위
         guard totalRange > 0 else { return }
         
         // 위치 비율로 환산
