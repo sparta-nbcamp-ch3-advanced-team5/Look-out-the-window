@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import OSLog
 
 import RxCocoa
 import RxSwift
@@ -16,8 +17,13 @@ final class RegionWeatherListViewController: UIViewController {
     
     // MARK: - Properties
     
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
+    
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
+    
+    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
+    private let itemSpacing: CGFloat = 30
     
     // MARK: - UI Components
     
@@ -89,35 +95,23 @@ private extension RegionWeatherListViewController {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherList
             .asDriver(onErrorJustReturn: [])
-            .drive(regionListView.getTableView.rx.items(
-                cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ _, weather, cell in
-                    cell.configure(temp: weather.temp,
-                                   maxTemp: weather.maxTemp,
-                                   minTemp: weather.minTemp,
-                                   location: weather.location,
-//                                   rive: weather.rive,
-                                   rive: Rive.partlyCloudy,
-                                   weather: weather.weather)
-            })
-            .disposed(by: disposeBag)
+            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ _, model, cell in
+                cell.configure(model: model)
+            }).disposed(by: disposeBag)
         
         // ViewController ➡️ ViewModel
-        regionListView.getTableView.rx.modelSelected(RegionWeatherCell.self)
+        regionListView.getCollectionView.rx.modelSelected(RegionWeatherModel.self)
             .bind(with: self) { owner, cell in
                 // TODO: Main 화면 present
+                os_log(.debug, log: owner.log, "Main 화면 present")
             }.disposed(by: disposeBag)
         
         viewModel.action.onNext(.viewDidLoad)
         
         
         // View ➡️ ViewController
-        regionListView.getTableView.rx.setDelegate(self)
+        regionListView.getCollectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
-        
-        regionListView.getTableView.rx.itemSelected
-            .bind(with: self) { owner, indexPath in
-                print(indexPath)
-            }.disposed(by: disposeBag)
     }
 }
 
@@ -125,19 +119,23 @@ private extension RegionWeatherListViewController {
 
 private extension RegionWeatherListViewController {
     func configureTableView() {
-        regionListView.getTableView.register(RegionWeatherCell.self, forCellReuseIdentifier: RegionWeatherCell.identifier)
+        regionListView.getCollectionView.register(RegionWeatherCell.self, forCellWithReuseIdentifier: RegionWeatherCell.identifier)
     }
 }
 
-extension RegionWeatherListViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = UIView()
-        view.backgroundColor = .clear
-        return view
+extension RegionWeatherListViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width: CGFloat = collectionView.frame.width - sectionInset.left * 2
+        let height: CGFloat = 200
+        return CGSize(width: width, height: height)
     }
     
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return .leastNonzeroMagnitude
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return sectionInset
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return itemSpacing
     }
 }
 

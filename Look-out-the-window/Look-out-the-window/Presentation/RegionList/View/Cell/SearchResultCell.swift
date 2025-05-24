@@ -45,7 +45,18 @@ final class SearchResultCell: UITableViewCell {
     // MARK: - Methods
     
     func configure(model: SearchResultModel) {
-        addressLabel.text = model.address
+        let text = model.address
+        if let titleHighlightRange = model.titleHighlightRange {
+            let attributedText = NSMutableAttributedString.makeAttributedString(
+                text: text,
+                highlightedParts: [
+                    (range: titleHighlightRange, .label, UIFont.systemFont(ofSize: 17, weight: .bold)),
+                ]
+            )
+            addressLabel.attributedText = attributedText
+        } else {
+            addressLabel.text = model.address
+        }
     }
 }
 

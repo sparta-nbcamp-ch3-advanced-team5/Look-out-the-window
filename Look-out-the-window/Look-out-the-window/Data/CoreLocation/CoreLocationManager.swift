@@ -91,16 +91,16 @@ extension CoreLocationManager {
             placemarkList.forEach {
                 guard let country = $0.country,
                       let administrativeArea = $0.administrativeArea,
-                      let locality = $0.locality else { return }
+                      let coord = $0.location?.coordinate else { return }
+                let locality = $0.locality ?? $0.subLocality ?? $0.thoroughfare ?? ""
                 let subLocality = $0.subLocality ?? $0.thoroughfare ?? ""
-                let coord = $0.location?.coordinate
                 
                 let location = LocationModel(country: country,
                                              administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             lat: coord?.latitude ?? 37.574187,
-                                             lng: coord?.longitude ?? 126.976882)
+                                             lat: coord.latitude,
+                                             lng: coord.longitude)
                 
                 results.append(location)
                 os_log(.debug, log: log, "Geocoding: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
@@ -121,12 +121,14 @@ extension CoreLocationManager {
             let currCoord = CLLocation(latitude: lat, longitude: lng)
             let placemarkList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
             guard let placemark = placemarkList.last,
+                  let country = placemark.country,
                   let administrativeArea = placemark.administrativeArea,
                   let coord = placemark.location?.coordinate else { return nil }
             let locality = placemark.locality ?? placemark.subLocality ?? placemark.thoroughfare ?? ""
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
             
-            let location = LocationModel(administrativeArea: administrativeArea,
+            let location = LocationModel(country: country,
+                                         administrativeArea: administrativeArea,
                                          locality: locality,
                                          subLocality: subLocality,
                                          lat: coord.latitude,

@@ -9,4 +9,5 @@ import Foundation
 
 struct SearchResultModel {
     let address: String
+    let titleHighlightRange: NSRange?
 }

@@ -95,15 +95,16 @@ private extension SearchResultViewModel {
                 let placemark = item.placemark
                 
                 guard let country = placemark.country,
-                      let administrativeArea = placemark.administrativeArea else { return }
+                      let administrativeArea = placemark.administrativeArea,
+                let coord = placemark.location?.coordinate else { return }
                 let locality = placemark.locality ?? ""
                 let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
-                let coord = placemark.location?.coordinate
-                let location = LocationModel(administrativeArea: administrativeArea,
+                let location = LocationModel(country: country,
+                                             administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             lat: coord?.latitude ?? 37.574187,
-                                             lng: coord?.longitude ?? 126.976882)
+                                             lat: coord.latitude,
+                                             lng: coord.longitude)
                 os_log(.debug, log: log, "MKLocalSearch: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
                 
                 state.localSearchResult.accept(location)
@@ -120,9 +121,9 @@ extension SearchResultViewModel: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         let models: [SearchResultModel] = completer.results.map {
             if $0.subtitle.isEmpty {
-                SearchResultModel(address: $0.title)
+                return SearchResultModel(address: $0.title, titleHighlightRange: $0.titleHighlightRanges.first?.rangeValue)
             } else {
-                SearchResultModel(address: "\($0.title) \($0.subtitle)")
+                return SearchResultModel(address: "\($0.title) \($0.subtitle)", titleHighlightRange: $0.titleHighlightRanges.first?.rangeValue)
             }
         }
         state.searchResults.accept(models)

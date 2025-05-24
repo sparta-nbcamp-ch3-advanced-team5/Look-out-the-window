@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 import RxRelay
 import RxSwift
@@ -14,8 +15,11 @@ import RxSwift
 final class RegionWeatherListViewModel: ViewModelProtocol {
     
     // MARK: - Properties
-    
+
+    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     let disposeBag = DisposeBag()
+    
+    private let networkManager = NetworkManager()
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -55,14 +59,48 @@ private extension RegionWeatherListViewModel {
     func getRegionWeatherList() {
         // TODO: CoreData에서 지역 데이터 가져옴
         // Mock Data
-        let regionWeatherList = regionWeatherList_Mock
-        
+        var regionWeatherList = regionWeatherList_Mock
+    
         // TODO: OpenWeather API 호출
-//        NetworkManager.fetch(<#T##self: NetworkManager##NetworkManager#>)
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
+        
+        let requests: [Single<WeatherResponseDTO>] = regionWeatherList.compactMap { model -> Single<WeatherResponseDTO>? in
+            guard let request = APIEndpoints.getURLRequest(
+                .weather,
+                parameters: WeatherParameters(
+                    lat: model.lat,
+                    lng: model.lng,
+                    appid: apiKey
+                ).makeParameterDict()
+            ) else { return nil }
+            return networkManager.fetch(urlRequest: request)
+        }
+                
+        
+        
+        Single.zip(requests)
+            .subscribe(with: self) { owner, responses in
+                var newRegionWeatherList = [RegionWeatherModel]()
+                for (index, response) in responses.enumerated() {
+                    
+                    let currentWeather = response.toCurrentWeather()
+                    newRegionWeatherList.append(RegionWeatherModel(temp: currentWeather.temperature,
+                                                                   maxTemp: currentWeather.maxTemp,
+                                                                   minTemp: currentWeather.minTemp,
+                                                                   location: regionWeatherList[index].location,
+                                                                   rive: Rive.partlyCloudy,
+                                                                   weather: currentWeather.skyInfo,
+                                                                   lat: regionWeatherList[index].lat,
+                                                                   lng: regionWeatherList[index].lng))
+                }
+                owner.state.regionWeatherList.accept(newRegionWeatherList)
+            } onFailure: { owner, error in
+                os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
+            }.disposed(by: disposeBag)
         
         // 현재 위치가 nil이 아니면 리스트에 표시
-        if let currLocation = CoreLocationManager.shared.currLocation.value {
-            
-        }
+//        if let currLocation = CoreLocationManager.shared.currLocation.value {
+//
+//        }
     }
 }
