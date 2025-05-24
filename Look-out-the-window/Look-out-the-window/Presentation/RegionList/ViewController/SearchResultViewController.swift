@@ -93,12 +93,8 @@ private extension SearchResultViewController {
         // ViewModel ➡️ ViewController
         viewModel.state.searchResults.asDriver(onErrorJustReturn: [])
             .drive(searchResultView.getTableView.rx.items(
-                cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
-                    if result.subtitle.isEmpty {
-                        cell.configure(model: SearchResultModel(address: result.title))
-                    } else {
-                        cell.configure(model: SearchResultModel(address: result.title + " " + result.subtitle))
-                    }
+                cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { _, model, cell in
+                    cell.configure(model: model)
                 }.disposed(by: disposeBag)
         
         viewModel.state.localSearchResult.asDriver(onErrorJustReturn: LocationModel())

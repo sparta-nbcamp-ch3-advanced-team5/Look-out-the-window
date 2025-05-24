@@ -39,7 +39,7 @@ final class SearchResultViewModel: NSObject, ViewModelProtocol {
     struct State {
         let actionSubject = PublishSubject<Action>()
         
-        let searchResults = BehaviorRelay<[MKLocalSearchCompletion]>(value: [])
+        let searchResults = BehaviorRelay<[SearchResultModel]>(value: [])
         let localSearchResult = PublishRelay<LocationModel>()
     }
     var state = State()
@@ -93,19 +93,18 @@ private extension SearchResultViewModel {
                 let response = try await localSearch.start()
                 guard let item = response.mapItems.first else { return }
                 let placemark = item.placemark
-                dump(placemark)
                 
-                guard let administrativeArea = placemark.administrativeArea else { return }
+                guard let country = placemark.country,
+                      let administrativeArea = placemark.administrativeArea else { return }
                 let locality = placemark.locality ?? ""
                 let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
-                let areasOfInterest = placemark.areasOfInterest?.first ?? ""
                 let coord = placemark.location?.coordinate
                 let location = LocationModel(administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             areasOfInterest: areasOfInterest,
                                              lat: coord?.latitude ?? 37.574187,
                                              lng: coord?.longitude ?? 126.976882)
+                os_log(.debug, log: log, "MKLocalSearch: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
                 
                 state.localSearchResult.accept(location)
             } catch {
@@ -119,7 +118,14 @@ private extension SearchResultViewModel {
 
 extension SearchResultViewModel: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        state.searchResults.accept(completer.results)
+        let models: [SearchResultModel] = completer.results.map {
+            if $0.subtitle.isEmpty {
+                SearchResultModel(address: $0.title)
+            } else {
+                SearchResultModel(address: "\($0.title) \($0.subtitle)")
+            }
+        }
+        state.searchResults.accept(models)
     }
     
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {
