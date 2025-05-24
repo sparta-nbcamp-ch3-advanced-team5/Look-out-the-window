@@ -11,28 +11,28 @@ import OSLog
 
 /// `CoreLocation`을 관리하는 싱글톤 매니저
 final class CoreLocationManager: NSObject {
-    
+
     // MARK: - Properties
-    
+
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
-    
+
     static let shared = CoreLocationManager()
-    
+
     private let second = UInt64(1_000_000_000)
     private var sleepTask: Task<Void, Error>?
-    
+
     /// Core Location Manager
     private let locationManager = CLLocationManager()
     /// Geocoder
     private let geocoder = CLGeocoder()
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
-    
+
     /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
     var currLocation: LocationModel
-    
+
     // MARK: - Initializer
-    
+
     private override init() {
         locationManager.allowsBackgroundLocationUpdates = true
         currLocation = LocationModel()
@@ -48,15 +48,15 @@ extension CoreLocationManager {
     func requestLocationOneTime() {
         locationManager.requestLocation()
     }
-    
+
     /// 1분마다 위치 업데이트를 수행하는 메서드
     func startUpdatingLocationInForeground() {
         os_log(.debug, log: log, #function)
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestAlwaysAuthorization()
-        
+
         locationManager.stopMonitoringSignificantLocationChanges()
-        
+
         sleepTask = Task {
             repeat {
                 do {
@@ -66,7 +66,7 @@ extension CoreLocationManager {
             } while !Task.isCancelled
         }
     }
-    
+
     /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(GPS 사용 X, 대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
     func startUpdatingLocationInBackground() {
         os_log(.debug, log: log, #function)
@@ -92,17 +92,17 @@ extension CoreLocationManager {
                 let subLocality = $0.subLocality ?? $0.thoroughfare ?? ""
                 let areasOfInterest = $0.areasOfInterest?.first ?? ""
                 let coord = $0.location?.coordinate
-                
+
                 let location = LocationModel(administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
                                              areasOfInterest: areasOfInterest,
                                              lat: coord?.latitude ?? 37.574187,
                                              lng: coord?.longitude ?? 126.976882)
-                
+
                 results.append(location)
             }
-            
+
             os_log(.debug, log: log, "\(results)")
             return results
         } catch {
@@ -110,7 +110,7 @@ extension CoreLocationManager {
             return []
         }
     }
-    
+
     /// 사용자 현재 위치 좌표를 위치 정보(`LocationModel`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
     /// - Returns: 변환된 위치 정보 `LocationModel`
@@ -124,17 +124,17 @@ extension CoreLocationManager {
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
             let areasOfInterest = placemark.areasOfInterest?.first ?? ""
             let coord = placemark.location?.coordinate
-            
+
             let location = LocationModel(administrativeArea: administrativeArea,
                                          locality: locality,
                                          subLocality: subLocality,
                                          areasOfInterest: areasOfInterest,
                                          lat: coord?.latitude ?? 37.574187,
                                          lng: coord?.longitude ?? 126.976882)
-            
+
             dump(location)
             return location
-            
+
         } catch {
             os_log(.error, log: log, "Reverse Geocoding error: \(error.localizedDescription)")
         }
@@ -179,19 +179,32 @@ extension CoreLocationManager: CLLocationManagerDelegate {
             break
         }
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         let lat = location.coordinate.latitude
         let lng = location.coordinate.longitude
         os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
-        
+
         Task {
             await currLocation = convertCoordToAddress(lat: lat, lng: lng) ?? currLocation
+            //주형: viewmodel 추가하려는데 여기서는 viewmodel.action이 안된
+            //CoreLocationManager는 ViewModel이나 ViewController를 직접 알 수 없으므로
+            //→ 디커플링을 위해 Notification 또는 Delegate 방식이 적절합니다.
+            NotificationCenter.default.post(
+                name: .didUpdateUserLocation,
+                object: nil,
+                userInfo: ["location": currLocation]
+            )
         }
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         os_log(.error, log: log, "CLLocationManager: \(error.localizedDescription)")
     }
+}
+
+// 주형: 문자열 안정성 증가
+extension Notification.Name {
+    static let didUpdateUserLocation = Notification.Name("didUpdateUserLocation")
 }

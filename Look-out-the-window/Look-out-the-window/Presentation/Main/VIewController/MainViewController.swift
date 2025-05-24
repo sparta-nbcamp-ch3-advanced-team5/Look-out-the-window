@@ -24,7 +24,8 @@ import CoreLocation
 final class MainViewController: UIViewController {
     
     private let mainView = MainView()
-    
+    private let viewmodel = MainViewModel()
+
     private let disposeBag = DisposeBag()
     
     let dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
@@ -77,10 +78,29 @@ final class MainViewController: UIViewController {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
                else { return }
         print(apiKey)
-        
+
         setRxDataSource()
+        //주형 추가
+        viewmodel.loadSavedWeatherData()
+        setupBindings()
     }
-    
+
+    //주형 트리거 추가
+    private func setupBindings() {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleLocationUpdate(_:)),
+                name: .didUpdateUserLocation,
+                object: nil
+            )
+        }
+
+        @objc private func handleLocationUpdate(_ notification: Notification) {
+            if let location = notification.userInfo?["location"] as? LocationModel {
+                viewmodel.action.onNext(.fetchWeatherIfNeeded(location))
+            }
+        }
+
     
 }
 
