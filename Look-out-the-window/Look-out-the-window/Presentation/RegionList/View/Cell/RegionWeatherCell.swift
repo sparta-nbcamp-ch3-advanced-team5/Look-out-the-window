@@ -11,15 +11,15 @@ import RiveRuntime
 import SnapKit
 import Then
 
-/// 지역 날씨 리스트 `UITableViewCell`
+/// 지역 날씨 리스트 `UICollectionViewCell`
 final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Properties
     
     static let identifier = "RegionWeatherCell"
     
-    private(set) var riveViewModel: RiveViewModel
-    
+    private var riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
+        
     // MARK: - UI Components
     
     private let currTempLabel = UILabel().then {
@@ -60,11 +60,6 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     private lazy var riveView = RiveView()
     
-//    private let weatherImageView = UIImageView().then {
-//        $0.image = UIImage(systemName: "cloud.sun.rain.fill", withConfiguration: UIImage.SymbolConfiguration.preferringMulticolor())
-//        $0.contentMode = .scaleAspectFit
-//    }
-    
     private let weatherLabel = UILabel().then {
         $0.text = "맑음"
         $0.textColor = .label
@@ -74,10 +69,7 @@ final class RegionWeatherCell: UICollectionViewCell {
     // MARK: - Initializer
     
     override init(frame: CGRect) {
-        riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
         super.init(frame: frame)
-        riveView = riveViewModel.createRiveView()
-        
         setupUI()
     }
     
@@ -96,10 +88,11 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     func configure(model: RegionWeatherModel) {
         currTempLabel.text = "\(model.temp)°"
-        highTempLabel.text = "\(model.maxTemp)°"
-        lowTempLabel.text = "\(model.minTemp)°"
+        highTempLabel.text = "H: \(model.maxTemp)°"
+        lowTempLabel.text = "L: \(model.minTemp)°"
         locationLabel.text = model.location
         riveViewModel = RiveViewModel(fileName: model.rive)
+        riveViewModel.setView(riveView)
         weatherLabel.text = model.weather
     }
 }
@@ -120,9 +113,6 @@ private extension RegionWeatherCell {
     }
     
     func setViewHierarchy() {
-//        self.contentView.addSubviews(currTempLabel, weatherImageView,
-//                         tempAndLocationStack, windLabel)
-        
         self.contentView.addSubviews(currTempLabel, riveView,
                                      tempAndLocationStack, weatherLabel)
         
@@ -137,12 +127,6 @@ private extension RegionWeatherCell {
             $0.top.equalToSuperview().inset(40)
             $0.leading.equalToSuperview().inset(20)
         }
-        
-//        weatherImageView.snp.makeConstraints {
-//            $0.top.equalToSuperview().inset(5)
-//            $0.trailing.equalToSuperview().inset(20)
-//            $0.width.height.equalTo(150)
-//        }
         
         riveView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(-85)

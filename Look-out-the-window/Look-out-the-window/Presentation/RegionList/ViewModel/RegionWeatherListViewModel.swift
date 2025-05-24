@@ -59,7 +59,7 @@ private extension RegionWeatherListViewModel {
     func getRegionWeatherList() {
         // TODO: CoreData에서 지역 데이터 가져옴
         // Mock Data
-        var regionWeatherList = regionWeatherList_Mock
+        let regionWeatherList = regionWeatherList_Mock
     
         // TODO: OpenWeather API 호출
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
@@ -75,8 +75,6 @@ private extension RegionWeatherListViewModel {
             ) else { return nil }
             return networkManager.fetch(urlRequest: request)
         }
-                
-        
         
         Single.zip(requests)
             .subscribe(with: self) { owner, responses in
@@ -88,7 +86,7 @@ private extension RegionWeatherListViewModel {
                                                                    maxTemp: currentWeather.maxTemp,
                                                                    minTemp: currentWeather.minTemp,
                                                                    location: regionWeatherList[index].location,
-                                                                   rive: Rive.partlyCloudy,
+                                                                   rive: currentWeather.rive,
                                                                    weather: currentWeather.skyInfo,
                                                                    lat: regionWeatherList[index].lat,
                                                                    lng: regionWeatherList[index].lng))
