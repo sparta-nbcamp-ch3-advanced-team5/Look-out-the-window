@@ -34,7 +34,6 @@ final class BackgroundViewModel: ViewModelProtocol {
     
     enum Action {
         case getCurrentWeather
-        case appendWeatherInfo
     }
     var action: AnyObserver<Action> {
         return state.actionSubject.asObserver()
@@ -47,8 +46,6 @@ final class BackgroundViewModel: ViewModelProtocol {
         private(set) var actionSubject = PublishSubject<Action>()
         /// 현재 날씨
         private(set) var currentWeather = PublishSubject<WeatherInfo>()
-        /// 날씨 리스트
-        private(set) var weatherInfoList = BehaviorRelay<[WeatherInfo]>(value: [])
     }
     var state = State()
     
@@ -61,8 +58,6 @@ final class BackgroundViewModel: ViewModelProtocol {
                 switch action {
                 case .getCurrentWeather:
                     owner.getCurrentWeatherData()
-                case .appendWeatherInfo:
-                    owner.appendToWeatherInfoList()
                 }
             }.disposed(by: disposeBag)
     }
@@ -100,9 +95,5 @@ private extension BackgroundViewModel {
                 print("에러 발생: \(error)")
             })
             .disposed(by: disposeBag)
-    }
-    
-    func appendToWeatherInfoList() {
-        
     }
 }

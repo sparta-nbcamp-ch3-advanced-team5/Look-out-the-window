@@ -28,7 +28,7 @@ final class BackgroundViewController: UIViewController {
     private let gradientLayer = CAGradientLayer()
     
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
-        
+    
     private lazy var scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
@@ -79,7 +79,7 @@ final class BackgroundViewController: UIViewController {
         loadingIndicatorView.startAnimating()
         bindViewModel()
         setupUI()
-        setupPagination()
+        bindUIEvents()
     }
 }
 
@@ -88,15 +88,15 @@ private extension BackgroundViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        setInitalBackgrounds()
+        //        setInitalBackgroundViews()
     }
     
-//    func setAppearance() {
-//        // 리스트의 초기값으로 첫 화면 설정
-//        if !weatherInfoList.isEmpty {
-//            applyGradientBackground(time: Double(weatherInfoList[0].currentTime))
-//        }
-//    }
+    //    func setAppearance() {
+    //        // 리스트의 초기값으로 첫 화면 설정
+    //        if !weatherInfoList.isEmpty {
+    //            applyGradientBackground(time: Double(weatherInfoList[0].currentTime))
+    //        }
+    //    }
     
     func setViewHiearchy() {
         view.addSubviews(dimView, scrollView, pageController, locationButton, listButton, loadingIndicatorView)
@@ -140,7 +140,7 @@ private extension BackgroundViewController {
         }
     }
     
-    func setupPagination() {
+    func bindUIEvents() {
         
         // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
@@ -185,9 +185,45 @@ private extension BackgroundViewController {
                 self.previousPage = currentPage
             })
             .disposed(by: disposeBag)
+        
+        // MARK: - Test
+        // 테스트로 왼쪽 하단 위치 버튼 클릭 시 날씨 추가
+        locationButton.rx.tap
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                let mockWeather = WeatherInfo(address: "지역1", temperature: "15", skyInfo: "비", maxTemp: "16", minTemp: "14", rive: "Rainy", currentTime: 0.3)
+                self.weatherInfoList.append(mockWeather)
+                self.reloadUI(with: mockWeather)
+            })
+            .disposed(by: disposeBag)
+        
+        listButton.rx.tap
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                let mockWeather = WeatherInfo(address: "지역2", temperature: "20", skyInfo: "천둥", maxTemp: "18", minTemp: "14", rive: "Thunderbolt", currentTime: 0.5)
+                self.weatherInfoList.append(mockWeather)
+                self.reloadUI(with: mockWeather)
+            })
+            .disposed(by: disposeBag)
     }
     
-    /// 초기 내장된 backgroundViews 생성
+    func bindViewModel() {
+        viewModel.action.onNext(.getCurrentWeather)
+        
+        viewModel.state.currentWeather
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (weather) in
+                guard let self else { return }
+                self.weatherInfoList.append(weather)
+                self.reloadUI(with: weather)
+                // 로딩 인디케이터 정지
+                self.loadingIndicatorView.stopAnimating()
+            }).disposed(by: disposeBag)
+    }
+    
+    /// 초기 내장된 backgroundViews 생성 (향후 CoreData 로드 시 사용, 현재 비활성화)
     func setInitalBackgroundViews() {
         
         if !backgroundViewList.isEmpty {
@@ -214,7 +250,7 @@ private extension BackgroundViewController {
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
         //        gradientLayer.locations = [0.4, 0.6]
         gradientLayer.frame = view.bounds
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.5))
         // 배경이니 제일 하단에 위치하도록
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
@@ -238,33 +274,29 @@ private extension BackgroundViewController {
         return clampedValue
     }
     
-    func bindViewModel() {
-        viewModel.action.onNext(.getCurrentWeather)
-        
-        viewModel.state.currentWeather
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (weather) in
-                guard let self else { return }
-                self.weatherInfoList.append(weather)
-                self.reloadUI(with: weather)
-                self.loadingIndicatorView.stopAnimating()
-            }).disposed(by: disposeBag)
-    }
-    
     func reloadUI(with weather: WeatherInfo) {
         let index = weatherInfoList.count - 1
+        
+        pageController.isHidden = weatherInfoList.count <= 1
+        
+        // pageController 업데이트
+        pageController.numberOfPages = weatherInfoList.count
         
         // Background View 추가
         let backgroundView = setBackgroundView(index: index, weather: weather)
         
-        if let last = backgroundViewList.last {
-            last.snp.makeConstraints {
+        if let lastBackgroundView = backgroundViewList.last {
+            lastBackgroundView.snp.makeConstraints {
                 $0.trailing.equalToSuperview()
             }
         }
         
-        // pageController 업데이트
-        pageController.numberOfPages = weatherInfoList.count
+        // scrollContentView 제약 재설정
+        scrollContentView.snp.remakeConstraints {
+            $0.edges.equalToSuperview()
+            $0.height.equalTo(scrollView.snp.height)
+            $0.width.equalTo(view.snp.width).multipliedBy(CGFloat(weatherInfoList.count))
+        }
         
         // 첫 번째 뷰일 경우 재생 및 배경 적용
         if index == 0 {
@@ -288,4 +320,3 @@ private extension BackgroundViewController {
         return backgroundView
     }
 }
- 
