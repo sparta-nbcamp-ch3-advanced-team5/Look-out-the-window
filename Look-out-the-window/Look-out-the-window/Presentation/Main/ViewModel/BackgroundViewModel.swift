@@ -17,7 +17,7 @@ struct WeatherInfo {
     let maxTemp: String
     let minTemp: String
     let rive: String
-    let currentTime: Int
+    let currentTime: Double
 }
 
 
@@ -26,8 +26,9 @@ final class BackgroundViewModel: ViewModelProtocol {
     // MARK: - Properties
     let disposeBag = DisposeBag()
     
-    private let urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(lat: 35.137752, lng: 129.10258, appid: Bundle.main.infoDictionary?["API_KEY"] as? String ?? "").makeParameterDict())
+    private let urlRequest: URLRequest?
     private let networkManager = NetworkManager()
+    private let currentLocation = CoreLocationManager.shared.currLocation
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -54,6 +55,7 @@ final class BackgroundViewModel: ViewModelProtocol {
     // MARK: - Initializer
     
     init() {
+        self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(lat: currentLocation.lat, lng: currentLocation.lng, appid: Bundle.main.infoDictionary?["API_KEY"] as? String ?? "").makeParameterDict())
         state.actionSubject
             .subscribe(with: self) { owner, action in
                 switch action {
@@ -75,13 +77,13 @@ private extension BackgroundViewModel {
                 
                 let currentWeather = response.toCurrentWeather()
                 let weatherInfo = WeatherInfo(
-                    address: currentWeather.address ?? "지역",
+                    address: self.currentLocation.administrativeArea,
                     temperature: currentWeather.temperature,
                     skyInfo: currentWeather.skyInfo,
                     maxTemp: currentWeather.maxTemp,
                     minTemp: currentWeather.minTemp,
                     rive: currentWeather.rive,
-                    currentTime: currentWeather.currentTime
+                    currentTime: currentWeather.currentMomentValue
                 )
                 print("지역: \(weatherInfo.address)")
                 print("현재 온도: \(weatherInfo.temperature)")
