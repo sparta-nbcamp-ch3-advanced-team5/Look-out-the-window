@@ -12,32 +12,14 @@ import SnapKit
 import Then
 import RiveRuntime
 
-struct WeatherInfo {
-    let city: String
-    let temperature: Int
-    let weather: String
-    let highestTemp: Int
-    let lowestTemp: Int
-    let rive: String
-    let time: Double
-}
 
 final class BackgroundViewController: UIViewController {
     
     // Mock Model
-    private let weatherInfoList: [WeatherInfo] = [
-        WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, time: 0.0),
-        WeatherInfo(city: "서울", temperature: 18, weather: "맑음", highestTemp: 21, lowestTemp: 16, rive: Rive.sunny, time: 3.0),
-        WeatherInfo(city: "제주", temperature: 21, weather: "눈", highestTemp: 24, lowestTemp: 19, rive: Rive.snow, time: 5.0),
-        WeatherInfo(city: "인천", temperature: 19, weather: "비", highestTemp: 20, lowestTemp: 17, rive: Rive.rainy, time: 7.0),
-        WeatherInfo(city: "강원", temperature: 19, weather: "천둥", highestTemp: 21, lowestTemp: 18, rive: Rive.thunder, time: 9.0),
-        WeatherInfo(city: "광주", temperature: 19, weather: "흐림", highestTemp: 22, lowestTemp: 19, rive: Rive.cloudy, time: 9.5),
-        WeatherInfo(city: "뉴욕", temperature: 17, weather: "안개", highestTemp: 19, lowestTemp: 15, rive: Rive.fog, time: 10.0)
-    ]
-    
     private let viewModel: BackgroundViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
+    private var weatherInfoList = [WeatherInfo]()
     
     // MARK: - UI Components
     /// 밝기관련 뷰 시간에 따라 어두워짐.
@@ -89,8 +71,9 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        bindViewModel()
         setupUI()
-        bind()
+        setupPagination()
     }
 }
 
@@ -100,14 +83,15 @@ private extension BackgroundViewController {
         setAppearance()
         setViewHiearchy()
         setConstraints()
-        
         setBackgroundViews()
     }
     
-    func setAppearance() {
-        // 리스트의 초기값으로 첫 화면 설정
-        applyGradientBackground(time: weatherInfoList[0].time)
-    }
+//    func setAppearance() {
+//        // 리스트의 초기값으로 첫 화면 설정
+//        if !weatherInfoList.isEmpty {
+//            applyGradientBackground(time: Double(weatherInfoList[0].currentTime))
+//        }
+//    }
     
     func setViewHiearchy() {
         view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
@@ -147,7 +131,7 @@ private extension BackgroundViewController {
         }
     }
     
-    func bind() {
+    func setupPagination() {
         
         // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
@@ -162,7 +146,7 @@ private extension BackgroundViewController {
             }
             .do(onNext: { [weak self] page in
                 guard let self else { return }
-                self.applyGradientBackground(time: self.weatherInfoList[page].time)
+                self.applyGradientBackground(time: Double(self.weatherInfoList[page].currentTime))
                 // 페이징 후 페이지 rive 재생
                 backgroundViewList[page].riveViewModel.play()
             })
@@ -186,7 +170,7 @@ private extension BackgroundViewController {
                 
                 let offsetX = Int(self.scrollView.frame.width) * currentPage
                 self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: self.weatherInfoList[currentPage].time)
+                self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
                 
                 // 이전 페이지 업데이트
                 self.previousPage = currentPage
@@ -196,26 +180,29 @@ private extension BackgroundViewController {
     
     /// backgroundView 레이아웃 설정
     func setBackgroundViews() {
-        for (index, weatherInfo) in weatherInfoList.enumerated() {
-            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
-            scrollContentView.addSubview(backgroundView)
-            backgroundViewList.append(backgroundView)
+        
+        if !backgroundViewList.isEmpty {
+            for (index, weatherInfo) in weatherInfoList.enumerated() {
+                let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
+                scrollContentView.addSubview(backgroundView)
+                backgroundViewList.append(backgroundView)
+                
+                backgroundView.snp.makeConstraints {
+                    $0.verticalEdges.equalToSuperview()
+                    $0.width.equalTo(view.snp.width)
+                    $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+                }
+            }
             
-            backgroundView.snp.makeConstraints {
-                $0.verticalEdges.equalToSuperview()
-                $0.width.equalTo(view.snp.width)
-                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+            if let lastBackgroundView = backgroundViewList.last {
+                lastBackgroundView.snp.makeConstraints {
+                    $0.trailing.equalToSuperview()
+                }
             }
+            
+            // 첫번째 뷰 rive play
+            backgroundViewList[0].riveViewModel.play()
         }
-        
-        if let lastBackgroundView = backgroundViewList.last {
-            lastBackgroundView.snp.makeConstraints {
-                $0.trailing.equalToSuperview()
-            }
-        }
-        
-        // 첫번째 뷰 rive play
-        backgroundViewList[0].riveViewModel.play()
     }
     
     /// Gradient, 밝기 설정
@@ -250,6 +237,45 @@ private extension BackgroundViewController {
     }
     
     func bindViewModel() {
-//        viewModel.state.actionSubject
+        viewModel.action.onNext(.getCurrentWeather)
+        
+        viewModel.state.currentWeather
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (weather) in
+                guard let self else { return }
+                self.weatherInfoList.append(weather)
+                self.reloadUI(with: weather)
+            }).disposed(by: disposeBag)
+    }
+    
+    func reloadUI(with weather: WeatherInfo) {
+        let index = weatherInfoList.count - 1
+        
+        // Background View 추가
+        let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
+        scrollContentView.addSubview(backgroundView)
+        backgroundViewList.append(backgroundView)
+        
+        backgroundView.snp.makeConstraints {
+            $0.verticalEdges.equalToSuperview()
+            $0.width.equalTo(view.snp.width)
+            $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+        }
+        
+        if let last = backgroundViewList.last {
+            last.snp.makeConstraints {
+                $0.trailing.equalToSuperview()
+            }
+        }
+        
+        // pageController 업데이트
+        pageController.numberOfPages = weatherInfoList.count
+        
+        // 첫 번째 뷰일 경우 재생 및 배경 적용
+        if index == 0 {
+            backgroundView.riveViewModel.play()
+            applyGradientBackground(time: Double(weather.currentTime))
+        }
     }
 }
+ 

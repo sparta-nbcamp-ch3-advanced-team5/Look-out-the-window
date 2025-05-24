@@ -87,11 +87,11 @@ private extension BackgroundTopInfoView {
     }
     
     func setAppearance() {
-        city.text = weatherInfo.city
+        city.text = weatherInfo.address
         temperature.text = "\(weatherInfo.temperature)°"
-        weather.text = weatherInfo.weather
-        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
-        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
+        weather.text = weatherInfo.skyInfo
+        highestTemp.text = "H:\(weatherInfo.maxTemp)°"
+        lowestTemp.text = "L:\(weatherInfo.minTemp)°"
     }
     
     func setViewHiearchy() {
