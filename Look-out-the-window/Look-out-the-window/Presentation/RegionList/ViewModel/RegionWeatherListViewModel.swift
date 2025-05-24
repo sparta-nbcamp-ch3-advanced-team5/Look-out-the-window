@@ -88,6 +88,7 @@ private extension RegionWeatherListViewModel {
                                                                    location: regionWeatherList[index].location,
                                                                    rive: currentWeather.rive,
                                                                    weather: currentWeather.skyInfo,
+                                                                   updateTime: currentWeather.currentTime.convertUnixToHourMinuteAndMark(),
                                                                    lat: regionWeatherList[index].lat,
                                                                    lng: regionWeatherList[index].lng))
                 }

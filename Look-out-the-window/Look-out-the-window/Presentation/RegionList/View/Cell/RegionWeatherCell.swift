@@ -52,18 +52,30 @@ final class RegionWeatherCell: UICollectionViewCell {
         $0.font = .systemFont(ofSize: 17)
     }
     
-    private let tempAndLocationStack = UIStackView().then {
+    private let tempAndLocationStackView = UIStackView().then {
         $0.axis = .vertical
         $0.alignment = .leading
         $0.spacing = 2
     }
     
-    private lazy var riveView = RiveView()
+    private let riveView = RiveView()
     
     private let weatherLabel = UILabel().then {
         $0.text = "맑음"
         $0.textColor = .label
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
+    }
+    
+    private let lastUpdateLabel = UILabel().then {
+        $0.text = "업데이트: 5/25 오전 0:00"
+        $0.textColor = .secondaryLabel
+        $0.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+    }
+    
+    private let weatherAndUpdateStackView = UIStackView().then {
+        $0.axis = .vertical
+        $0.alignment = .trailing
+        $0.spacing = 2
     }
     
     // MARK: - Initializer
@@ -94,6 +106,7 @@ final class RegionWeatherCell: UICollectionViewCell {
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
         weatherLabel.text = model.weather
+        lastUpdateLabel.text = "업데이트 \(model.updateTime)"
     }
 }
 
@@ -114,12 +127,15 @@ private extension RegionWeatherCell {
     
     func setViewHierarchy() {
         self.contentView.addSubviews(currTempLabel, riveView,
-                                     tempAndLocationStack, weatherLabel)
+                                     tempAndLocationStackView, weatherAndUpdateStackView)
         
-        tempAndLocationStack.addArrangedSubviews(highLowTempStackView,
-                                                 locationLabel)
+        tempAndLocationStackView.addArrangedSubviews(highLowTempStackView,
+                                                     locationLabel)
         
         highLowTempStackView.addArrangedSubviews(highTempLabel, lowTempLabel)
+        
+        weatherAndUpdateStackView.addArrangedSubviews(weatherLabel,
+                                                      lastUpdateLabel)
     }
     
     func setConstraints() {
@@ -134,7 +150,7 @@ private extension RegionWeatherCell {
             $0.width.height.equalTo(350)
         }
         
-        tempAndLocationStack.snp.makeConstraints {
+        tempAndLocationStackView.snp.makeConstraints {
             $0.leading.equalTo(currTempLabel)
             $0.bottom.equalToSuperview().inset(20)
             $0.width.greaterThanOrEqualTo(180)
@@ -144,9 +160,9 @@ private extension RegionWeatherCell {
             $0.width.equalTo(100)
         }
         
-        weatherLabel.snp.makeConstraints {
+        weatherAndUpdateStackView.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(tempAndLocationStack)
+            $0.bottom.equalTo(tempAndLocationStackView)
         }
     }
     
