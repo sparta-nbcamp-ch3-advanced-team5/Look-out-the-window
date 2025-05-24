@@ -88,7 +88,7 @@ private extension BackgroundViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        setBackgroundViews()
+        setInitalBackgrounds()
     }
     
 //    func setAppearance() {
@@ -187,20 +187,13 @@ private extension BackgroundViewController {
             .disposed(by: disposeBag)
     }
     
-    /// backgroundView 레이아웃 설정
-    func setBackgroundViews() {
+    /// 초기 내장된 backgroundViews 생성
+    func setInitalBackgroundViews() {
         
         if !backgroundViewList.isEmpty {
-            for (index, weatherInfo) in weatherInfoList.enumerated() {
-                let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
-                scrollContentView.addSubview(backgroundView)
-                backgroundViewList.append(backgroundView)
-                
-                backgroundView.snp.makeConstraints {
-                    $0.verticalEdges.equalToSuperview()
-                    $0.width.equalTo(view.snp.width)
-                    $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-                }
+            for (index, weather) in weatherInfoList.enumerated() {
+                // Background View 추가
+                _ = setBackgroundView(index: index, weather: weather)
             }
             
             if let lastBackgroundView = backgroundViewList.last {
@@ -262,15 +255,7 @@ private extension BackgroundViewController {
         let index = weatherInfoList.count - 1
         
         // Background View 추가
-        let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
-        scrollContentView.addSubview(backgroundView)
-        backgroundViewList.append(backgroundView)
-        
-        backgroundView.snp.makeConstraints {
-            $0.verticalEdges.equalToSuperview()
-            $0.width.equalTo(view.snp.width)
-            $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-        }
+        let backgroundView = setBackgroundView(index: index, weather: weather)
         
         if let last = backgroundViewList.last {
             last.snp.makeConstraints {
@@ -286,6 +271,21 @@ private extension BackgroundViewController {
             backgroundView.riveViewModel.play()
             applyGradientBackground(time: Double(weather.currentTime))
         }
+    }
+    
+    // BackgroundView 추가
+    private func setBackgroundView(index: Int, weather: WeatherInfo) -> BackgroundTopInfoView {
+        let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
+        scrollContentView.addSubview(backgroundView)
+        backgroundViewList.append(backgroundView)
+        
+        backgroundView.snp.makeConstraints {
+            $0.verticalEdges.equalToSuperview()
+            $0.width.equalTo(view.snp.width)
+            $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+        }
+        
+        return backgroundView
     }
 }
  
