@@ -54,6 +54,11 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
 private extension RegionWeatherListViewModel {
     func getRegionWeatherList() {
         // TODO: CoreData에서 지역 데이터 가져옴
+        // Mock Data
+        let regionWeatherList = regionWeatherList_Mock
+        
+        // TODO: OpenWeather API 호출
+//        NetworkManager.fetch(<#T##self: NetworkManager##NetworkManager#>)
         
         // 현재 위치가 nil이 아니면 리스트에 표시
         if let currLocation = CoreLocationManager.shared.currLocation.value {

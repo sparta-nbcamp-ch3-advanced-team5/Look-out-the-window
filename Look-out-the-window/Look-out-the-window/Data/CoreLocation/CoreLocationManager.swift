@@ -30,7 +30,7 @@ final class CoreLocationManager: NSObject {
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
     
-    /// 사용자 현재 위치 정보
+    /// 사용자 현재 위치 정보 `BehaviorRelay`
     let currLocation = BehaviorRelay<LocationModel?>(value: nil)
     
     // MARK: - Initializer
@@ -89,23 +89,23 @@ extension CoreLocationManager {
             let placemarkList = try await geocoder.geocodeAddressString(address)
             var results = [LocationModel]()
             placemarkList.forEach {
-                guard let administrativeArea = $0.administrativeArea,
+                guard let country = $0.country,
+                      let administrativeArea = $0.administrativeArea,
                       let locality = $0.locality else { return }
                 let subLocality = $0.subLocality ?? $0.thoroughfare ?? ""
-                let areasOfInterest = $0.areasOfInterest?.first ?? ""
                 let coord = $0.location?.coordinate
                 
-                let location = LocationModel(administrativeArea: administrativeArea,
+                let location = LocationModel(country: country,
+                                             administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             areasOfInterest: areasOfInterest,
                                              lat: coord?.latitude ?? 37.574187,
                                              lng: coord?.longitude ?? 126.976882)
                 
                 results.append(location)
+                os_log(.debug, log: log, "Geocoding: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
             }
             
-            os_log(.debug, log: log, "\(results)")
             return results
         } catch {
             os_log(.error, log: log, "Geocoding error: \(error.localizedDescription)")
@@ -125,16 +125,14 @@ extension CoreLocationManager {
                   let coord = placemark.location?.coordinate else { return nil }
             let locality = placemark.locality ?? placemark.subLocality ?? placemark.thoroughfare ?? ""
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
-            let areasOfInterest = placemark.areasOfInterest?.first ?? ""
             
             let location = LocationModel(administrativeArea: administrativeArea,
                                          locality: locality,
                                          subLocality: subLocality,
-                                         areasOfInterest: areasOfInterest,
                                          lat: coord.latitude,
                                          lng: coord.longitude)
             
-            dump(location)
+            os_log(.debug, log: log, "Reverse Geocoding: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
             return location
             
         } catch {

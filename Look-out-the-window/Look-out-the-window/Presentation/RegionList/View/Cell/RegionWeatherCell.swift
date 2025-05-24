@@ -117,7 +117,6 @@ private extension RegionWeatherCell {
     func setAppearance() {
         self.selectionStyle = .none
         self.backgroundColor = .clear
-        self.layer.masksToBounds = true
         self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
     }
