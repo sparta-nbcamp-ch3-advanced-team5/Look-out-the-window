@@ -1,5 +1,5 @@
 //
-//  RegionListView.swift
+//  RegionWeatherListView.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/21/25.
@@ -11,7 +11,7 @@ import SnapKit
 import Then
 
 /// 지역 리스트 View
-final class RegionListView: UIView {
+final class RegionWeatherListView: UIView {
     
     // MARK: - UI Components
     
@@ -37,7 +37,7 @@ final class RegionListView: UIView {
 
 // MARK: - UI Methods
 
-private extension RegionListView {
+private extension RegionWeatherListView {
     func setupUI() {
         setAppearance()
         setViewHierarchy()

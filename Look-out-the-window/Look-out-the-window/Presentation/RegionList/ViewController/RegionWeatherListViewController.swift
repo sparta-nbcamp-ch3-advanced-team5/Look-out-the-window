@@ -1,5 +1,5 @@
 //
-//  RegionListViewController.swift
+//  RegionWeatherListViewController.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/21/25.
@@ -12,11 +12,11 @@ import RxSwift
 import SnapKit
 
 /// 지역 리스트 ViewController
-final class RegionListViewController: UIViewController {
+final class RegionWeatherListViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let viewModel = RegionListViewModel()
+    private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
     // MARK: - UI Components
@@ -24,7 +24,7 @@ final class RegionListViewController: UIViewController {
     private let searchController: UISearchController
     private let searchResultVC = SearchResultViewController()
     
-    private let regionListView = RegionListView()
+    private let regionListView = RegionWeatherListView()
     
     // MARK: - Initializer
     
@@ -44,15 +44,12 @@ final class RegionListViewController: UIViewController {
         
         setupUI()
         configureTableView()
-        Task {
-            await CoreLocationManager.shared.convertAddressToCoord(of: "반송동")
-        }
     }
 }
 
 // MARK: - UI Methods
 
-private extension RegionListViewController {
+private extension RegionWeatherListViewController {
     func setupUI() {
         setAppearance()
         setDelegates()
@@ -67,7 +64,7 @@ private extension RegionListViewController {
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
         
-        searchController.searchBar.placeholder = "도시 또는 주소 검색"
+        searchController.searchBar.placeholder = "도시 또는 우편번호 검색"
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.obscuresBackgroundDuringPresentation = true
     }
@@ -76,8 +73,6 @@ private extension RegionListViewController {
         searchController.searchBar.delegate = searchResultVC
         
         searchResultVC.delegate = self
-        
-        regionListView.getTableView.dataSource = self
     }
     
     func setViewHierarchy() {
@@ -91,6 +86,31 @@ private extension RegionListViewController {
     }
     
     func bind() {
+        // ViewModel ➡️ ViewController
+        viewModel.state.regionWeatherList
+            .asDriver(onErrorJustReturn: [])
+            .drive(regionListView.getTableView.rx.items(
+                cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ _, weather, cell in
+                    cell.configure(temp: weather.temp,
+                                   maxTemp: weather.maxTemp,
+                                   minTemp: weather.minTemp,
+                                   location: weather.location,
+//                                   rive: weather.rive,
+                                   rive: Rive.partlyCloudy,
+                                   weather: weather.weather)
+            })
+            .disposed(by: disposeBag)
+        
+        // ViewController ➡️ ViewModel
+        regionListView.getTableView.rx.modelSelected(RegionWeatherCell.self)
+            .bind(with: self) { owner, cell in
+                // TODO: Main 화면 present
+            }.disposed(by: disposeBag)
+        
+        viewModel.action.onNext(.viewDidLoad)
+        
+        
+        // View ➡️ ViewController
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
@@ -101,15 +121,15 @@ private extension RegionListViewController {
     }
 }
 
-// MARK: - UITableViewDelegate & Methods
+// MARK: - UITableView Methods
 
-private extension RegionListViewController {
+private extension RegionWeatherListViewController {
     func configureTableView() {
-        regionListView.getTableView.register(RegionCell.self, forCellReuseIdentifier: RegionCell.identifier)
+        regionListView.getTableView.register(RegionWeatherCell.self, forCellReuseIdentifier: RegionWeatherCell.identifier)
     }
 }
 
-extension RegionListViewController: UITableViewDelegate {
+extension RegionWeatherListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = UIView()
         view.backgroundColor = .clear
@@ -121,26 +141,9 @@ extension RegionListViewController: UITableViewDelegate {
     }
 }
 
-// MARK: - UITableViewDataSource
-
-extension RegionListViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionCell.identifier, for: indexPath) as? RegionCell else {
-            return UITableViewCell()
-        }
-        
-        cell.configure()
-        return cell
-    }
-}
-
 // MARK: - SearchResultViewControllerDelegate
 
-extension RegionListViewController: SearchResultViewControllerDelegate {
+extension RegionWeatherListViewController: SearchResultViewControllerDelegate {
     func cellDidTapped() {
         searchController.searchBar.resignFirstResponder()
     }

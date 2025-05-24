@@ -1,5 +1,5 @@
 //
-//  RegionCell.swift
+//  RegionWeatherCell.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/22/25.
@@ -7,25 +7,20 @@
 
 import UIKit
 
+import RiveRuntime
 import SnapKit
 import Then
 
-import RiveRuntime
-
-/// 지역 리스트 `UITableViewCell`
-final class RegionCell: UITableViewCell {
+/// 지역 날씨 리스트 `UITableViewCell`
+final class RegionWeatherCell: UITableViewCell {
     
     // MARK: - Properties
     
-    static let identifier = "RegionCell"
+    static let identifier = "RegionWeatherCell"
     
     private(set) var riveViewModel: RiveViewModel
     
-    
-    
     // MARK: - UI Components
-    
-    private lazy var riveView = RiveView()
     
     private let currTempLabel = UILabel().then {
         $0.text = "20°"
@@ -34,13 +29,13 @@ final class RegionCell: UITableViewCell {
     }
     
     private let highTempLabel = UILabel().then {
-        $0.text = "H: -10°"
+        $0.text = "H: --°"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
     
     private let lowTempLabel = UILabel().then {
-        $0.text = "L: -21°"
+        $0.text = "L: --°"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
@@ -63,24 +58,26 @@ final class RegionCell: UITableViewCell {
         $0.spacing = 2
     }
     
+    private lazy var riveView = RiveView()
+    
 //    private let weatherImageView = UIImageView().then {
 //        $0.image = UIImage(systemName: "cloud.sun.rain.fill", withConfiguration: UIImage.SymbolConfiguration.preferringMulticolor())
 //        $0.contentMode = .scaleAspectFit
 //    }
     
-    private let windLabel = UILabel().then {
-        $0.text = "Fast Wind"
+    private let weatherLabel = UILabel().then {
+        $0.text = "맑음"
         $0.textColor = .label
-        $0.font = .systemFont(ofSize: 13)
+        $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
     
     // MARK: - Initializer
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         // TODO: - 임시 fileName
-        self.riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
+        riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.riveView = riveViewModel.createRiveView()
+        riveView = riveViewModel.createRiveView()
         
         setupUI()
     }
@@ -98,14 +95,19 @@ final class RegionCell: UITableViewCell {
     
     // MARK: - Methods
     
-    func configure() {
-        
+    func configure(temp: String, maxTemp: String, minTemp: String, location: String, rive: String, weather: String) {
+        currTempLabel.text = "\(temp)°"
+        highTempLabel.text = "\(maxTemp)°"
+        lowTempLabel.text = "\(minTemp)°"
+        locationLabel.text = location
+        riveViewModel = RiveViewModel(fileName: rive)
+        weatherLabel.text = weather
     }
 }
 
 // MARK: - UI Methods
 
-private extension RegionCell {
+private extension RegionWeatherCell {
     func setupUI() {
         setAppearance()
         setViewHierarchy()
@@ -115,7 +117,7 @@ private extension RegionCell {
     func setAppearance() {
         self.selectionStyle = .none
         self.backgroundColor = .clear
-//        self.layer.masksToBounds = true
+        self.layer.masksToBounds = true
         self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
     }
@@ -125,7 +127,7 @@ private extension RegionCell {
 //                         tempAndLocationStack, windLabel)
         
         self.contentView.addSubviews(currTempLabel, riveView,
-                         tempAndLocationStack, windLabel)
+                         tempAndLocationStack, weatherLabel)
         
         tempAndLocationStack.addArrangedSubviews(highLowTempStackView,
                                                  locationLabel)
@@ -161,14 +163,14 @@ private extension RegionCell {
             $0.width.equalTo(100)
         }
         
-        windLabel.snp.makeConstraints {
+        weatherLabel.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
             $0.bottom.equalTo(tempAndLocationStack)
         }
     }
     
     func setGradient() {
-        self.backgroundView = RegionCellBGView(frame: self.frame)
+        self.backgroundView = RegionWeatherCellBGView(frame: self.frame)
         
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds

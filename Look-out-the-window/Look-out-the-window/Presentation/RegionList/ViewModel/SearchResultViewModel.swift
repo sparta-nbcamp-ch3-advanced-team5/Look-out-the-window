@@ -20,7 +20,7 @@ final class SearchResultViewModel: NSObject, ViewModelProtocol {
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     let disposeBag = DisposeBag()
-
+    
     private var currLocalSearch: MKLocalSearch?
     private let searchCompleter = MKLocalSearchCompleter()
     
@@ -82,7 +82,7 @@ private extension SearchResultViewModel {
         
         currLocalSearch?.cancel()
         currLocalSearch = localSearch
-
+        
         defer {
             currLocalSearch = nil
         }
