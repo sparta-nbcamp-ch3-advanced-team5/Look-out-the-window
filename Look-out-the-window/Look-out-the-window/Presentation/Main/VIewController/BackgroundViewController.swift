@@ -58,6 +58,11 @@ final class BackgroundViewController: UIViewController {
         $0.pageIndicatorTintColor = .systemGray
     }
     
+    private lazy var loadingIndicatorView = UIActivityIndicatorView(style: .large).then {
+        $0.hidesWhenStopped = true
+        $0.color = .white
+    }
+    
     // MARK: - Initializers
     init(viewModel: BackgroundViewModel) {
         self.viewModel = viewModel
@@ -71,6 +76,7 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        loadingIndicatorView.startAnimating()
         bindViewModel()
         setupUI()
         setupPagination()
@@ -80,7 +86,6 @@ final class BackgroundViewController: UIViewController {
 // MARK: - Setting Methods
 private extension BackgroundViewController {
     func setupUI() {
-        setAppearance()
         setViewHiearchy()
         setConstraints()
         setBackgroundViews()
@@ -94,7 +99,7 @@ private extension BackgroundViewController {
 //    }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
+        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton, loadingIndicatorView)
         
         scrollView.addSubview(scrollContentView)
     }
@@ -128,6 +133,10 @@ private extension BackgroundViewController {
             $0.trailing.equalToSuperview().inset(20)
             $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
             $0.width.height.equalTo(44)
+        }
+        
+        loadingIndicatorView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
     }
     
@@ -245,6 +254,7 @@ private extension BackgroundViewController {
                 guard let self else { return }
                 self.weatherInfoList.append(weather)
                 self.reloadUI(with: weather)
+                self.loadingIndicatorView.stopAnimating()
             }).disposed(by: disposeBag)
     }
     
