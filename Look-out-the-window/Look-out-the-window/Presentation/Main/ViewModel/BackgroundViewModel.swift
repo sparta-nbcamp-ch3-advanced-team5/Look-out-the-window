@@ -52,7 +52,10 @@ final class BackgroundViewModel: ViewModelProtocol {
     // MARK: - Initializer
     
     init() {
-        self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(lat: currentLocation.lat, lng: currentLocation.lng, appid: Bundle.main.infoDictionary?["API_KEY"] as? String ?? "").makeParameterDict())
+        self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(
+            lat: currentLocation.lat,
+            lng: currentLocation.lng,
+            appid: Bundle.main.infoDictionary?["API_KEY"] as? String ?? "").makeParameterDict())
         state.actionSubject
             .subscribe(with: self) { owner, action in
                 switch action {
