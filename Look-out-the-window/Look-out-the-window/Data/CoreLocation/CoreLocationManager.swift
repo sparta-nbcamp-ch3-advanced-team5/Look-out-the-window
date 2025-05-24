@@ -13,16 +13,16 @@ import RxRelay
 
 /// `CoreLocation`을 관리하는 싱글톤 매니저
 final class CoreLocationManager: NSObject {
-    
+
     // MARK: - Properties
-    
+
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
-    
+
     static let shared = CoreLocationManager()
-    
+
     private let second = UInt64(1_000_000_000)
     private var sleepTask: Task<Void, Error>?
-    
+
     /// Core Location Manager
     private let locationManager = CLLocationManager()
     /// Geocoder
@@ -34,7 +34,7 @@ final class CoreLocationManager: NSObject {
     let currLocationRelay = BehaviorRelay<LocationModel?>(value: nil)
     
     // MARK: - Initializer
-    
+
     private override init() {
         locationManager.allowsBackgroundLocationUpdates = true
         super.init()
@@ -49,15 +49,15 @@ extension CoreLocationManager {
     func requestLocationOneTime() {
         locationManager.requestLocation()
     }
-    
+
     /// 1분마다 위치 업데이트를 수행하는 메서드
     func startUpdatingLocationInForeground() {
         os_log(.debug, log: log, #function)
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestAlwaysAuthorization()
-        
+
         locationManager.stopMonitoringSignificantLocationChanges()
-        
+
         sleepTask = Task {
             repeat {
                 locationManager.requestLocation()
@@ -110,7 +110,7 @@ extension CoreLocationManager {
             return []
         }
     }
-    
+
     /// 사용자 현재 위치 좌표를 위치 정보(`LocationModel`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
     /// - Returns: 변환된 위치 정보 `LocationModel`
@@ -134,7 +134,7 @@ extension CoreLocationManager {
             
             os_log(.debug, log: log, "Reverse Geocoding: \(location.toAddress())")
             return location
-            
+
         } catch {
             os_log(.error, log: log, "Reverse Geocoding error: \(error.localizedDescription)")
             return nil
@@ -178,19 +178,24 @@ extension CoreLocationManager: CLLocationManagerDelegate {
             break
         }
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         let lat = location.coordinate.latitude
         let lng = location.coordinate.longitude
         os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
-        
+
         Task {
             await currLocationRelay.accept(convertCoordToLocation(lat: lat, lng: lng))
         }
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
         os_log(.error, log: log, "CLLocationManager: \(error.localizedDescription)")
     }
+}
+
+// 주형: 문자열 안정성 증가
+extension Notification.Name {
+    static let didUpdateUserLocation = Notification.Name("didUpdateUserLocation")
 }

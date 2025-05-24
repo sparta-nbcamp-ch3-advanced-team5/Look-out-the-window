@@ -13,11 +13,18 @@ final class CoreDataManager {
 
     private init() {}
 
+
+    //주형: 명시적 데이터 모델 로딩 방식 이유: model 엔티티가 중복되는 오류가 발생했었음
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "CoreDataStorage")
+        guard let modelURL = Bundle.main.url(forResource: "CoreDataStorage", withExtension: "momd"),
+              let model = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("CoreData 모델 로드 실패")
+        }
+
+        let container = NSPersistentContainer(name: "CoreDataStorage", managedObjectModel: model)
         container.loadPersistentStores { _, error in
             if let error = error {
-                fatalError("CoreData 로딩 실패: \(error)")
+                fatalError("CoreData PersistentStore 로딩 실패: \(error)")
             }
         }
         return container
@@ -87,6 +94,7 @@ final class CoreDataManager {
 
         do {
             let result = try context.fetch(request)
+            print("coredata fetch 출력 \(result)")
             return result
         } catch {
             print("\(error.localizedDescription)")
@@ -111,6 +119,35 @@ final class CoreDataManager {
 
         do {
             try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("\(error.localizedDescription)")
+        }
+    }
+
+    //주소 기반 fetch
+    func fetchWeather(for address: String?) -> WeatherDataEntity? {
+        guard let address = address else { return nil }
+
+        let request: NSFetchRequest<WeatherDataEntity> = WeatherDataEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "address == %@", address)
+        request.fetchLimit = 1
+
+        do {
+            return try context.fetch(request).first
+        } catch {
+            print("주소 기반 fetch 실패: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    //주형 동환님 앱 실행시 위도 경도 저장
+    func saveLatLngAppStarted(current: CurrentWeather, latitude: Double, longitude: Double) {
+        let weather = WeatherDataEntity(context: context)
+        weather.latitude = latitude
+        weather.longitude = longitude
+
+        do {
             try context.save()
         } catch {
             print("\(error.localizedDescription)")
