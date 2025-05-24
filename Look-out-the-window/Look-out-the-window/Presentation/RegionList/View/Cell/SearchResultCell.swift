@@ -19,15 +19,15 @@ final class SearchResultCell: UITableViewCell {
     
     // MARK: - UI Components
     
-    private let locationLabel = UILabel().then {
+    private let addressLabel = UILabel().then {
         $0.text = "몬트리올, QC 캐나다"
         $0.numberOfLines = 1
     }
     
     // MARK: - Getter
     
-    var getLocationLabel: UILabel {
-        return locationLabel
+    var getAddressLabel: UILabel {
+        return addressLabel
     }
     
     // MARK: - Initializer
@@ -44,8 +44,8 @@ final class SearchResultCell: UITableViewCell {
     
     // MARK: - Methods
     
-    func configure(location: String) {
-        locationLabel.text = location
+    func configure(model: SearchResultModel) {
+        addressLabel.text = model.address
     }
 }
 
@@ -64,11 +64,11 @@ private extension SearchResultCell {
     }
     
     func setViewHierarchy() {
-        self.contentView.addSubview(locationLabel)
+        self.contentView.addSubview(addressLabel)
     }
     
     func setConstraints() {
-        locationLabel.snp.makeConstraints {
+        addressLabel.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
             $0.centerY.equalToSuperview()
         }
