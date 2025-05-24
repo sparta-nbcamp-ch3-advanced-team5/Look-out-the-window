@@ -12,7 +12,7 @@ import SnapKit
 import Then
 
 /// 지역 날씨 리스트 `UITableViewCell`
-final class RegionWeatherCell: UITableViewCell {
+final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Properties
     
@@ -73,10 +73,9 @@ final class RegionWeatherCell: UITableViewCell {
     
     // MARK: - Initializer
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        // TODO: - 임시 fileName
+    override init(frame: CGRect) {
         riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        super.init(frame: frame)
         riveView = riveViewModel.createRiveView()
         
         setupUI()
@@ -95,13 +94,13 @@ final class RegionWeatherCell: UITableViewCell {
     
     // MARK: - Methods
     
-    func configure(temp: String, maxTemp: String, minTemp: String, location: String, rive: String, weather: String) {
-        currTempLabel.text = "\(temp)°"
-        highTempLabel.text = "\(maxTemp)°"
-        lowTempLabel.text = "\(minTemp)°"
-        locationLabel.text = location
-        riveViewModel = RiveViewModel(fileName: rive)
-        weatherLabel.text = weather
+    func configure(model: RegionWeatherModel) {
+        currTempLabel.text = "\(model.temp)°"
+        highTempLabel.text = "\(model.maxTemp)°"
+        lowTempLabel.text = "\(model.minTemp)°"
+        locationLabel.text = model.location
+        riveViewModel = RiveViewModel(fileName: model.rive)
+        weatherLabel.text = model.weather
     }
 }
 
@@ -115,7 +114,6 @@ private extension RegionWeatherCell {
     }
     
     func setAppearance() {
-        self.selectionStyle = .none
         self.backgroundColor = .clear
         self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
@@ -126,7 +124,7 @@ private extension RegionWeatherCell {
 //                         tempAndLocationStack, windLabel)
         
         self.contentView.addSubviews(currTempLabel, riveView,
-                         tempAndLocationStack, weatherLabel)
+                                     tempAndLocationStack, weatherLabel)
         
         tempAndLocationStack.addArrangedSubviews(highLowTempStackView,
                                                  locationLabel)

@@ -15,12 +15,19 @@ final class RegionWeatherListView: UIView {
     
     // MARK: - UI Components
     
-    private let regionListTableView = UITableView(frame: .zero, style: .insetGrouped)
+    private let regionListCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout()).then {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        $0.collectionViewLayout = layout
+        $0.backgroundColor = .clear
+        $0.showsHorizontalScrollIndicator = false
+        $0.showsVerticalScrollIndicator = false
+    }
     
     // MARK: - Getter
     
-    var getTableView: UITableView {
-        return regionListTableView
+    var getCollectionView: UICollectionView {
+        return regionListCollectionView
     }
     
     // MARK: - Initializer
@@ -39,24 +46,16 @@ final class RegionWeatherListView: UIView {
 
 private extension RegionWeatherListView {
     func setupUI() {
-        setAppearance()
         setViewHierarchy()
         setConstraints()
     }
     
-    func setAppearance() {
-        regionListTableView.backgroundColor = .clear
-        regionListTableView.rowHeight = 200
-        regionListTableView.separatorStyle = .none
-        regionListTableView.showsVerticalScrollIndicator = false
-    }
-    
     func setViewHierarchy() {
-        self.addSubview(regionListTableView)
+        self.addSubview(regionListCollectionView)
     }
     
     func setConstraints() {
-        regionListTableView.snp.makeConstraints {
+        regionListCollectionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }

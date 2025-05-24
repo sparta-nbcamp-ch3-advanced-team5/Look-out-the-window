@@ -14,4 +14,6 @@ struct RegionWeatherModel {
     let location: String
     let rive: String
     let weather: String
+    let lat: Double
+    let lng: Double
 }

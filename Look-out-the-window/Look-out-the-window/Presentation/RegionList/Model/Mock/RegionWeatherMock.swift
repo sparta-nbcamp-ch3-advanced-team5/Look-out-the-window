@@ -8,8 +8,8 @@
 import Foundation
 
 let regionWeatherList_Mock: [RegionWeatherModel] = [
-    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "화성시, 경기도", rive: Rive.partlyCloudy, weather: "대체로 흐림"),
-    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "몬트리올, 경기도", rive: Rive.partlyCloudy, weather: "대체로 흐림"),
-    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "화성시, 경기도", rive: Rive.partlyCloudy, weather: "대체로 흐림"),
-    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "화성시, 경기도", rive: Rive.partlyCloudy, weather: "대체로 흐림")
+    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "화성시, 경기도", rive: Rive.partlyCloudy, weather: "대체로 흐림", lat: 37.19681667, lng: 126.8335306),
+    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "오산시, 경기도", rive: Rive.partlyCloudy, weather: "비", lat: 37.14691389, lng: 127.0796417),
+    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "파주시, 경기도", rive: Rive.partlyCloudy, weather: "흐림", lat: 37.75708333, lng: 126.7819528),
+    RegionWeatherModel(temp: "16", maxTemp: "18", minTemp: "12", location: "종로구, 서울특별시", rive: Rive.partlyCloudy, weather: "맑음", lat: 37.57037778, lng: 126.9816417)
 ]

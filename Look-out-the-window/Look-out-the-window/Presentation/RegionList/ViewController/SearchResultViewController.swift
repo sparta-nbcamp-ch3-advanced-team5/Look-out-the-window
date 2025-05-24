@@ -80,14 +80,6 @@ private extension SearchResultViewController {
                 owner.delegate?.cellDidTapped()
                 owner.viewModel.action.onNext(.localSearch(location: model.address))
             }.disposed(by: disposeBag)
-        
-//        searchResultView.getTableView.rx.itemSelected
-//            .bind(with: self) { owner, indexPath in
-//                if let cell = owner.searchResultView.getTableView.cellForRow(at: indexPath) as? SearchResultCell {
-//                    owner.delegate?.cellDidTapped()
-//                    owner.viewModel.action.onNext(.localSearch(location: cell.getAddressLabel.text ?? ""))
-//                }
-//            }.disposed(by: disposeBag)
 
 
         // ViewModel ➡️ ViewController
