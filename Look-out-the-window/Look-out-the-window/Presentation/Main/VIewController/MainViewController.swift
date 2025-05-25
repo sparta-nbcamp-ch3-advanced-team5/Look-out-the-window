@@ -5,15 +5,6 @@
 //  Created by 서동환 on 5/20/25.
 //
 
-import UIKit
-
-import RxCocoa
-import RxSwift
-import RxDataSources
-import SnapKit
-import Then
-import CoreLocation
-
 // TODO: - DetailCell Header, customView 추가
 // TODO: - SF Symbol 컬러 세팅
 
@@ -21,11 +12,22 @@ import CoreLocation
  데이터 종류
  temperature: "22", maxTemp: "28", minTemp: "21", tempFeelLike: "23", skyInfo: "구름", pressure: "1006", humidity: "83", clouds: "75", uvi: "0", visibility: "10000", windSpeed: "2", windDeg: "320"
  */
+
+import UIKit
+import RxCocoa
+import RxSwift
+import RxDataSources
+import SnapKit
+import Then
+import CoreLocation
+
 final class MainViewController: UIViewController {
     
     private let mainView = MainView()
-    
     private let disposeBag = DisposeBag()
+    
+    // 네트워크 데이터 바인딩용 Relay
+    private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
     
     let dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
         configureCell: { dataSource, collectionView, indexPath, item in
@@ -71,66 +73,96 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         self.view.backgroundColor = UIColor(named: "MainBackground")
-        
-        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
-               else { return }
-        print(apiKey)
-        
         setRxDataSource()
+        requestWeatherAndBind()
     }
-    
-    
 }
 
 extension MainViewController: UICollectionViewDelegate {
     func setRxDataSource() {
-        // Delegate 연결
         mainView.collectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        // 예시 데이터(Mock)
-        let sections = Observable.just([
-            MainSection(items: [
-                .hourly(HourlyModel(hour: "Now", temperature: "20'C", weatherInfo: "sun.min")),
-                .hourly(HourlyModel(hour: "10시", temperature: "21'C", weatherInfo: "sun.horizon.fill")),
-                .hourly(HourlyModel(hour: "11시", temperature: "22'C", weatherInfo: "sun.haze.fill")),
-                .hourly(HourlyModel(hour: "12시", temperature: "23'C", weatherInfo: "sun.rain.fill")),
-                .hourly(HourlyModel(hour: "13시", temperature: "24'C", weatherInfo: "sun.snow.fill")),
-                .hourly(HourlyModel(hour: "14시", temperature: "25'C", weatherInfo: "cloud.drizzle.fill")),
-                .hourly(HourlyModel(hour: "15시", temperature: "26'C", weatherInfo: "cloud.bolt.rain.fill")),
-                .hourly(HourlyModel(hour: "16시", temperature: "27'C", weatherInfo: "sun.max")),
-                .hourly(HourlyModel(hour: "17시", temperature: "28'C", weatherInfo: "sun.min"))
-            ]),
-            MainSection(items: [
-                .daily(DailyModel(day: "오늘", high: "35", low: "11", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "화", high: "35", low: "30", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "수", high: "32", low: "27", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "목", high: "29", low: "24", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "금", high: "24", low: "19", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "토", high: "19", low: "14", weatherInfo: "sun.min")),
-                .daily(DailyModel(day: "일", high: "16", low: "11", weatherInfo: "sun.min"))
-            ]),
-            MainSection(items: [
-                .detail(DetailModel(title: "자외선지수", value: "1", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "4", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "6", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "10", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "11", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "15", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "바람", value: "3m/s NW", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "강수량", value: "5mm", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "체감기온", value: "20℃", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "습도", value: "70%", weatherInfo: "sun.min"))
-            ])
-        ])
-        
-        // RxDataSources 바인딩
-        sections
+        sectionsRelay
             .bind(to: mainView.collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
 }
 
+// MARK: - 네트워크 요청 및 데이터 변환
+private extension MainViewController {
+    func requestWeatherAndBind() {
+        let networkManager = NetworkManager()
+        
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else {
+            print("❌ API 키 없음")
+            return
+        }
+        
+        let params = WeatherParameters(lat: 37.5665, lng: 126.9780, appid: apiKey)
+        guard let request = APIEndpoints.getURLRequest(.weather, parameters: params.makeParameterDict()) else {
+            print("❌ URLRequest 생성 실패")
+            return
+        }
+        
+        // 1. Task에서 await로 fetch 호출
+        Task {
+            let single: Single<WeatherResponseDTO> = await networkManager.fetch(urlRequest: request)
+            
+            // 2. Single을 Rx 체인으로 사용
+            single
+                .map { dto in
+                    print("WeatherResponseDTO 디버깅:\n\(dto)") // MARK: - 디버깅용
+                    let weather = dto.toCurrentWeather()
+                    return self.convertToMainSections(from: weather)
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onSuccess: { [weak self] sections in
+                    self?.sectionsRelay.accept(sections)
+                }, onFailure: { error in
+                    print("❌ 날씨 요청 실패: \(error)")
+                })
+                .disposed(by: self.disposeBag)
+        }
+    }
+    
+    func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
+        let hourlyItems = weather.hourlyModel.map { MainSectionItem.hourly($0) }
+        let dailyItems = weather.dailyModel.map { MainSectionItem.daily($0) }
+        
+        // detail 섹션 예시 (필요에 따라 수정)
+        let detailItems: [MainSectionItem] = [
+            .detail(DetailModel(title: "자외선지수", value: weather.uvi, weatherInfo: weather.skyInfo)),
+            .detail(DetailModel(title: "일출/일몰", value: "\(weather.sunriseTime)/\(weather.sunsetTime)", weatherInfo: weather.skyInfo)),
+            .detail(DetailModel(title: "바람", value: "\(weather.windSpeed)m/s \(weather.windDeg)", weatherInfo: weather.skyInfo)),
+            .detail(DetailModel(title: "강수량", value: "-", weatherInfo: weather.skyInfo)),
+            .detail(DetailModel(title: "체감기온", value: weather.tempFeelLike, weatherInfo: weather.skyInfo)),
+            .detail(DetailModel(title: "습도", value: weather.humidity, weatherInfo: weather.skyInfo))
+        ]
+        
+        return [
+            MainSection(items: hourlyItems),
+            MainSection(items: dailyItems),
+            MainSection(items: detailItems)
+        ]
+    }
+}
+
+// MARK: - 디버깅 용으로 임의로 만들었습니다
+extension WeatherResponseDTO: CustomStringConvertible {
+    var description: String {
+        """
+        --- WeatherResponseDTO ---
+        lat: \(lat)
+        lng: \(lng)
+        timeZone: \(timeZone)
+        timeZoneOffset: \(timeZoneOffset)
+        currentWeather: \(currentWeather)
+        minutelyRains: \(minutelyRains.count)개
+        hourlyWeathers: \(hourlyWeathers.count)개
+        dailyWeathers: \(dailyWeathers.count)개
+        -------------------------
+        """
+    }
+}
