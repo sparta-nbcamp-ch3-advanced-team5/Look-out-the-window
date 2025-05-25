@@ -87,7 +87,7 @@ final class UVProgressBarView: UIView {
         let level = UVIndexLevel.level(for: uvi)
         numberLabel.text = String(uvi)
         stateLabel.text = level.rawValue
-        let maxUVI: CGFloat = 11.0
+//        let maxUVI: CGFloat = 11.0
         progress = CGFloat(min(max(Double(uvi) / 11.0, 0), 1))
     }
 }

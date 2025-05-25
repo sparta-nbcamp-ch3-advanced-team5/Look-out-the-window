@@ -30,7 +30,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Presentation/Register/ViewController/.gitkeep,
-				Presentation/Register/ViewModel/.gitkeep,
 				Resources/Info.plist,
 			);
 			target = 5B8DBC302DDC214400F53723 /* Look-out-the-window */;
