@@ -24,7 +24,6 @@ final class DailyCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .yellow
     }
     
     private let lowTempLabel = UILabel().then {
@@ -59,7 +58,8 @@ final class DailyCell: UICollectionViewCell {
     
     func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
         dayLabel.text = model.day
-        weatherIcon.image = UIImage(systemName: model.weatherInfo)
+        let config = UIImage.SymbolConfiguration.preferringMulticolor()
+        weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         lowTempLabel.text = model.low + "°"
         highTempLabel.text = model.high + "°"
         separatorView.isHidden = isBottom

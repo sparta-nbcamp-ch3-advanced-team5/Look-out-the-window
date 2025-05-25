@@ -5,15 +5,6 @@
 //  Created by 서동환 on 5/20/25.
 //
 
-// TODO: - DetailCell Header, customView 추가
-// TODO: - SF Symbol 컬러 세팅
-// TODO: - CoreData 관련 로직 추가
-
-/*
- 데이터 종류
- temperature: "22", maxTemp: "28", minTemp: "21", tempFeelLike: "23", skyInfo: "구름", pressure: "1006", humidity: "83", clouds: "75", uvi: "0", visibility: "10000", windSpeed: "2", windDeg: "320"
- */
-
 import UIKit
 import RxCocoa
 import RxSwift
@@ -25,8 +16,15 @@ import CoreLocation
 /*
  HourlyModel - temperature -> ex) 14.78 -> 15 (소수점 포맷팅 필요)
  DailyModel - day(월요일 -> 월) high, low->  ex) 14.78 -> 15 (소수점 포맷팅 필요)
+ 
+ -> 요일 제외 온도 소수점 포맷팅 완료
+ 
  DetailModel - 잘 판단이 안됨.... 팀원 협의
  */
+
+// TODO: - DetailCell Header, customView 추가
+// TODO: - SF Symbol 컬러 세팅
+// TODO: - CoreData 관련 로직 추가
 
 final class MainViewController: UIViewController {
     

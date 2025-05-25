@@ -44,7 +44,8 @@ final class DetailCell: UICollectionViewCell {
     }
     
     func bind(model: DetailModel) {
-        cellIcon.image = UIImage(systemName: model.weatherInfo)
+        let config = UIImage.SymbolConfiguration.preferringMulticolor()
+        cellIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         titleLabel.text = model.title
         
         uvProgressBar?.removeFromSuperview()

@@ -21,7 +21,6 @@ final class HourlyCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .yellow
     }
     
     private let tempLabel = UILabel().then {
@@ -43,7 +42,8 @@ final class HourlyCell: UICollectionViewCell {
     
     func bind(model: HourlyModel) {
         hourLabel.text = model.hour
-        weatherIcon.image = UIImage(systemName: model.weatherInfo)
+        let config = UIImage.SymbolConfiguration.preferringMulticolor()
+        weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         tempLabel.text = model.temperature
     }
 }
