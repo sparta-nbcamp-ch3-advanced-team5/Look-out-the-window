@@ -17,7 +17,7 @@ import RxDataSources
 
 // MARK: - 각 섹션 DataModel (수정 필요해 보임)
 struct HourlyModel {
-    let hour: String      // 포맷 수정  ( 12시간 -> Cell 12개 정도)
+    let hour: Int      // 포맷 수정  ( 12시간 -> Cell 12개 정도)
     let temperature: String  // 섭씨
     // weatherState
     let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정

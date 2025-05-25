@@ -83,7 +83,7 @@ extension HourlyWeatherDTO {
     }
     
     func toHourlyModel() -> HourlyModel {
-        return HourlyModel(hour: self.currentTime.convertUnixTimeToHourString(),
+        return HourlyModel(hour: self.currentTime,
                            temperature: String(self.temperature),
                            weatherInfo: self.toWeatherImageString())
     }

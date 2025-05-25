@@ -176,6 +176,8 @@ extension WeatherResponseDTO {
     func toCurrentWeather() -> CurrentWeather {
         return CurrentWeather(
             address: nil,
+            lat: lat,
+            lng: lng,
             currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,
             currentMomentValue: toMomentValue(),
             sunriseTime: self.currentWeather.sunriseTime + self.timeZoneOffset - 32400,
