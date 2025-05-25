@@ -60,8 +60,8 @@ final class DailyCell: UICollectionViewCell {
     func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
         dayLabel.text = model.day // 요일
         weatherIcon.image = UIImage(systemName: model.weatherInfo) // icon
-        lowTempLabel.text = "\(model.low)'C" // minTemp
-        highTempLabel.text = "\(model.high)'C" // maxTemp
+        lowTempLabel.text = model.low // minTemp
+        highTempLabel.text = model.high // maxTemp
         separatorView.isHidden = isBottom // 구분선 hidden 처리 여부
         
         let minTemp = Int(model.low)
