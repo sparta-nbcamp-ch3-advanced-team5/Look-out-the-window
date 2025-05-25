@@ -5,8 +5,8 @@
 //  Created by GO on 5/22/25.
 //
 
-import UIKit
 import SnapKit
+import UIKit
 
 // 오늘 날씨에만 현재 온도 위치 마크해주기
 final class ProgressBarView: UIView {
@@ -26,48 +26,67 @@ final class ProgressBarView: UIView {
         super.init(frame: frame)
         setupUI()
     }
-
+    
+    // 호출 타이밍 이슈로 인해 추가
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateProgress()
+    }
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     func updateProgress() {
-        layoutIfNeeded() // 레이아웃 변경사항 즉시 적용
-        let totalRange = CGFloat(totalMaxTemp - totalMinTemp) // 전체 범위
+        layoutIfNeeded()  // 레이아웃 변경사항 즉시 적용
+        let totalRange = CGFloat(totalMaxTemp - totalMinTemp)  // 전체 범위
         guard totalRange > 0 else { return }
         
         // 위치 비율로 환산
         let minRatio = CGFloat(minTemp - totalMinTemp) / totalRange
         let maxRatio = CGFloat(maxTemp - totalMinTemp) / totalRange
         
-        let barWidth = baseView.frame.width // 전체 기간 온도 범위의 길이
-        let startX = barWidth * minRatio // 하루기준 최저온도 (rangeView 시작점)
-        let rangeWidth = barWidth * (maxRatio - minRatio) // rangeView의 width
+        let barWidth = baseView.frame.width  // 전체 기간 온도 범위의 길이
+        let startX = barWidth * minRatio  // 하루기준 최저온도 (rangeView 시작점)
+        let rangeWidth = barWidth * (maxRatio - minRatio)  // rangeView의 width
         
         // x에서 시작해서 rangeWidth까지만 적용 (rangeView)
         rangeView.frame = CGRect(x: startX, y: 0, width: rangeWidth, height: baseView.frame.height)
+        
+        print("""
+            === ProgressBarView 디버깅 ===
+            baseView.frame.width: \(baseView.frame.width)
+            baseView.frame.height: \(baseView.frame.height)
+            minTemp: \(minTemp), maxTemp: \(maxTemp), totalMinTemp: \(totalMinTemp), totalMaxTemp: \(totalMaxTemp)
+            totalRange: \(totalRange)
+            minRatio: \(minRatio), maxRatio: \(maxRatio)
+            startX: \(startX), rangeWidth: \(rangeWidth)
+            rangeView.frame: \(rangeView.frame)
+            \(totalRange <= 0 ? "totalRange <= 0" : "")
+            =============================
+            """)
     }
 }
 
-private extension ProgressBarView {
-    func setupUI() {
+extension ProgressBarView {
+    fileprivate func setupUI() {
         setAppearance()
         viewHierarchy()
         viewConstraints()
     }
     
-    func setAppearance() {
+    fileprivate func setAppearance() {
         baseView.backgroundColor = UIColor.white.withAlphaComponent(0.2)
         rangeView.backgroundColor = .systemYellow
     }
     
-    func viewHierarchy() {
+    fileprivate func viewHierarchy() {
         addSubview(baseView)
         baseView.addSubview(rangeView)
     }
     
-    func viewConstraints() {
+    fileprivate func viewConstraints() {
         baseView.snp.makeConstraints {
             $0.directionalHorizontalEdges.equalToSuperview()
             $0.centerY.equalToSuperview()

@@ -58,21 +58,21 @@ final class DailyCell: UICollectionViewCell {
     }
     
     func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
-        dayLabel.text = model.day // 요일
-        weatherIcon.image = UIImage(systemName: model.weatherInfo) // icon
-        lowTempLabel.text = model.low // minTemp
-        highTempLabel.text = model.high // maxTemp
-        separatorView.isHidden = isBottom // 구분선 hidden 처리 여부
-        
+        dayLabel.text = model.day
+        weatherIcon.image = UIImage(systemName: model.weatherInfo)
+        lowTempLabel.text = model.low + "°"
+        highTempLabel.text = model.high + "°"
+        separatorView.isHidden = isBottom
+
         let minTemp = Int(model.low)
         let maxTemp = Int(model.high)
-        
+
         progressBar.minTemp = minTemp ?? 0
         progressBar.maxTemp = maxTemp ?? 0
         progressBar.totalMinTemp = totalMin
         progressBar.totalMaxTemp = totalMax
-        progressBar.updateProgress()
     }
+
 }
 
 private extension DailyCell {

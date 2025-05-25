@@ -33,10 +33,13 @@ final class MainViewController: UIViewController {
     private let mainView = MainView()
     private let disposeBag = DisposeBag()
     
+    private var totalMinTemp = 0
+    private var totalMaxTemp = 0
+    
     // 네트워크 데이터 바인딩용 Relay
     private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
     
-    let dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
+    lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
         configureCell: { dataSource, collectionView, indexPath, item in
             switch item {
             case .hourly(let model):
@@ -46,7 +49,7 @@ final class MainViewController: UIViewController {
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
                 let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isBottom: isLast, totalMin: 10, totalMax: 40)
+                cell.bind(model: model, isBottom: isLast, totalMin: self.totalMinTemp, totalMax: self.totalMaxTemp)
                 return cell
             case .detail(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
@@ -150,13 +153,22 @@ private extension MainViewController {
         let formattedDailyModels = weather.dailyModel.map { model in
             DailyModel(
                 day: model.day,
-                high: "\(Double(model.high)?.roundedString ?? model.high)°",
-                low: "\(Double(model.low)?.roundedString ?? model.low)°",
+                high: Double(model.high)?.roundedString ?? model.high,
+                low: Double(model.low)?.roundedString ?? model.low,
                 weatherInfo: model.weatherInfo
             )
         }
+        // 전체 기간 최저/최고 기온 계산
+        let dailyHighs = formattedDailyModels.compactMap { Int($0.high) }
+        let dailyLows = formattedDailyModels.compactMap { Int($0.low) }
+        
+        totalMaxTemp = dailyHighs.max() ?? 0
+        totalMinTemp = dailyLows.min() ?? 0
+        
+        // dailyItems 생성 (이 값들을 dataSource에도 전달)
         let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-
+        
+        
         // 디버깅용 프린트
         formattedHourlyModels.debugPrintModelArray(title: "HourlyModel")
         formattedDailyModels.debugPrintModelArray(title: "DailyModel")
