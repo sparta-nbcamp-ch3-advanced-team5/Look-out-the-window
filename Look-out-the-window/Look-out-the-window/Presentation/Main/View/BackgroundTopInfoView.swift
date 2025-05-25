@@ -113,7 +113,7 @@ private extension BackgroundTopInfoView {
         riveView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
             $0.top.equalTo(infoStackView.snp.bottom)
-            $0.width.height.equalTo(500)
+            $0.width.height.equalTo(UIScreen.main.bounds.width).multipliedBy(0.5)
         }
     }
 }
