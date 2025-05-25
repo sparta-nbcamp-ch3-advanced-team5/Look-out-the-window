@@ -25,6 +25,7 @@ struct HourlyModel {
 
 struct DailyModel {
     // 요일, 하늘상태(이미지 -> String), 최저 - 최고 온도
+    let unixTime: Int
     let day: String
     let high: String
     let low: String

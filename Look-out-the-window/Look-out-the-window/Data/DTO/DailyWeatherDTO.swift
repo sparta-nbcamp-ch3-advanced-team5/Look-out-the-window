@@ -84,7 +84,8 @@ extension DailyWeatherDTO {
     }
     
     func toDailyModel() -> DailyModel {
-        return DailyModel(day: self.currentTime.convertUnixTimeToWeekString(),
+        return DailyModel(unixTime: self.currentTime,
+                          day: self.currentTime.convertUnixTimeToWeekString(),
                           high: String(self.temperature.maxTemperature),
                           low: String(self.temperature.minTemperature),
                           weatherInfo: self.toWeatherImageString())
