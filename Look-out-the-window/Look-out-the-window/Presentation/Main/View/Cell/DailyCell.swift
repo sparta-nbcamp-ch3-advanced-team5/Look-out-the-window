@@ -113,8 +113,8 @@ private extension DailyCell {
         progressBar.snp.makeConstraints{
             $0.height.equalTo(5)
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(6)
-            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-6)
+            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(30)
+            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-30)
         }
         
         highTempLabel.snp.makeConstraints{
