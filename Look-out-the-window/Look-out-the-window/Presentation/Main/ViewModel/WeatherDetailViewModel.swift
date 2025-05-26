@@ -11,7 +11,6 @@ import RxRelay
 import RxSwift
 
 
-
 final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Properties
@@ -127,7 +126,6 @@ extension WeatherDetailViewModel {
         let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
         
         let formattedDailyModels = weather.dailyModel.map { model in
-
             DailyModel(
                 unixTime: model.unixTime,
                 day: String(model.day.prefix(1)),
@@ -151,6 +149,7 @@ extension WeatherDetailViewModel {
             DetailModel(title: .visibility, value: weather.visibility),
             DetailModel(title: .clouds, value: weather.clouds)
         ]
+        
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
         
         return [

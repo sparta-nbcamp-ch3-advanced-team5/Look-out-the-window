@@ -436,7 +436,7 @@ extension WeatherDetailViewController: UICollectionViewDelegate {
         bottomInfoView.collectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        viewModel.sections
+        viewModel.state.sections
             .bind(to: bottomInfoView.collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
