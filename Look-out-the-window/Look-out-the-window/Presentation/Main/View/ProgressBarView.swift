@@ -55,24 +55,24 @@ final class ProgressBarView: UIView {
     }
 }
 
-extension ProgressBarView {
-    fileprivate func setupUI() {
+private extension ProgressBarView {
+    func setupUI() {
         setAppearance()
         viewHierarchy()
         viewConstraints()
     }
     
-    fileprivate func setAppearance() {
+    func setAppearance() {
         baseView.backgroundColor = UIColor.white.withAlphaComponent(0.2)
         rangeView.backgroundColor = .systemYellow
     }
     
-    fileprivate func viewHierarchy() {
+    func viewHierarchy() {
         addSubview(baseView)
         baseView.addSubview(rangeView)
     }
     
-    fileprivate func viewConstraints() {
+    func viewConstraints() {
         baseView.snp.makeConstraints {
             $0.directionalHorizontalEdges.equalToSuperview()
             $0.centerY.equalToSuperview()
