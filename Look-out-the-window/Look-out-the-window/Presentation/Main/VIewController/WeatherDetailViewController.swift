@@ -13,10 +13,9 @@ import Then
 import RiveRuntime
 import RxCocoa
 
-
-final class BackgroundViewController: UIViewController {
+final class WeatherDetailViewController: UIViewController {
     
-    private let viewModel: BackgroundViewModel
+    private let viewModel: WeatherDetailViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
     private var weatherInfoList = [WeatherInfo]()
@@ -75,7 +74,7 @@ final class BackgroundViewController: UIViewController {
     }
     
     // MARK: - Initializers
-    init(viewModel: BackgroundViewModel) {
+    init(viewModel: WeatherDetailViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -95,7 +94,7 @@ final class BackgroundViewController: UIViewController {
 }
 
 // MARK: - Setting Methods
-private extension BackgroundViewController {
+private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()

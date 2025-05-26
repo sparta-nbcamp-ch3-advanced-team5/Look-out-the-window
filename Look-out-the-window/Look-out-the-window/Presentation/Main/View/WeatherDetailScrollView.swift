@@ -5,7 +5,6 @@
 //  Created by 정근호 on 5/26/25.
 //
 
-import Foundation
 
 import UIKit
 
@@ -18,17 +17,20 @@ final class WeatherDetailScrollView: UIView {
     
     private let disposeBag = DisposeBag()
     
-    let dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
+    private var totalMinTemp = 0
+    private var totalMaxTemp = 0
+    
+    lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
         configureCell: { dataSource, collectionView, indexPath, item in
             switch item {
             case .hourly(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
-                cell.bind(model: model)
+                cell.bind(model: model, isFirst: indexPath.item == 0)
                 return cell
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
                 let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isBottom: isLast, totalMin: 10, totalMax: 40)
+                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast, totalMin: self.totalMinTemp, totalMax: self.totalMaxTemp)
                 return cell
             case .detail(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
@@ -66,7 +68,7 @@ final class WeatherDetailScrollView: UIView {
     }
     private lazy var verticalScrollContentView = UIView()
     var backgroundView: BackgroundTopInfoView
-    private lazy var mainView = MainView()
+    private lazy var bottomInfoView = BottomInfoView()
     private lazy var topLoadingIndicatorView = LoadingIndicatorView()
     
     
@@ -87,13 +89,13 @@ private extension WeatherDetailScrollView {
     func setupUI() {
         setViewHierarchy()
         setConstraints()
-        setRxDataSource(mainView: mainView)
+        setRxDataSource(bottomInfoView: bottomInfoView)
     }
 
     func setViewHierarchy() {
         addSubview(verticalScrollView)
         verticalScrollView.addSubviews(topLoadingIndicatorView, verticalScrollContentView)
-        verticalScrollContentView.addSubviews(backgroundView, mainView)
+        verticalScrollContentView.addSubviews(backgroundView, bottomInfoView)
     }
     
     func setConstraints() {
@@ -118,7 +120,7 @@ private extension WeatherDetailScrollView {
             $0.height.equalTo(UIScreen.main.bounds.height * 0.6)
         }
         
-        mainView.snp.makeConstraints {
+        bottomInfoView.snp.makeConstraints {
             $0.top.equalTo(backgroundView.riveView.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
         }
@@ -148,51 +150,60 @@ private extension WeatherDetailScrollView {
 
 // MARK: - UICollectionViewDelegate
 extension WeatherDetailScrollView: UICollectionViewDelegate {
-    func setRxDataSource(mainView: MainView) {
+    func setRxDataSource(bottomInfoView: BottomInfoView) {
         // Delegate 연결
-        mainView.collectionView.rx.setDelegate(self)
+        bottomInfoView.collectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        // 예시 데이터(Mock)
-        let sections = Observable.just([
-            MainSection(items: [
-                .hourly(HourlyModel(hour: 13, temperature: "20'C", weatherInfo: "sun.min")),
-                .hourly(HourlyModel(hour: 14, temperature: "21'C", weatherInfo: "sun.horizon.fill")),
-                .hourly(HourlyModel(hour: 15, temperature: "22'C", weatherInfo: "sun.haze.fill")),
-                .hourly(HourlyModel(hour: 16, temperature: "23'C", weatherInfo: "sun.rain.fill")),
-                .hourly(HourlyModel(hour: 17, temperature: "24'C", weatherInfo: "sun.snow.fill")),
-                .hourly(HourlyModel(hour: 18, temperature: "25'C", weatherInfo: "cloud.drizzle.fill")),
-                .hourly(HourlyModel(hour: 19, temperature: "26'C", weatherInfo: "cloud.bolt.rain.fill")),
-                .hourly(HourlyModel(hour: 20, temperature: "27'C", weatherInfo: "sun.max")),
-                .hourly(HourlyModel(hour: 21, temperature: "28'C", weatherInfo: "sun.min"))
-            ]),
-            MainSection(items: [
-                .daily(DailyModel(unixTime: 1748232000, day: "오늘", high: "35", low: "11", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748318400, day: "화", high: "35", low: "30", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748404800, day: "수", high: "32", low: "27", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748491200, day: "목", high: "29", low: "24", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748577600, day: "금", high: "24", low: "19", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748664000, day: "토", high: "19", low: "14", weatherInfo: "sun.min")),
-                .daily(DailyModel(unixTime: 1748750400, day: "일", high: "16", low: "11", weatherInfo: "sun.min"))
-            ]),
-            MainSection(items: [
-                .detail(DetailModel(title: "자외선지수", value: "1", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "4", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "6", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "10", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "11", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "자외선지수", value: "15", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "바람", value: "3m/s NW", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "강수량", value: "5mm", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "체감기온", value: "20℃", weatherInfo: "sun.min")),
-                .detail(DetailModel(title: "습도", value: "70%", weatherInfo: "sun.min"))
-            ])
-        ])
-        
-        // RxDataSources 바인딩
-        sections
-            .bind(to: mainView.collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
+        func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
+            let formattedHourlyModels = weather.hourlyModel
+                .prefix(24) // 앞에서 24개만 사용
+                .map { model in
+                    HourlyModel(
+                        hour: model.hour.to24HourInt(),
+                        temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                        weatherInfo: model.weatherInfo
+                    )
+                }
+            let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
+            
+            // DailyModel 포맷팅
+            let formattedDailyModels = weather.dailyModel.map { model in
+                DailyModel(
+                    unixTime: model.unixTime,
+                    day: String(model.day.prefix(1)),
+                    high: Double(model.high)?.roundedString ?? model.high,
+                    low: Double(model.low)?.roundedString ?? model.low,
+                    weatherInfo: model.weatherInfo
+                )
+            }
+            // 전체 기간 최저/최고 기온 계산
+            let dailyHighs = formattedDailyModels.compactMap { Int($0.high) }
+            let dailyLows = formattedDailyModels.compactMap { Int($0.low) }
+            
+            totalMaxTemp = dailyHighs.max() ?? 0
+            totalMinTemp = dailyLows.min() ?? 0
+            
+            // dailyItems 생성 (이 값들을 dataSource에도 전달)
+            let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
+
+            let detailModels: [DetailModel] = [
+                DetailModel(title: .uvIndex, value: weather.uvi),
+                DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
+                DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
+                DetailModel(title: .rainSnow, value: "-"),
+                DetailModel(title: .feelsLike, value: weather.tempFeelLike),
+                DetailModel(title: .humidity, value: weather.humidity),
+                DetailModel(title: .visibility, value: weather.visibility),
+                DetailModel(title: .clouds, value: weather.clouds)
+            ]
+            let detailItems = detailModels.map { MainSectionItem.detail($0) }
+            
+            return [
+                MainSection(items: hourlyItems),
+                MainSection(items: dailyItems),
+                MainSection(items: detailItems)
+            ]
+        }
     }
 }

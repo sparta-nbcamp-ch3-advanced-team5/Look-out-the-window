@@ -21,14 +21,14 @@ struct WeatherInfo {
 }
 
 
-final class BackgroundViewModel: ViewModelProtocol {
+final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Properties
     let disposeBag = DisposeBag()
     
     private let urlRequest: URLRequest?
     private let networkManager = NetworkManager()
-    private let currentLocation = CoreLocationManager.shared.currLocation
+    private let currentLocation = CoreLocationManager.shared.currLocationRelay
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -54,8 +54,8 @@ final class BackgroundViewModel: ViewModelProtocol {
     init() {
         // URLRequset 설정
         self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(
-            lat: currentLocation.lat,
-            lng: currentLocation.lng,
+            lat: currentLocation.value?.lat ?? 0.0,
+            lng: currentLocation.value?.lng ?? 0.0,
             appid: Bundle.main.infoDictionary?["API_KEY"] as? String ?? "").makeParameterDict())
         
         state.actionSubject
@@ -69,7 +69,7 @@ final class BackgroundViewModel: ViewModelProtocol {
 }
 
 //MARK: - Extension Private Methods
-private extension BackgroundViewModel {
+private extension WeatherDetailViewModel {
     
     func getCurrentWeatherData() {
         networkManager.fetch(urlRequest: urlRequest!)
@@ -77,7 +77,7 @@ private extension BackgroundViewModel {
                 
                 let currentWeather = response.toCurrentWeather()
                 let weatherInfo = WeatherInfo(
-                    address: self.currentLocation.administrativeArea,
+                    address: self.currentLocation.value?.administrativeArea ?? "",
                     temperature: currentWeather.temperature,
                     skyInfo: currentWeather.skyInfo,
                     maxTemp: currentWeather.maxTemp,

@@ -1,0 +1,62 @@
+//
+//  BottomInfoView.swift
+//  Look-out-the-window
+//
+//  Created by GO on 5/26/25.
+//
+
+import UIKit
+import SnapKit
+import Then
+import RxDataSources
+
+final class BottomInfoView: UIView {
+    
+    let collectionView = UICollectionView(frame: .zero, collectionViewLayout: MainCompositionalLayout.create())
+    
+    // MARK: - Initializer
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+private extension BottomInfoView {
+    func setupUI() {
+        setAppearance()
+        setViewHierarchy()
+        setConstraints()
+        registerCells()
+    }
+    
+    func setAppearance() {
+        self.backgroundColor = .mainBackground
+        collectionView.backgroundColor = .mainBackground
+    }
+    
+    func setViewHierarchy() {
+        self.addSubviews(collectionView)
+    }
+    
+    func setConstraints() {
+        collectionView.snp.makeConstraints{
+            $0.top.equalTo(safeAreaLayoutGuide).offset(12)
+            $0.directionalHorizontalEdges.equalTo(safeAreaLayoutGuide).inset(20)
+            $0.bottom.equalTo(safeAreaLayoutGuide)
+        }
+    }
+    
+    func registerCells() {
+        collectionView.register(HourlyCell.self, forCellWithReuseIdentifier: "HourlyCell")
+        collectionView.register(DailyCell.self, forCellWithReuseIdentifier: "DailyCell")
+        collectionView.register(DetailCell.self, forCellWithReuseIdentifier: "DetailCell")
+        collectionView.register(MainHeaderView.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: MainHeaderView.id)
+    }
+}
