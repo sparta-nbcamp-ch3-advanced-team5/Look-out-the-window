@@ -173,7 +173,7 @@ private extension BackgroundViewController {
         pageController.snp.makeConstraints {
             $0.centerX.equalToSuperview()
         }
-                
+        
         locationButton.snp.makeConstraints {
             $0.width.height.equalTo(44)
         }
@@ -326,7 +326,6 @@ private extension BackgroundViewController {
     func reloadUI(with weather: WeatherInfo) {
         let index = weatherInfoList.count - 1
         
-        // 페이지 수 1일때 페이지 컨트롤러 제약은 유지한 상태로 안보이도록
         if index == 0 {
             pageController.alpha = 0
         } else {
@@ -346,7 +345,7 @@ private extension BackgroundViewController {
         }
     }
     
-    /// BackgroundView 추가하는 메서드
+    // BackgroundView 추가
     private func setBackgroundView(index: Int, weather: WeatherInfo) -> BackgroundTopInfoView {
         /// containerView = backgroundView + mainView
         let containerView = UIView()
@@ -374,7 +373,7 @@ private extension BackgroundViewController {
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(view.snp.height)
         }
-
+        
         // scrollContentView 제약 재설정
         scrollContentView.snp.remakeConstraints {
             $0.edges.equalToSuperview()
