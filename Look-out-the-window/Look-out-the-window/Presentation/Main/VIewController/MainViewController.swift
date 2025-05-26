@@ -169,22 +169,17 @@ private extension MainViewController {
         
         // dailyItems 생성 (이 값들을 dataSource에도 전달)
         let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-        
-        
-        // 디버깅용 프린트
-        formattedHourlyModels.debugPrintModelArray(title: "HourlyModel")
-        formattedDailyModels.debugPrintModelArray(title: "DailyModel")
-        
-        // DetailModel은 동일하게 사용
+
         let detailModels: [DetailModel] = [
-            DetailModel(title: "자외선지수", value: weather.uvi, weatherInfo: weather.skyInfo),
-            DetailModel(title: "일출/일몰", value: "\(weather.sunriseTime)/\(weather.sunsetTime)", weatherInfo: weather.skyInfo),
-            DetailModel(title: "바람", value: "\(weather.windSpeed)m/s \(weather.windDeg)", weatherInfo: weather.skyInfo),
-            DetailModel(title: "강수량", value: "-", weatherInfo: weather.skyInfo),
-            DetailModel(title: "체감기온", value: weather.tempFeelLike, weatherInfo: weather.skyInfo),
-            DetailModel(title: "습도", value: weather.humidity, weatherInfo: weather.skyInfo)
+            DetailModel(title: .uvIndex, value: weather.uvi),
+            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
+            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
+            DetailModel(title: .rainSnow, value: "-"),
+            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
+            DetailModel(title: .humidity, value: weather.humidity),
+            DetailModel(title: .visibility, value: weather.visibility),
+            DetailModel(title: .clouds, value: weather.clouds)
         ]
-        detailModels.debugPrintModelArray(title: "DetailModel")
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
         
         return [
@@ -211,32 +206,5 @@ extension WeatherResponseDTO: CustomStringConvertible {
         dailyWeathers: \(dailyWeathers.count)개
         -------------------------
         """
-    }
-}
-
-// MARK: - 디버깅용
-extension HourlyModel: CustomStringConvertible {
-    var description: String {
-        "☠️[hour: \(hour), temperature: \(temperature), weatherInfo: \(weatherInfo)]☠️"
-    }
-}
-
-extension DailyModel: CustomStringConvertible {
-    var description: String {
-        "☠️[day: \(day), high: \(high), low: \(low), weatherInfo: \(weatherInfo)]☠️"
-    }
-}
-
-extension DetailModel: CustomStringConvertible {
-    var description: String {
-        "☠️[title: \(title), value: \(value), weatherInfo: \(weatherInfo)]☠️"
-    }
-}
-
-// 배열을 프린트하는 함수
-extension Array where Element: CustomStringConvertible {
-    func debugPrintModelArray(title: String) {
-        print("☠️🔎 \(title) (\(self.count)개)☠️")
-        self.forEach { print($0) }
     }
 }

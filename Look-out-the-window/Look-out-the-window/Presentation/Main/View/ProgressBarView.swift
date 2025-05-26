@@ -8,7 +8,6 @@
 import SnapKit
 import UIKit
 
-// 오늘 날씨에만 현재 온도 위치 마크해주기
 final class ProgressBarView: UIView {
     
     private let baseView = UIView()
@@ -53,19 +52,6 @@ final class ProgressBarView: UIView {
         
         // x에서 시작해서 rangeWidth까지만 적용 (rangeView)
         rangeView.frame = CGRect(x: startX, y: 0, width: rangeWidth, height: baseView.frame.height)
-        
-        print("""
-            === ProgressBarView 디버깅 ===
-            baseView.frame.width: \(baseView.frame.width)
-            baseView.frame.height: \(baseView.frame.height)
-            minTemp: \(minTemp), maxTemp: \(maxTemp), totalMinTemp: \(totalMinTemp), totalMaxTemp: \(totalMaxTemp)
-            totalRange: \(totalRange)
-            minRatio: \(minRatio), maxRatio: \(maxRatio)
-            startX: \(startX), rangeWidth: \(rangeWidth)
-            rangeView.frame: \(rangeView.frame)
-            \(totalRange <= 0 ? "totalRange <= 0" : "")
-            =============================
-            """)
     }
 }
 

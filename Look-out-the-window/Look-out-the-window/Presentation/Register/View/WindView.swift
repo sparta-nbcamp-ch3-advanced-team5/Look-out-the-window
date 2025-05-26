@@ -70,7 +70,7 @@ final class WindView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = .cellStart
+        self.backgroundColor = .clear
         setupUI()
     }
     
@@ -200,5 +200,15 @@ private extension WindView {
         arrowPath.lineWidth = 2.5
         arrowPath.stroke()
         UIColor.white.setStroke()
+    }
+}
+
+extension WindView {
+    /// 바람 각도(degree)와 풍속(speed)를 넣어주면 뷰를 갱신
+    func bind(degree: CGFloat, speed: Double) {
+        self.degree = degree
+        self.windSpeedLabel.text = "\(Int(round(speed)))"
+        // radius는 draw에서 bounds 기반으로 계산 (별도 지정 불필요)
+        setNeedsDisplay()
     }
 }

@@ -18,11 +18,9 @@ final class DetailCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.tintColor = .white
-        $0.image = UIImage(systemName: "sun.max")
     }
     
     private let titleLabel = UILabel().then {
-        $0.text = "시간별 예보"
         $0.textColor = .white
         $0.textAlignment = .center
         $0.font = .systemFont(ofSize: 16)
@@ -33,7 +31,6 @@ final class DetailCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
-//        containerView.backgroundColor = .blue // test
     }
 
     @available(*, unavailable)
@@ -42,25 +39,57 @@ final class DetailCell: UICollectionViewCell {
     }
     
     func bind(model: DetailModel) {
-        // Detail Cell 헤더
+        print("DetailCell - bind메서드")
+        // 헤더 아이콘, 타이틀 세팅
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
-        cellIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
-        titleLabel.text = model.title
+        cellIcon.image = UIImage(systemName: model.title.icon, withConfiguration: config)
+        titleLabel.text = model.title.title
         
-        uvProgressBar?.removeFromSuperview()
-        uvProgressBar = nil
+        // 기존 containerView의 모든 서브뷰 제거
+        containerView.subviews.forEach { $0.removeFromSuperview() }
         
-        if model.title == "자외선지수", let uvi = Int(model.value) {
+        switch model.title.viewKind {
+        case .uvProgressBar:
             let progressBar = UVProgressBarView()
-            containerView.addSubview(progressBar)
-            self.uvProgressBar = progressBar
-            
-            progressBar.snp.makeConstraints {
-                $0.directionalHorizontalEdges.equalToSuperview().inset(8)
-                $0.centerY.equalToSuperview()
-                $0.height.equalTo(6)
+            if let uvi = Int(model.value) {
+                progressBar.updateUI(with: uvi)
             }
-            progressBar.updateUI(with: uvi)
+            containerView.addSubview(progressBar)
+            progressBar.snp.makeConstraints { $0.edges.equalToSuperview() }
+            
+        case .windView:
+            let components = model.value.components(separatedBy: " ")
+            let speed = Double(components.first?.replacingOccurrences(of: "m/s", with: "") ?? "0") ?? 0
+            let degree = Double(components.last ?? "0") ?? 0
+            print("#########    Component  ###########")
+            print(components)
+            print("#########       speeed       ###########")
+            print(speed)
+            print("######    degree   ##############")
+            print(degree)
+            print("####################")
+            let windView = WindView()
+            windView.bind(degree: CGFloat(degree - 90), speed: speed) // -90도 보정!
+            containerView.addSubview(windView)
+            windView.snp.makeConstraints {
+                $0.edges.equalToSuperview()
+            }
+            
+        case .sunriseSunsetView:
+            let sunriseSunsetView = SunriseView()
+            // 예시: model.value = "1748204130/1748256182"
+            let times = model.value.components(separatedBy: "/")
+            let sunrise = Int(times.first ?? "0") ?? 0
+            let sunset = Int(times.last ?? "0") ?? 0
+            //sunriseSunsetView.bind(sunrise: sunrise, sunset: sunset)
+            containerView.addSubview(sunriseSunsetView)
+            sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+            
+        case .detailCellView:
+            let detailView = DetailCellView()
+            detailView.bind(model: model)
+            containerView.addSubview(detailView)
+            detailView.snp.makeConstraints { $0.edges.equalToSuperview() }
         }
     }
     
@@ -98,7 +127,7 @@ private extension DetailCell {
     
     func setConstraints() {
         cellIcon.snp.makeConstraints{
-            $0.top.equalToSuperview().offset(4)
+            $0.top.equalToSuperview().offset(8)
             $0.leading.equalToSuperview().offset(4)
             $0.size.equalTo(16)
         }
@@ -108,12 +137,11 @@ private extension DetailCell {
             $0.leading.equalTo(cellIcon.snp.trailing).offset(4)
         }
         
-        containerView.snp.makeConstraints{
-            $0.top.equalTo(cellIcon.snp.bottom).offset(4)
-            $0.directionalHorizontalEdges.equalToSuperview()
-            $0.bottom.equalTo(safeAreaLayoutGuide).inset(10) //범위 확인용 inset 10
-//            $0.size.equalTo(100)
-//            $0.center.equalToSuperview()
+        containerView.snp.makeConstraints {
+            $0.top.equalTo(titleLabel.snp.bottom).offset(8)
+            $0.leading.trailing.equalToSuperview().inset(12)
+            $0.height.equalTo(containerView.snp.width)
+            $0.bottom.equalToSuperview()
         }
     }
 }

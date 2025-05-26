@@ -7,7 +7,7 @@
 
 import UIKit
 import Then
-// TODO: 아이콘, 제목 섹션마다 다르게
+
 final class MainHeaderView: UICollectionReusableView {
     
     static let id = "MainHeaderView"

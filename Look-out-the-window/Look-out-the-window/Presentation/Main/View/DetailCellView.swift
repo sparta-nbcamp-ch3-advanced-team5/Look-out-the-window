@@ -26,7 +26,7 @@ final class DetailCellView: UIView {
         $0.font = .systemFont(ofSize: 14, weight: .light)
         $0.textColor = .white
         $0.numberOfLines = 0
-        $0.text = "Test Test Test Test Test Test Test"
+        $0.text = "Test Test Test"
     }
     
     override init(frame: CGRect) {
@@ -52,7 +52,7 @@ private extension DetailCellView {
     }
     
     func setAppearance() {
-        self.backgroundColor = .mainBackground
+        self.backgroundColor = .clear
     }
     
     func viewHierarchy() {
@@ -66,12 +66,12 @@ private extension DetailCellView {
         }
         
         subTitleLabel.snp.makeConstraints {
-            $0.top.equalTo(mainValueLabel.snp.top).offset(10)
+            $0.top.equalTo(mainValueLabel.snp.top).offset(50)
             $0.leading.equalToSuperview().offset(10)
         }
         
         bottomLabel.snp.makeConstraints {
-            $0.top.equalTo(subTitleLabel.snp.top).offset(10)
+            $0.top.equalTo(subTitleLabel.snp.top).offset(60)
             $0.leading.equalToSuperview().offset(10)
         }
     }

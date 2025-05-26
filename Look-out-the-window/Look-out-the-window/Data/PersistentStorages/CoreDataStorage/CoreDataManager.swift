@@ -55,7 +55,7 @@ final class CoreDataManager {
         // 시간별 날씨 저장 (HourlyWeatherEntity)
         current.hourlyModel.forEach { hour in
             let hourly = HourlyWeatherEntity(context: context)
-            hourly.time = hour.hour
+            hourly.time = String(hour.hour)
             hourly.temperature = hour.temperature
             hourly.skyInfo = hour.weatherInfo
             hourly.weather = weather

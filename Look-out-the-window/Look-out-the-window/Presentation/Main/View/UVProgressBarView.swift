@@ -9,8 +9,6 @@ import UIKit
 import SnapKit
 import Then
 
-// Network에서 자외선지수( uvi ) 받아오고 -> 해당 자외선지수가 어느 범위인지 체크하는 조건문 -> UVProgressBar에 적용
-
 // 자외선 지수 분류
 enum UVIndexLevel: String {
     case low = "낮음"
@@ -36,13 +34,13 @@ final class UVProgressBarView: UIView {
         $0.text = "0 ~ 100"
         $0.textAlignment = .center
         $0.textColor = .white
-        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .bold)
+        $0.font = .monospacedDigitSystemFont(ofSize: 40, weight: .bold)
     }
     private let stateLabel = UILabel().then {
         $0.text = "낮음"
         $0.textAlignment = .center
         $0.textColor = .white
-        $0.font = .monospacedDigitSystemFont(ofSize: 18, weight: .semibold)
+        $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
     }
     
     private let backgroundBar = UIView()
@@ -87,7 +85,6 @@ final class UVProgressBarView: UIView {
         let level = UVIndexLevel.level(for: uvi)
         numberLabel.text = String(uvi)
         stateLabel.text = level.rawValue
-//        let maxUVI: CGFloat = 11.0
         progress = CGFloat(min(max(Double(uvi) / 11.0, 0), 1))
     }
 }
@@ -130,17 +127,17 @@ private extension UVProgressBarView {
     
     func viewConstraints() {
         numberLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(4)
+            $0.top.equalToSuperview().offset(8)
             $0.leading.equalToSuperview().offset(4)
         }
         
         stateLabel.snp.makeConstraints {
-            $0.top.equalTo(numberLabel.snp.bottom).offset(4)
+            $0.top.equalTo(numberLabel.snp.bottom).offset(10)
             $0.left.equalToSuperview().offset(4)
         }
         
         backgroundBar.snp.makeConstraints {
-            $0.top.equalTo(stateLabel.snp.bottom).offset(10)
+            $0.top.equalTo(stateLabel.snp.bottom).offset(40)
             $0.directionalHorizontalEdges.equalToSuperview().inset(4)
             $0.height.equalTo(4)
         }

@@ -8,8 +8,6 @@
 import UIKit
 import Then
 
-// TODO: - SF Symbol 컬러
-
 final class DailyCell: UICollectionViewCell {
     static let id = "DailyCell"
     
@@ -90,7 +88,6 @@ private extension DailyCell {
         dayLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
-            // width값 추가
             $0.width.equalTo(35)
         }
         
@@ -104,8 +101,7 @@ private extension DailyCell {
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(weatherIcon.snp.trailing).offset(12)
         }
-        
-        // TODO: Progress Bar
+
         progressBar.snp.makeConstraints{
             $0.height.equalTo(5)
             $0.centerY.equalToSuperview()
