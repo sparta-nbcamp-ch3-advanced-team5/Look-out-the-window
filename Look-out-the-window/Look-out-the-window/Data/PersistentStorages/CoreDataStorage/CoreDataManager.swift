@@ -56,6 +56,7 @@ final class CoreDataManager {
         weather.rive = current.rive
         weather.currentMomentValue = current.currentMomentValue
         weather.timestamp = Date()
+        weather.isCurrLocation = false
 
 
         //모델에 속성명 맞게 수정
@@ -95,7 +96,6 @@ final class CoreDataManager {
 
         // hour.hour < unix 값이라 String값으로 변환 메서드 작성 불러온 값을 변환
         // NSSet unix 값으로 들어오면 정렬하기
-        
 
         do {
             let result = try context.fetch(request)
@@ -162,10 +162,20 @@ final class CoreDataManager {
 
 extension WeatherDataEntity {
 
+
+    // 시간별 날씨 정렬
+    var sortedHourlyArray: [HourlyWeatherEntity] {
+        guard let set = hourly as? Set<HourlyWeatherEntity> else { return [] }
+        let hourlySetSorted = set.sorted { $0. < $1.currentTime }
+        print("hourlySetSorted가 정렬 되었는지 확인: \(hourlySetSorted)")
+        return hourlySetSorted
+    }
+
+    // 일별 날씨 정렬
     var sortedDailyArray: [DailyWeatherEntity] {
-        let set = daily as? Set<DailyWeatherEntity> ?? []
-        let sortedSet = set.sorted { $0.currentTime < $1.currentTime }
-        print("sortedSet가 정렬 되었는지 확인: \(sortedSet)")
-        return sortedSet
+        guard let set = daily as? Set<DailyWeatherEntity> else { return [] }
+        let DailySetsorted = set.sorted { $0.currentTime < $1.currentTime }
+        print("DailySetsorted가 정렬 되었는지 확인: \(DailySetsorted)")
+        return DailySetsorted
     }
 }

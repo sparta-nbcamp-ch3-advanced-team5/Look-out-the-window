@@ -31,6 +31,9 @@ final class MainViewModel: ViewModelProtocol {
     struct State {
         let actionSubject = PublishSubject<Action>()
         let savedWeather = BehaviorSubject<[WeatherDataEntity]>(value: [])
+
+        let hourlyItems = BehaviorRelay<[HourlyWeatherEntity]>(value: [])
+        let dailyItems = BehaviorRelay<[DailyWeatherEntity]>(value: [])
     }
     var state = State()
 
@@ -61,9 +64,9 @@ final class MainViewModel: ViewModelProtocol {
                     let current = response.toCurrentWeather()
                     CoreDataManager.shared.saveWeatherData(current: current, latitude: location.lat, longitude: location.lng)
 
-//                    CoreDataManager.shared.saveLatLngAppStarted(current: current,
-//                                                          latitude: location.lat,
-//                                                          longitude: location.lng)
+                    //                    CoreDataManager.shared.saveLatLngAppStarted(current: current,
+                    //                                                          latitude: location.lat,
+                    //                                                          longitude: location.lng)
                 }, onFailure: { error in
                     print("\(error.localizedDescription)")
                 })
@@ -89,15 +92,26 @@ final class MainViewModel: ViewModelProtocol {
             }.disposed(by: disposeBag)
 
         state.savedWeather
-             .observe(on: MainScheduler.instance)
-             .subscribe(onNext: { savedList in
-                 print("🟢 CoreData에서 불러온 데이터 \(savedList.count)건")
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { savedList in
+                print("🟢 CoreData에서 불러온 데이터 \(savedList.count)건")
 
-                 // ✅ TODO: 테이블 뷰에 연결 시 reloadData 또는 diffable datasource 사용
-                 savedList.forEach { weather in
-                     print("🌍 \(weather.latitude), \(weather.longitude) | \(weather.temperature ?? "-")º ")
-                 }
-             })
-             .disposed(by: disposeBag)
+                guard let current = savedList.first else { return }
+
+                let hourly = current.sortedHourlyArray
+                let daily = current.sortedDailyArray
+
+                //정렬된 데이터 방출
+                self.state.hourlyItems.accept(hourly)
+                self.state.dailyItems.accept(daily)
+
+                print("🟢 CoreData에서 정렬된 시간별 \(hourly.count)개, 일별 \(daily.count)개")
+
+                // ✅ TODO: 테이블 뷰에 연결 시 reloadData 또는 diffable datasource 사용
+                savedList.forEach { weather in
+                    print("🌍 \(weather.latitude), \(weather.longitude) | \(weather.temperature ?? "-")º ")
+                }
+            })
+            .disposed(by: disposeBag)
     }
 }
