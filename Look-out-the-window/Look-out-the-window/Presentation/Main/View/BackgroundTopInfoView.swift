@@ -19,7 +19,7 @@ final class BackgroundTopInfoView: UIView {
     
     // MARK: - UI Components
     /// Rive 날씨 아이콘
-    private lazy var riveView = RiveView()
+    lazy var riveView = RiveView()
     
     private lazy var infoStackView = UIStackView().then {
         $0.axis = .vertical
@@ -35,7 +35,7 @@ final class BackgroundTopInfoView: UIView {
     }
     
     private lazy var temperature = UILabel().then {
-        $0.font = .systemFont(ofSize: 90, weight: .light)
+        $0.font = .systemFont(ofSize: 80, weight: .light)
         $0.textColor = .label
     }
     
@@ -106,14 +106,14 @@ private extension BackgroundTopInfoView {
     
     func setConstraints() {
         infoStackView.snp.makeConstraints {
-            $0.top.equalTo(self.safeAreaLayoutGuide).inset(50)
+            $0.top.equalTo(self.safeAreaLayoutGuide).inset(30)
             $0.centerX.equalToSuperview()
         }
         
         riveView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
             $0.top.equalTo(infoStackView.snp.bottom)
-            $0.width.height.equalTo(UIScreen.main.bounds.width).multipliedBy(0.5)
+            $0.width.height.equalTo(infoStackView.snp.height).multipliedBy(1.5)
         }
     }
 }
