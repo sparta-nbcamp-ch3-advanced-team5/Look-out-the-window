@@ -49,7 +49,7 @@ final class MainViewController: UIViewController {
             switch item {
             case .hourly(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
-                cell.bind(model: model)
+                cell.bind(model: model, isFirst: indexPath.item == 0)
                 return cell
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
@@ -158,6 +158,7 @@ private extension MainViewController {
         let formattedDailyModels = weather.dailyModel.map { model in
             DailyModel(
                 day: model.day,
+                day: String(model.day.prefix(1)),
                 high: Double(model.high)?.roundedString ?? model.high,
                 low: Double(model.low)?.roundedString ?? model.low,
                 weatherInfo: model.weatherInfo

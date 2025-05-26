@@ -40,8 +40,8 @@ final class HourlyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: HourlyModel) {
-        hourLabel.text = model.hour
+    func bind(model: HourlyModel, isFirst: Bool) {
+        hourLabel.text = isFirst ? "Now" : String(format: "%02d시", model.hour)
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
         weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         tempLabel.text = model.temperature
