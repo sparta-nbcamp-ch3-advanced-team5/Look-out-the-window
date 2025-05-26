@@ -50,21 +50,15 @@ final class DailyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: DailyModel, isFirst: Bool, isBottom: Bool, totalMin: Int, totalMax: Int) {
+    func bind(model: DailyModel, isFirst: Bool, isBottom: Bool) {
         dayLabel.text = isFirst ? "오늘" : model.day
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
         weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         lowTempLabel.text = model.low + "°"
         highTempLabel.text = model.high + "°"
         separatorView.isHidden = isBottom
-
-        let minTemp = Int(model.low)
-        let maxTemp = Int(model.high)
-
-        progressBar.minTemp = minTemp ?? 0
-        progressBar.maxTemp = maxTemp ?? 0
-        progressBar.totalMinTemp = totalMin
-        progressBar.totalMaxTemp = totalMax
+        
+        progressBar.updateProgress(minTemp: Int(model.low) ?? 0, maxTemp: Int(model.high) ?? 0, totalMinTemp: model.minTemp, totalMaxTemp: model.maxTemp)
     }
 
 }

@@ -20,44 +20,6 @@ final class WeatherDetailScrollView: UIView {
     private var totalMinTemp = 0
     private var totalMaxTemp = 0
     
-    lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
-        configureCell: { dataSource, collectionView, indexPath, item in
-            switch item {
-            case .hourly(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
-                cell.bind(model: model, isFirst: indexPath.item == 0)
-                return cell
-            case .daily(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
-                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast, totalMin: self.totalMinTemp, totalMax: self.totalMaxTemp)
-                return cell
-            case .detail(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
-                cell.bind(model: model)
-                return cell
-            }
-        },
-        configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
-            if indexPath.section == 0 {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                )
-                return header
-            } else if indexPath.section == 1 {
-                let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                )
-                return header
-            }
-            return UICollectionReusableView()
-        }
-    )
-    
     // MARK: - UI Components
     private lazy var verticalScrollView = UIScrollView().then {
         $0.isPagingEnabled = false
@@ -89,7 +51,6 @@ private extension WeatherDetailScrollView {
     func setupUI() {
         setViewHierarchy()
         setConstraints()
-        setRxDataSource(bottomInfoView: bottomInfoView)
     }
 
     func setViewHierarchy() {
@@ -145,65 +106,5 @@ private extension WeatherDetailScrollView {
                     }
                 }
             }.disposed(by: disposeBag)
-    }
-}
-
-// MARK: - UICollectionViewDelegate
-extension WeatherDetailScrollView: UICollectionViewDelegate {
-    func setRxDataSource(bottomInfoView: BottomInfoView) {
-        // Delegate 연결
-        bottomInfoView.collectionView.rx.setDelegate(self)
-            .disposed(by: disposeBag)
-        
-        func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
-            let formattedHourlyModels = weather.hourlyModel
-                .prefix(24) // 앞에서 24개만 사용
-                .map { model in
-                    HourlyModel(
-                        hour: model.hour.to24HourInt(),
-                        temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
-                        weatherInfo: model.weatherInfo
-                    )
-                }
-            let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
-            
-            // DailyModel 포맷팅
-            let formattedDailyModels = weather.dailyModel.map { model in
-                DailyModel(
-                    unixTime: model.unixTime,
-                    day: String(model.day.prefix(1)),
-                    high: Double(model.high)?.roundedString ?? model.high,
-                    low: Double(model.low)?.roundedString ?? model.low,
-                    weatherInfo: model.weatherInfo
-                )
-            }
-            // 전체 기간 최저/최고 기온 계산
-            let dailyHighs = formattedDailyModels.compactMap { Int($0.high) }
-            let dailyLows = formattedDailyModels.compactMap { Int($0.low) }
-            
-            totalMaxTemp = dailyHighs.max() ?? 0
-            totalMinTemp = dailyLows.min() ?? 0
-            
-            // dailyItems 생성 (이 값들을 dataSource에도 전달)
-            let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-
-            let detailModels: [DetailModel] = [
-                DetailModel(title: .uvIndex, value: weather.uvi),
-                DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
-                DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
-                DetailModel(title: .rainSnow, value: "-"),
-                DetailModel(title: .feelsLike, value: weather.tempFeelLike),
-                DetailModel(title: .humidity, value: weather.humidity),
-                DetailModel(title: .visibility, value: weather.visibility),
-                DetailModel(title: .clouds, value: weather.clouds)
-            ]
-            let detailItems = detailModels.map { MainSectionItem.detail($0) }
-            
-            return [
-                MainSection(items: hourlyItems),
-                MainSection(items: dailyItems),
-                MainSection(items: detailItems)
-            ]
-        }
     }
 }

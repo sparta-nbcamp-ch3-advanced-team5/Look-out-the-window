@@ -76,6 +76,8 @@ struct DailyModel: Hashable {
     let high: String
     let low: String
     let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
+    let maxTemp: Int
+    let minTemp: Int
 }
 
 struct DetailModel {

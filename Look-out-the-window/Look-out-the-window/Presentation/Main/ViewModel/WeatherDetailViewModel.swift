@@ -63,8 +63,9 @@ final class WeatherDetailViewModel: ViewModelProtocol {
 }
 
 //MARK: - Extension Private Methods
-private extension WeatherDetailViewModel {
-    
+extension WeatherDetailViewModel {
+    // MARK: - 네트워크 요청 및 섹션 데이터 변환
+    // 네트워크 요청 및 데이터 변환
     func getCurrentWeatherData() {
         networkManager.fetch(urlRequest: urlRequest!)
             .subscribe(with: self, onSuccess: { (owner, response: WeatherResponseDTO)  in
@@ -110,6 +111,69 @@ private extension WeatherDetailViewModel {
             }, onFailure: { owner, error  in
                 print("에러 발생: \(error)")
             })
-            .disposed(by: disposeBag)
+            .disposed(by: self.disposeBag)
+    }
+    
+    func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
+        let formattedHourlyModels = weather.hourlyModel
+            .prefix(24)
+            .map { model in
+                HourlyModel(
+                    hour: model.hour.to24HourInt(),
+                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    weatherInfo: model.weatherInfo
+                )
+            }
+        let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
+        
+        let formattedDailyModels = weather.dailyModel.map { model in
+
+            DailyModel(
+                unixTime: model.unixTime,
+                day: String(model.day.prefix(1)),
+                high: Double(model.high)?.roundedString ?? model.high,
+                low: Double(model.low)?.roundedString ?? model.low,
+                weatherInfo: model.weatherInfo,
+                maxTemp: model.maxTemp,
+                minTemp: model.minTemp
+            )
+        }
+        
+        let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
+        
+        let detailModels: [DetailModel] = [
+            DetailModel(title: .uvIndex, value: weather.uvi),
+            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
+            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
+            DetailModel(title: .rainSnow, value: "-"),
+            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
+            DetailModel(title: .humidity, value: weather.humidity),
+            DetailModel(title: .visibility, value: weather.visibility),
+            DetailModel(title: .clouds, value: weather.clouds)
+        ]
+        let detailItems = detailModels.map { MainSectionItem.detail($0) }
+        
+        return [
+            MainSection(items: hourlyItems),
+            MainSection(items: dailyItems),
+            MainSection(items: detailItems)
+        ]
+    }
+}
+// MARK: - 디버깅 용으로 임의로 만들었습니다
+extension WeatherResponseDTO: CustomStringConvertible {
+    var description: String {
+        """
+        --- WeatherResponseDTO ---
+        lat: \(lat)
+        lng: \(lng)
+        timeZone: \(timeZone)
+        timeZoneOffset: \(timeZoneOffset)
+        currentWeather: \(currentWeather)
+        minutelyRains: \(minutelyRains.count)개
+        hourlyWeathers: \(hourlyWeathers.count)개
+        dailyWeathers: \(dailyWeathers.count)개
+        -------------------------
+        """
     }
 }

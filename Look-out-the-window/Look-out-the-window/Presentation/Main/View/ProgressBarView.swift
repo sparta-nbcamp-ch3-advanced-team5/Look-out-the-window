@@ -13,23 +13,9 @@ final class ProgressBarView: UIView {
     private let baseView = UIView()
     private let rangeView = UIView()
     
-    // 해당 날짜의 온도
-    var maxTemp = 0
-    var minTemp = 0
-    
-    // 전체 구간의 온도
-    var totalMaxTemp = 0
-    var totalMinTemp = 0
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
-    }
-    
-    // 호출 타이밍 이슈로 인해 추가
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        updateProgress()
     }
     
     @available(*, unavailable)
@@ -37,18 +23,24 @@ final class ProgressBarView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateProgress() {
+    func updateProgress(minTemp: Int, maxTemp: Int, totalMinTemp: Int, totalMaxTemp: Int) {
         layoutIfNeeded()  // 레이아웃 변경사항 즉시 적용
         let totalRange = CGFloat(totalMaxTemp - totalMinTemp)  // 전체 범위
+        print("totalRange: \(totalRange)")
         guard totalRange > 0 else { return }
         
         // 위치 비율로 환산
         let minRatio = CGFloat(minTemp - totalMinTemp) / totalRange
         let maxRatio = CGFloat(maxTemp - totalMinTemp) / totalRange
         
+        print("minRatio: \(minRatio)")
+        print("maxRatio: \(maxRatio)")
+        
         let barWidth = baseView.frame.width  // 전체 기간 온도 범위의 길이
         let startX = barWidth * minRatio  // 하루기준 최저온도 (rangeView 시작점)
         let rangeWidth = barWidth * (maxRatio - minRatio)  // rangeView의 width
+        
+        print("rangeWidth: \(rangeWidth)")
         
         // x에서 시작해서 rangeWidth까지만 적용 (rangeView)
         rangeView.frame = CGRect(x: startX, y: 0, width: rangeWidth, height: baseView.frame.height)
