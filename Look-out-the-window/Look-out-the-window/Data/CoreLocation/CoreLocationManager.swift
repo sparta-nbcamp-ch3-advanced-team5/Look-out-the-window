@@ -60,10 +60,8 @@ extension CoreLocationManager {
         
         sleepTask = Task {
             repeat {
-                do {
-                    locationManager.requestLocation()
-                    try await Task.sleep(nanoseconds: second * 60)
-                }
+                locationManager.requestLocation()
+                try await Task.sleep(nanoseconds: second * 60)
             } while !Task.isCancelled
         }
     }
@@ -103,7 +101,7 @@ extension CoreLocationManager {
                                              lng: coord.longitude)
                 
                 results.append(location)
-                os_log(.debug, log: log, "Geocoding: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
+                os_log(.debug, log: log, "Geocoding: \(location.toAddress())")
             }
             
             return results
@@ -134,7 +132,7 @@ extension CoreLocationManager {
                                          lat: coord.latitude,
                                          lng: coord.longitude)
             
-            os_log(.debug, log: log, "Reverse Geocoding: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
+            os_log(.debug, log: log, "Reverse Geocoding: \(location.toAddress())")
             return location
             
         } catch {
@@ -146,7 +144,7 @@ extension CoreLocationManager {
 
 // MARK: - Location Auth Methods
 
-private extension CoreLocationManager {
+extension CoreLocationManager {
     /// 디바이스 위치 서비스가 활성화 상태인지 확인
     func checkDeviceLocationService() -> Bool {
         if CLLocationManager.locationServicesEnabled() {

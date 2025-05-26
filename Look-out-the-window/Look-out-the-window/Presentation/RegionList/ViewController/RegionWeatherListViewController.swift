@@ -27,6 +27,7 @@ final class RegionWeatherListViewController: UIViewController {
     
     // MARK: - UI Components
     
+    // TODO: 아래로 당겨서 업데이트
     private let searchController: UISearchController
     private let searchResultVC = SearchResultViewController()
     
@@ -95,23 +96,33 @@ private extension RegionWeatherListViewController {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherList
             .asDriver(onErrorJustReturn: [])
-            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ _, model, cell in
-                cell.configure(model: model)
+            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ indexPath, model, cell in
+                if CoreLocationManager.shared.currLocation.value != nil && indexPath == 0 {
+                    // 현 위치 셀 세팅
+                } else {
+                    cell.configure(model: model)
+                }
             }).disposed(by: disposeBag)
         
-        // ViewController ➡️ ViewModel
-        regionListView.getCollectionView.rx.modelSelected(RegionWeatherModel.self)
-            .bind(with: self) { owner, cell in
-                // TODO: Main 화면 present
-                os_log(.debug, log: owner.log, "Main 화면 present")
-            }.disposed(by: disposeBag)
+//        viewModel.state.currLocationWeather
+//            .bind(to: regionListView.getCollectionView.rx.)
         
+        
+        // ViewController ➡️ ViewModel
         viewModel.action.onNext(.viewDidLoad)
         
         
         // View ➡️ ViewController
         regionListView.getCollectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
+        
+        regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
+            .asDriver()
+            .drive(with: self) { owner, model in
+                // TODO: Main 화면 present
+                dump(model)
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
     }
 }
 

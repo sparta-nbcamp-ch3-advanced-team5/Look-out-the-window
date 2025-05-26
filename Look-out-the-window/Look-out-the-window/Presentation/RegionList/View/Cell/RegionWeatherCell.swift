@@ -61,15 +61,15 @@ final class RegionWeatherCell: UICollectionViewCell {
     private let riveView = RiveView()
     
     private let weatherLabel = UILabel().then {
-        $0.text = "맑음"
+        $0.text = "--"
         $0.textColor = .label
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
     
     private let lastUpdateLabel = UILabel().then {
-        $0.text = "업데이트: 5/25 오전 0:00"
+        $0.text = "업데이트: -/- -:--"
         $0.textColor = .secondaryLabel
-        $0.font = .monospacedSystemFont(ofSize: 11, weight: .regular)
+        $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
     }
     
     private let weatherAndUpdateStackView = UIStackView().then {
@@ -98,15 +98,16 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Methods
     
-    func configure(model: RegionWeatherModel) {
-        currTempLabel.text = "\(model.temp)°"
+    func configure(model: CurrentWeather) {
+        currTempLabel.text = "\(model.temperature)°"
         highTempLabel.text = "H: \(model.maxTemp)°"
         lowTempLabel.text = "L: \(model.minTemp)°"
-        locationLabel.text = model.location
+        locationLabel.text = model.address
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
-        weatherLabel.text = model.weather
-        lastUpdateLabel.text = "업데이트 \(model.updateTime)"
+        weatherLabel.text = model.skyInfo
+        lastUpdateLabel.text = "업데이트 \(model.currentTime.convertUnixToHourMinuteAndMark())"
+        // TODO: M/d a h:mm 포맷 반영
     }
 }
 

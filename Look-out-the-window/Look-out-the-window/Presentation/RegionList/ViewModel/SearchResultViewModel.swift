@@ -96,7 +96,7 @@ private extension SearchResultViewModel {
                 
                 guard let country = placemark.country,
                       let administrativeArea = placemark.administrativeArea,
-                let coord = placemark.location?.coordinate else { return }
+                      let coord = placemark.location?.coordinate else { return }
                 let locality = placemark.locality ?? ""
                 let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
                 let location = LocationModel(country: country,
@@ -105,7 +105,7 @@ private extension SearchResultViewModel {
                                              subLocality: subLocality,
                                              lat: coord.latitude,
                                              lng: coord.longitude)
-                os_log(.debug, log: log, "MKLocalSearch: \(location.country), \(location.administrativeArea), \(location.locality), \(location.subLocality)")
+                os_log(.debug, log: log, "MKLocalSearch: \(location.toAddress())")
                 
                 state.localSearchResult.accept(location)
             } catch {

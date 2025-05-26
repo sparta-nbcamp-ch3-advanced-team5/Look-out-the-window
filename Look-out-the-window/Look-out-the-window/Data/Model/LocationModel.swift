@@ -18,8 +18,8 @@ import Foundation
 struct LocationModel {
     let country: String
     let administrativeArea: String
-    let locality: String
-    let subLocality: String
+    let locality: String?
+    let subLocality: String?
     let lat: Double
     let lng: Double
     
@@ -38,5 +38,13 @@ struct LocationModel {
         self.subLocality = subLocality
         self.lat = lat
         self.lng = lng
+    }
+}
+
+extension LocationModel {
+    func toAddress() -> String {
+        let addressComponents = [country, administrativeArea, locality, subLocality]
+        let lastComponents = addressComponents.compactMap { $0 }.filter { !$0.isEmpty }.suffix(2)
+        return lastComponents.joined(separator: " ")
     }
 }
