@@ -166,7 +166,8 @@ extension WeatherDataEntity {
     // 시간별 날씨 정렬
     var sortedHourlyArray: [HourlyWeatherEntity] {
         guard let set = hourly as? Set<HourlyWeatherEntity> else { return [] }
-        let hourlySetSorted = set.sorted { $0. < $1.currentTime }
+        //주형 임시 "" 처리
+        let hourlySetSorted = set.sorted { $0.time ?? "" < $1.time ?? "" }
         print("hourlySetSorted가 정렬 되었는지 확인: \(hourlySetSorted)")
         return hourlySetSorted
     }
