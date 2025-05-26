@@ -5,6 +5,15 @@
 //  Created by 서동환 on 5/20/25.
 //
 
+// TODO: - DetailCell Header, customView 추가
+// TODO: - SF Symbol 컬러 세팅
+// TODO: - CoreData 관련 로직 추가
+
+/*
+ 데이터 종류
+ temperature: "22", maxTemp: "28", minTemp: "21", tempFeelLike: "23", skyInfo: "구름", pressure: "1006", humidity: "83", clouds: "75", uvi: "0", visibility: "10000", windSpeed: "2", windDeg: "320"
+ */
+
 import UIKit
 import RxCocoa
 import RxSwift
@@ -16,21 +25,7 @@ import CoreLocation
 /*
  HourlyModel - temperature -> ex) 14.78 -> 15 (소수점 포맷팅 필요)
  DailyModel - day(월요일 -> 월) high, low->  ex) 14.78 -> 15 (소수점 포맷팅 필요)
- 
- -> 요일 제외 온도 소수점 포맷팅 완료
- 
  DetailModel - 잘 판단이 안됨.... 팀원 협의
- */
-
-// TODO: - DetailCell Header, customView 추가
-// TODO: - CoreData 관련 로직 추가
-// TODO: - Scroll Indicator 삭제? hidden 처리
-/*
- hourly -> 24개 / 24시간제
- progress bar 너비 줄이기
- 요일은 우선 한국어
- 합치는 작업 시 scroll
- MainView 이름 변경 ex) WeatherDetailView...
  */
 
 final class MainViewController: UIViewController {
@@ -144,20 +139,21 @@ private extension MainViewController {
     }
     
     func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
-        // HourlyModel 포맷팅
-        let formattedHourlyModels = weather.hourlyModel.map { model in
-            HourlyModel(
-                hour: model.hour,
-                temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
-                weatherInfo: model.weatherInfo
-            )
-        }
+        let formattedHourlyModels = weather.hourlyModel
+            .prefix(24) // 앞에서 24개만 사용
+            .map { model in
+                HourlyModel(
+                    hour: model.hour.to24HourInt(),
+                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    weatherInfo: model.weatherInfo
+                )
+            }
         let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
-
+        
         // DailyModel 포맷팅
         let formattedDailyModels = weather.dailyModel.map { model in
             DailyModel(
-                day: model.day,
+                unixTime: model.unixTime,
                 day: String(model.day.prefix(1)),
                 high: Double(model.high)?.roundedString ?? model.high,
                 low: Double(model.low)?.roundedString ?? model.low,
@@ -190,14 +186,14 @@ private extension MainViewController {
         ]
         detailModels.debugPrintModelArray(title: "DetailModel")
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
-
+        
         return [
             MainSection(items: hourlyItems),
             MainSection(items: dailyItems),
             MainSection(items: detailItems)
         ]
     }
-
+    
 }
 
 // MARK: - 디버깅 용으로 임의로 만들었습니다
