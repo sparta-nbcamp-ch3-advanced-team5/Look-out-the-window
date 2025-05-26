@@ -10,7 +10,7 @@ import SnapKit
 import Then
 import RiveRuntime
 
-final class LodingIndicatorView: UIView {
+final class LoadingIndicatorView: UIView {
     
     private let titleLabel = UILabel().then {
         $0.text = "새로운 날씨를 불러와요."
@@ -40,7 +40,7 @@ final class LodingIndicatorView: UIView {
     }
 }
 
-private extension LodingIndicatorView {
+private extension LoadingIndicatorView {
     func setupUI() {
         riveView = riveViewModel.createRiveView()
         riveViewModel.pause()
