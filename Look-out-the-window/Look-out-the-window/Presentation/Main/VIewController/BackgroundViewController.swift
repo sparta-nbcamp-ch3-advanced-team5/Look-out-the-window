@@ -11,48 +11,76 @@ import RxSwift
 import SnapKit
 import Then
 import RiveRuntime
+import RxDataSources
+import RxCocoa
 
-struct WeatherInfo {
-    let city: String
-    let temperature: Int
-    let weather: String
-    let highestTemp: Int
-    let lowestTemp: Int
-    let rive: String
-    let time: Double
-}
 
 final class BackgroundViewController: UIViewController {
-    
-    // Mock Model
-    private let weatherInfoList: [WeatherInfo] = [
-        WeatherInfo(city: "부산", temperature: 20, weather: "약간 흐림", highestTemp: 22, lowestTemp: 18, rive: Rive.partlyCloudy, time: 0.0),
-        WeatherInfo(city: "서울", temperature: 18, weather: "맑음", highestTemp: 21, lowestTemp: 16, rive: Rive.sunny, time: 3.0),
-        WeatherInfo(city: "제주", temperature: 21, weather: "눈", highestTemp: 24, lowestTemp: 19, rive: Rive.snow, time: 5.0),
-        WeatherInfo(city: "인천", temperature: 19, weather: "비", highestTemp: 20, lowestTemp: 17, rive: Rive.rainy, time: 7.0),
-        WeatherInfo(city: "강원", temperature: 19, weather: "천둥", highestTemp: 21, lowestTemp: 18, rive: Rive.thunder, time: 9.0),
-        WeatherInfo(city: "광주", temperature: 19, weather: "흐림", highestTemp: 22, lowestTemp: 19, rive: Rive.cloudy, time: 9.5),
-        WeatherInfo(city: "뉴욕", temperature: 17, weather: "안개", highestTemp: 19, lowestTemp: 15, rive: Rive.fog, time: 10.0)
-    ]
     
     private let viewModel: BackgroundViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
+    private var weatherInfoList = [WeatherInfo]()
+    
     
     // MARK: - UI Components
+    private let dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
+        configureCell: { dataSource, collectionView, indexPath, item in
+            switch item {
+            case .hourly(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
+                cell.bind(model: model)
+                return cell
+            case .daily(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
+                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
+                cell.bind(model: model, isBottom: isLast, totalMin: 10, totalMax: 40)
+                return cell
+            case .detail(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
+                cell.bind(model: model)
+                return cell
+            }
+        },
+        configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
+            if indexPath.section == 0 {
+                let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: UICollectionView.elementKindSectionHeader,
+                    withReuseIdentifier: MainHeaderView.id,
+                    for: indexPath
+                )
+                return header
+            } else if indexPath.section == 1 {
+                let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: UICollectionView.elementKindSectionHeader,
+                    withReuseIdentifier: MainHeaderView.id,
+                    for: indexPath
+                )
+                return header
+            }
+            return UICollectionReusableView()
+        }
+    )
+    
     /// 밝기관련 뷰 시간에 따라 어두워짐.
     private let dimView = UIView()
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
     
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
-        
+    
     private lazy var scrollView = UIScrollView().then {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
+        $0.showsVerticalScrollIndicator = false
     }
     
     private let scrollContentView = UIView()
+    
+    private lazy var bottomHStackView = UIStackView().then {
+        $0.axis = .horizontal
+        $0.alignment = .fill
+    }
     
     private lazy var locationButton = UIButton().then {
         // 버튼의 SFSymbol 이미지 크기 변경 시 사용
@@ -76,6 +104,11 @@ final class BackgroundViewController: UIViewController {
         $0.pageIndicatorTintColor = .systemGray
     }
     
+    private lazy var loadingIndicatorView = UIActivityIndicatorView(style: .large).then {
+        $0.hidesWhenStopped = true
+        $0.color = .white
+    }
+    
     // MARK: - Initializers
     init(viewModel: BackgroundViewModel) {
         self.viewModel = viewModel
@@ -89,28 +122,31 @@ final class BackgroundViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        loadingIndicatorView.startAnimating()
+        bindViewModel()
         setupUI()
-        bind()
+        bindUIEvents()
     }
 }
 
 // MARK: - Setting Methods
 private extension BackgroundViewController {
     func setupUI() {
-        setAppearance()
         setViewHiearchy()
         setConstraints()
-        
-        setBackgroundViews()
+        //        setInitalBackgroundViews()
     }
     
-    func setAppearance() {
-        // 리스트의 초기값으로 첫 화면 설정
-        applyGradientBackground(time: weatherInfoList[0].time)
-    }
+    //    func setAppearance() {
+    //        // 리스트의 초기값으로 첫 화면 설정
+    //        if !weatherInfoList.isEmpty {
+    //            applyGradientBackground(time: Double(weatherInfoList[0].currentTime))
+    //        }
+    //    }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, scrollView, pageController, locationButton, listButton)
+        view.addSubviews(dimView, scrollView, bottomHStackView, loadingIndicatorView)
+        bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         scrollView.addSubview(scrollContentView)
     }
@@ -121,33 +157,37 @@ private extension BackgroundViewController {
         }
         
         scrollView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.top.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(bottomHStackView.snp.top)
         }
         
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
-            $0.height.equalTo(scrollView.snp.height)
+        }
+        
+        bottomHStackView.snp.makeConstraints {
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
+            $0.horizontalEdges.equalToSuperview().inset(20)
         }
         
         pageController.snp.makeConstraints {
-            $0.centerY.equalTo(locationButton)
             $0.centerX.equalToSuperview()
         }
-        
+                
         locationButton.snp.makeConstraints {
-            $0.leading.equalToSuperview().inset(20)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
             $0.width.height.equalTo(44)
         }
         
         listButton.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
             $0.width.height.equalTo(44)
+        }
+        
+        loadingIndicatorView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
     }
     
-    func bind() {
+    func bindUIEvents() {
         
         // 스크롤의 감속이 끝났을 때 페이징
         scrollView.rx.didEndDecelerating
@@ -162,14 +202,15 @@ private extension BackgroundViewController {
             }
             .do(onNext: { [weak self] page in
                 guard let self else { return }
-                self.applyGradientBackground(time: self.weatherInfoList[page].time)
+                self.applyGradientBackground(time: self.weatherInfoList[page].currentTime)
+                
                 // 페이징 후 페이지 rive 재생
                 backgroundViewList[page].riveViewModel.play()
             })
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
         
-        // 페이지 컨트롤 클릭 시 페이징
+        // 페이징이 되었을 시 동작 (페이지 컨트롤 클릭 시 대응)
         // 기본적으로 페이지 컨트롤 클릭 시 페이지 값이 변경되어 .valueChaned로 구현
         pageController.rx.controlEvent(.valueChanged)
             .map { [weak self] _ -> Int in
@@ -179,43 +220,76 @@ private extension BackgroundViewController {
             }
             .subscribe(onNext: { [weak self] currentPage in
                 guard let self else { return }
-                
+                // 페이징 후 스크롤 상단, 추후 메인 뷰 리팩토링 하면 스와이프 시에도 아마 적용 가능
+                scrollView.scrollsToTop = true
                 // 이전 페이지 정지, 현재 페이지 재생
                 backgroundViewList[previousPage].riveViewModel.pause()
                 backgroundViewList[currentPage].riveViewModel.play()
                 
                 let offsetX = Int(self.scrollView.frame.width) * currentPage
                 self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: self.weatherInfoList[currentPage].time)
+                self.applyGradientBackground(time: self.weatherInfoList[currentPage].currentTime)
                 
                 // 이전 페이지 업데이트
                 self.previousPage = currentPage
             })
             .disposed(by: disposeBag)
+        
+        // MARK: - Test
+        // 테스트로 왼쪽 하단 위치 버튼 클릭 시 날씨 추가
+        locationButton.rx.tap
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                let mockWeather = WeatherInfo(address: "지역1", temperature: "15", skyInfo: "비", maxTemp: "16", minTemp: "14", rive: "Rainy", currentTime: 0.3)
+                self.weatherInfoList.append(mockWeather)
+                self.reloadUI(with: mockWeather)
+            })
+            .disposed(by: disposeBag)
+        
+        listButton.rx.tap
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let self else { return }
+                let mockWeather = WeatherInfo(address: "지역2", temperature: "20", skyInfo: "천둥", maxTemp: "18", minTemp: "14", rive: "Thunderbolt", currentTime: 0.5)
+                self.weatherInfoList.append(mockWeather)
+                self.reloadUI(with: mockWeather)
+            })
+            .disposed(by: disposeBag)
     }
     
-    /// backgroundView 레이아웃 설정
-    func setBackgroundViews() {
-        for (index, weatherInfo) in weatherInfoList.enumerated() {
-            let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weatherInfo)
-            scrollContentView.addSubview(backgroundView)
-            backgroundViewList.append(backgroundView)
+    func bindViewModel() {
+        viewModel.action.onNext(.getCurrentWeather)
+        
+        viewModel.state.currentWeather
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (weather) in
+                guard let self else { return }
+                self.weatherInfoList.append(weather)
+                self.reloadUI(with: weather)
+                // 로딩 인디케이터 정지
+                self.loadingIndicatorView.stopAnimating()
+            }).disposed(by: disposeBag)
+    }
+    
+    /// 초기 내장된 backgroundViews 생성 (향후 CoreData 로드 시 사용, 현재 비활성화)
+    func setInitalBackgroundViews() {
+        
+        if !backgroundViewList.isEmpty {
+            for (index, weather) in weatherInfoList.enumerated() {
+                // Background View 추가
+                _ = setBackgroundView(index: index, weather: weather)
+            }
             
-            backgroundView.snp.makeConstraints {
-                $0.verticalEdges.equalToSuperview()
-                $0.width.equalTo(view.snp.width)
-                $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+            if let lastBackgroundView = backgroundViewList.last {
+                lastBackgroundView.snp.makeConstraints {
+                    $0.trailing.equalToSuperview()
+                }
             }
+            
+            // 첫번째 뷰 rive play
+            backgroundViewList[0].riveViewModel.play()
         }
-        
-        if let lastBackgroundView = backgroundViewList.last {
-            lastBackgroundView.snp.makeConstraints {
-                $0.trailing.equalToSuperview()
-            }
-        }
-        
-        // 첫번째 뷰 rive play
-        backgroundViewList[0].riveViewModel.play()
     }
     
     /// Gradient, 밝기 설정
@@ -225,7 +299,7 @@ private extension BackgroundViewController {
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
         //        gradientLayer.locations = [0.4, 0.6]
         gradientLayer.frame = view.bounds
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 10.0, targetMin: 0.0, targetMax: 0.5))
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.5))
         // 배경이니 제일 하단에 위치하도록
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
@@ -249,7 +323,119 @@ private extension BackgroundViewController {
         return clampedValue
     }
     
-    func bindViewModel() {
-//        viewModel.state.actionSubject
+    func reloadUI(with weather: WeatherInfo) {
+        let index = weatherInfoList.count - 1
+        
+        // 페이지 수 1일때 페이지 컨트롤러 제약은 유지한 상태로 안보이도록
+        if index == 0 {
+            pageController.alpha = 0
+        } else {
+            pageController.alpha = 1
+        }
+        
+        // pageController 업데이트
+        pageController.numberOfPages = weatherInfoList.count
+        
+        // Background View 추가
+        let backgroundView = setBackgroundView(index: index, weather: weather)
+        
+        // 첫 번째 뷰일 경우 재생 및 배경 적용
+        if index == 0 {
+            backgroundView.riveViewModel.play()
+            applyGradientBackground(time: weather.currentTime)
+        }
+    }
+    
+    /// BackgroundView 추가하는 메서드
+    private func setBackgroundView(index: Int, weather: WeatherInfo) -> BackgroundTopInfoView {
+        /// containerView = backgroundView + mainView
+        let containerView = UIView()
+        let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
+        let mainView = MainView()
+        
+        backgroundViewList.append(backgroundView)
+        
+        scrollContentView.addSubview(containerView)
+        containerView.addSubviews(backgroundView, mainView)
+        
+        containerView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            $0.width.equalTo(view.snp.width)
+            $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
+        }
+        
+        backgroundView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.height.equalTo(view.snp.height)
+        }
+        
+        mainView.snp.makeConstraints {
+            $0.top.equalTo(backgroundView.snp.bottom)
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(view.snp.height)
+        }
+
+        // scrollContentView 제약 재설정
+        scrollContentView.snp.remakeConstraints {
+            $0.edges.equalToSuperview()
+            $0.width.equalTo(view.snp.width).multipliedBy(CGFloat(weatherInfoList.count))
+            $0.height.equalTo(view.snp.height).multipliedBy(CGFloat(2.0))
+        }
+        
+        // 하단 콜렉션뷰 데이터 설정
+        setRxDataSource(mainView: mainView)
+        
+        return backgroundView
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+extension BackgroundViewController: UICollectionViewDelegate {
+    func setRxDataSource(mainView: MainView) {
+        // Delegate 연결
+        mainView.collectionView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
+        // 예시 데이터(Mock)
+        let sections = Observable.just([
+            MainSection(items: [
+                .hourly(HourlyModel(hour: "Now", temperature: "20'C", weatherInfo: "sun.min")),
+                .hourly(HourlyModel(hour: "10시", temperature: "21'C", weatherInfo: "sun.horizon.fill")),
+                .hourly(HourlyModel(hour: "11시", temperature: "22'C", weatherInfo: "sun.haze.fill")),
+                .hourly(HourlyModel(hour: "12시", temperature: "23'C", weatherInfo: "sun.rain.fill")),
+                .hourly(HourlyModel(hour: "13시", temperature: "24'C", weatherInfo: "sun.snow.fill")),
+                .hourly(HourlyModel(hour: "14시", temperature: "25'C", weatherInfo: "cloud.drizzle.fill")),
+                .hourly(HourlyModel(hour: "15시", temperature: "26'C", weatherInfo: "cloud.bolt.rain.fill")),
+                .hourly(HourlyModel(hour: "16시", temperature: "27'C", weatherInfo: "sun.max")),
+                .hourly(HourlyModel(hour: "17시", temperature: "28'C", weatherInfo: "sun.min"))
+            ]),
+            MainSection(items: [
+                .daily(DailyModel(day: "오늘", high: "35", low: "11", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "화", high: "35", low: "30", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "수", high: "32", low: "27", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "목", high: "29", low: "24", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "금", high: "24", low: "19", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "토", high: "19", low: "14", weatherInfo: "sun.min")),
+                .daily(DailyModel(day: "일", high: "16", low: "11", weatherInfo: "sun.min"))
+            ]),
+            MainSection(items: [
+                .detail(DetailModel(title: "자외선지수", value: "1", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "4", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "6", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "10", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "11", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "자외선지수", value: "15", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "일출/일몰", value: "05:20/19:45", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "바람", value: "3m/s NW", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "강수량", value: "5mm", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "체감기온", value: "20℃", weatherInfo: "sun.min")),
+                .detail(DetailModel(title: "습도", value: "70%", weatherInfo: "sun.min"))
+            ])
+        ])
+        
+        // RxDataSources 바인딩
+        sections
+            .bind(to: mainView.collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
     }
 }

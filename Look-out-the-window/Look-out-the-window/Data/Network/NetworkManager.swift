@@ -24,36 +24,20 @@ final class NetworkManager {
     ///
     /// - Note: HTTP 상태 코드가 200번대일 때만 성공으로 간주됩니다.
     /// - Warning: 응답 디코딩 실패 시 `DataError.parsingFailed` 에러가 반환됩니다.
-    func fetch<T: Decodable>(urlRequest: URLRequest) async -> Single<T> {
+    func fetch<T: Decodable>(urlRequest: URLRequest) -> Single<T> {
         return Single.create { observer in
-            Task {
-                
-                let session = Session.default
-                let request = session.request(urlRequest)
-                
-                guard let url = urlRequest.url else {
-                    observer(.failure(NetworkError.invalidURL))
-                    return
+            AF.request(urlRequest)
+                .validate(statusCode: 200..<300)
+                .responseDecodable(of: T.self) { response in
+                    switch response.result {
+                    case .success(let data):
+                        observer(.success(data))
+                    case .failure(let error):
+                        observer(.failure(error))
+                    }
                 }
-                let response = await request.serializingDecodable(T.self).response
-                
-                guard let statusCode = response.response?.statusCode,
-                      (200..<300).contains(statusCode) else {
-                    observer(.failure(NetworkError.serverError(response.response?.statusCode ?? -1)))
-                    return
-                }
-                
-                switch response.result {
-                case .success(let data):
-                    observer(.success(data))
-                case .failure(let error):
-                    observer(.failure(DataError.parsingFailed))
-                }
-                
-            }
             return Disposables.create()
         }
     }
 }
-
 

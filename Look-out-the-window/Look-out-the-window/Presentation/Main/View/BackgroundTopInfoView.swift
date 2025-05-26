@@ -87,11 +87,11 @@ private extension BackgroundTopInfoView {
     }
     
     func setAppearance() {
-        city.text = weatherInfo.city
+        city.text = weatherInfo.address
         temperature.text = "\(weatherInfo.temperature)°"
-        weather.text = weatherInfo.weather
-        highestTemp.text = "H:\(weatherInfo.highestTemp)°"
-        lowestTemp.text = "L:\(weatherInfo.lowestTemp)°"
+        weather.text = weatherInfo.skyInfo
+        highestTemp.text = "H:\(weatherInfo.maxTemp)°"
+        lowestTemp.text = "L:\(weatherInfo.minTemp)°"
     }
     
     func setViewHiearchy() {
@@ -113,7 +113,7 @@ private extension BackgroundTopInfoView {
         riveView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
             $0.top.equalTo(infoStackView.snp.bottom)
-            $0.width.height.equalTo(500)
+            $0.width.height.equalTo(UIScreen.main.bounds.width).multipliedBy(0.5)
         }
     }
 }
