@@ -326,6 +326,7 @@ private extension BackgroundViewController {
     func reloadUI(with weather: WeatherInfo) {
         let index = weatherInfoList.count - 1
         
+        // 페이지 수 1일때 페이지 컨트롤러 제약은 유지한 상태로 안보이도록
         if index == 0 {
             pageController.alpha = 0
         } else {
@@ -345,7 +346,7 @@ private extension BackgroundViewController {
         }
     }
     
-    // BackgroundView 추가
+    /// BackgroundView 추가하는 메서드
     private func setBackgroundView(index: Int, weather: WeatherInfo) -> BackgroundTopInfoView {
         /// containerView = backgroundView + mainView
         let containerView = UIView()
@@ -381,6 +382,7 @@ private extension BackgroundViewController {
             $0.height.equalTo(view.snp.height).multipliedBy(CGFloat(2.0))
         }
         
+        // 하단 콜렉션뷰 데이터 설정
         setRxDataSource(mainView: mainView)
         
         return backgroundView
