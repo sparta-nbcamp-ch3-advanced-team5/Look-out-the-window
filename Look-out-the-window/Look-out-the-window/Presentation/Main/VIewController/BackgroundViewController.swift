@@ -202,7 +202,7 @@ private extension BackgroundViewController {
             }
             .do(onNext: { [weak self] page in
                 guard let self else { return }
-                self.applyGradientBackground(time: Double(self.weatherInfoList[page].currentTime))
+                self.applyGradientBackground(time: self.weatherInfoList[page].currentTime)
                 
                 // 페이징 후 페이지 rive 재생
                 backgroundViewList[page].riveViewModel.play()
@@ -228,7 +228,7 @@ private extension BackgroundViewController {
                 
                 let offsetX = Int(self.scrollView.frame.width) * currentPage
                 self.scrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
+                self.applyGradientBackground(time: self.weatherInfoList[currentPage].currentTime)
                 
                 // 이전 페이지 업데이트
                 self.previousPage = currentPage
@@ -341,7 +341,7 @@ private extension BackgroundViewController {
         // 첫 번째 뷰일 경우 재생 및 배경 적용
         if index == 0 {
             backgroundView.riveViewModel.play()
-            applyGradientBackground(time: Double(weather.currentTime))
+            applyGradientBackground(time: weather.currentTime)
         }
     }
     
