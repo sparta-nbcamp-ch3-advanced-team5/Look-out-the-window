@@ -79,7 +79,7 @@ final class RegionWeatherCell: UITableViewCell {
     }
     
     private let lastUpdateLabel = UILabel().then {
-        $0.text = "업데이트: -/- -:--"
+        $0.text = "업데이트 -.--. XX -:--"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
     }
@@ -123,7 +123,13 @@ final class RegionWeatherCell: UITableViewCell {
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
         weatherLabel.text = model.skyInfo
-        lastUpdateLabel.text = "업데이트 \(model.currentTime.convertUnixToHourMinuteAndMark())"
+        let date = Date(timeIntervalSince1970: TimeInterval(model.currentTime))
+        let customFormat = Date.FormatStyle()
+            .month(.defaultDigits)
+            .day(.twoDigits)
+            .hour(.defaultDigits(amPM: .abbreviated))
+            .minute(.defaultDigits)
+        lastUpdateLabel.text = "업데이트 \(date.formatted(customFormat))"
         // TODO: M/d a h:mm 포맷 반영
     }
 }
