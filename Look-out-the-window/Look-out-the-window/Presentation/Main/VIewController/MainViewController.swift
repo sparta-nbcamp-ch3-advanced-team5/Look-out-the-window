@@ -23,7 +23,6 @@ import CoreLocation
  */
 
 // TODO: - DetailCell Header, customView 추가
-// TODO: - SF Symbol 컬러 세팅
 // TODO: - CoreData 관련 로직 추가
 
 final class MainViewController: UIViewController {
@@ -81,7 +80,7 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor(named: "MainBackground")
+        self.view.backgroundColor = .mainBackground
         setRxDataSource()
         requestWeatherAndBind()
     }

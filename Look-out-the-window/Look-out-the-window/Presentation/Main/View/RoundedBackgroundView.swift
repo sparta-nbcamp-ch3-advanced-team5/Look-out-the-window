@@ -12,7 +12,7 @@ final class RoundedBackgroundView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        backgroundColor = .mainBackground
         layer.cornerRadius = 20
         layer.masksToBounds = true
     }

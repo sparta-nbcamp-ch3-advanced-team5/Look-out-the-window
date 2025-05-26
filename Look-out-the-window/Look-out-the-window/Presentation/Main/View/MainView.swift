@@ -37,8 +37,8 @@ private extension MainView {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(named: "MainBackground")
-        collectionView.backgroundColor = UIColor(named: "MainBackground")
+        self.backgroundColor = .mainBackground
+        collectionView.backgroundColor = .mainBackground
     }
     
     func setViewHierarchy() {

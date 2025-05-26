@@ -54,7 +54,7 @@ private extension MainHeaderView {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        self.backgroundColor = .mainBackground
     }
     
     func setViewHierarchy() {

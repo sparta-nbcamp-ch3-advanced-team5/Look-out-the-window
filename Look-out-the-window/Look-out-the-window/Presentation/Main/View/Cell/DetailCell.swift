@@ -9,8 +9,6 @@ import UIKit
 import SnapKit
 import Then
 
-// TODO: - Default Custom View로 최대한 재사용 고려
-
 final class DetailCell: UICollectionViewCell {
     static let id = "DetailCell"
     
@@ -44,6 +42,7 @@ final class DetailCell: UICollectionViewCell {
     }
     
     func bind(model: DetailModel) {
+        // Detail Cell 헤더
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
         cellIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         titleLabel.text = model.title
@@ -88,7 +87,7 @@ private extension DetailCell {
     }
     
     func setAppearance() {
-        contentView.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        contentView.backgroundColor = .mainBackground
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
     }
