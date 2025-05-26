@@ -19,7 +19,7 @@ final class RegionWeatherCell: UICollectionViewCell {
     static let identifier = "RegionWeatherCell"
     
     private var riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
-        
+    
     // MARK: - UI Components
     
     private let currTempLabel = UILabel().then {
@@ -46,13 +46,25 @@ final class RegionWeatherCell: UICollectionViewCell {
         $0.spacing = 2
     }
     
-    private let locationLabel = UILabel().then {
+    private let locationIndicatorImageView = UIImageView().then {
+        $0.image = UIImage(systemName: "location.fill")?.withRenderingMode(.alwaysTemplate)
+        $0.contentMode = .scaleAspectFit
+        $0.tintColor = .label
+    }
+    
+    private let addressLabel = UILabel().then {
         $0.text = "Toronto, Canada"
         $0.textColor = .label
         $0.font = .systemFont(ofSize: 17)
     }
     
-    private let tempAndLocationStackView = UIStackView().then {
+    private let locationIndicatorAddressStackView = UIStackView().then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 5
+    }
+    
+    private let tempLocationStackView = UIStackView().then {
         $0.axis = .vertical
         $0.alignment = .leading
         $0.spacing = 2
@@ -72,7 +84,7 @@ final class RegionWeatherCell: UICollectionViewCell {
         $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
     }
     
-    private let weatherAndUpdateStackView = UIStackView().then {
+    private let weatherLastUpdateStackView = UIStackView().then {
         $0.axis = .vertical
         $0.alignment = .trailing
         $0.spacing = 2
@@ -102,7 +114,8 @@ final class RegionWeatherCell: UICollectionViewCell {
         currTempLabel.text = "\(model.temperature)°"
         highTempLabel.text = "H: \(model.maxTemp)°"
         lowTempLabel.text = "L: \(model.minTemp)°"
-        locationLabel.text = model.address
+        locationIndicatorImageView.isHidden = !model.isCurrLocation
+        addressLabel.text = model.address
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
         weatherLabel.text = model.skyInfo
@@ -128,15 +141,17 @@ private extension RegionWeatherCell {
     
     func setViewHierarchy() {
         self.contentView.addSubviews(currTempLabel, riveView,
-                                     tempAndLocationStackView, weatherAndUpdateStackView)
+                                     tempLocationStackView, weatherLastUpdateStackView)
         
-        tempAndLocationStackView.addArrangedSubviews(highLowTempStackView,
-                                                     locationLabel)
+        tempLocationStackView.addArrangedSubviews(highLowTempStackView,
+                                                  locationIndicatorAddressStackView)
         
         highLowTempStackView.addArrangedSubviews(highTempLabel, lowTempLabel)
         
-        weatherAndUpdateStackView.addArrangedSubviews(weatherLabel,
-                                                      lastUpdateLabel)
+        locationIndicatorAddressStackView.addArrangedSubviews(locationIndicatorImageView, addressLabel)
+        
+        weatherLastUpdateStackView.addArrangedSubviews(weatherLabel,
+                                                       lastUpdateLabel)
     }
     
     func setConstraints() {
@@ -145,13 +160,14 @@ private extension RegionWeatherCell {
             $0.leading.equalToSuperview().inset(20)
         }
         
+        // TODO: 이미지 크기 조절
         riveView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(-85)
-            $0.trailing.equalToSuperview().inset(-80)
-            $0.width.height.equalTo(350)
+            $0.trailing.equalToSuperview().inset(-70)
+            $0.width.height.equalTo(320)
         }
         
-        tempAndLocationStackView.snp.makeConstraints {
+        tempLocationStackView.snp.makeConstraints {
             $0.leading.equalTo(currTempLabel)
             $0.bottom.equalToSuperview().inset(20)
             $0.width.greaterThanOrEqualTo(180)
@@ -161,9 +177,13 @@ private extension RegionWeatherCell {
             $0.width.equalTo(100)
         }
         
-        weatherAndUpdateStackView.snp.makeConstraints {
+        locationIndicatorImageView.snp.makeConstraints {
+            $0.width.height.equalTo(15)
+        }
+        
+        weatherLastUpdateStackView.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(tempAndLocationStackView)
+            $0.bottom.equalTo(tempLocationStackView)
         }
     }
     

@@ -27,20 +27,9 @@ final class RegionWeatherListViewController: UIViewController {
 //    private let itemSpacing: CGFloat = 30
     
     private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
-        switch item {
-        case let .currLocationWeather(weather):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
-            
-            cell.configure(model: weather)
-            return cell
-            
-        case let .regionWeather(weather):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
-            
-            cell.configure(model: weather)
-            return cell
-            
-        }
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
+        cell.configure(model: item)
+        return cell
     }
     
     // MARK: - UI Components
@@ -112,16 +101,6 @@ private extension RegionWeatherListViewController {
     
     func bind() {
         // ViewModel ➡️ ViewController
-//        viewModel.state.regionWeatherListSectionRelay
-//            .asDriver(onErrorJustReturn: [])
-//            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ indexPath, model, cell in
-//                if CoreLocationManager.shared.currLocationRelay.value != nil && indexPath == 0 {
-//                    // 현 위치 셀 세팅
-//                } else {
-//                    cell.configure(model: model)
-//                }
-//            }).disposed(by: disposeBag)
-        
         viewModel.state.regionWeatherListSectionRelay
             .asDriver(onErrorJustReturn: [])
             .drive(regionListView.getCollectionView.rx.items(dataSource: dataSource))

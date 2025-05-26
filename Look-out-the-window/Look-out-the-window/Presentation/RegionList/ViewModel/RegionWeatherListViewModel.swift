@@ -21,8 +21,6 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     
     private let networkManager = NetworkManager()
     
-    private var regionWeatherListSections = [RegionWeatherListSection]()
-    
     // MARK: - Action (ViewController ➡️ ViewModel)
     
     enum Action {
@@ -38,7 +36,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     struct State {
         let actionSubject = PublishSubject<Action>()
         
-        let regionWeatherListSectionRelay = PublishRelay<[RegionWeatherListSection]>()
+        let regionWeatherListSectionRelay = BehaviorRelay<[RegionWeatherListSection]>(value: [])
     }
     var state = State()
     
@@ -50,7 +48,6 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
         CoreLocationManager.shared.currLocationRelay
             .subscribe(with: self) { owner, currLocation in
                 // 현재 위치가 nil이 아니면 업데이트
-                // TODO: CoreData에 현재위치인지 식별하는 변수 필요
                 guard let currLocation,
                       let request = APIEndpoints.getURLRequest(
                         .weather,
@@ -62,22 +59,35 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                       ) else { return }
                 
                 let networkRequests: Single<WeatherResponseDTO> = owner.networkManager.fetch(urlRequest: request)
-                
                 networkRequests
                     .subscribe(with: self) { owner, responseDTO in
-                        let currLocationWeather = responseDTO.toCurrentWeather()
+                        let currLocationWeather = responseDTO.toCurrentWeather(address: currLocation.toAddress(), isCurrLocation: true)
                         
-                        let currLocationWeatherItems =  [currLocationWeather].map { RegionWeatherListItem.currLocationWeather($0) }
+                        var regionWeatherListSections = owner.state.regionWeatherListSectionRelay.value
                         
-                        let regionWeatherListSection = RegionWeatherListSection.currLocation(currLocationWeatherItems)
+                        // 현 위치에 해당하는 날씨 데이터가 있는지 확인
+                        if let regionWeatherListSection = regionWeatherListSections.first {
+                           var regionWeatherList = regionWeatherListSection.items
+                            // 현 위치 주소와 같은 날씨 데이터가 있는지 확인
+                            if let index = regionWeatherList.firstIndex(where: { $0.address == currLocation.toAddress() }) {
+                                // 같으면 해당 데이터를 0번째 인덱스로 순서 변경
+                                let currLocationWeather = regionWeatherList.remove(at: index)
+                                regionWeatherList.insert(currLocationWeather, at: 0)
+                                
+                                // 새로운 섹션 반영
+                                let newRegionWeatherListSections = [RegionWeatherListSection(items: regionWeatherList)]
+                                owner.state.regionWeatherListSectionRelay.accept(newRegionWeatherListSections)
+                            } else {
+                                // 없으면 0번째 인덱스에 현 위치 데이터 추가, 섹션 반영
+                                regionWeatherListSections.insert(RegionWeatherListSection(items: [currLocationWeather]), at: 0)
+                                owner.state.regionWeatherListSectionRelay.accept(regionWeatherListSections)
+                            }
+                        }
                         
-                        owner.regionWeatherListSections.insert(regionWeatherListSection, at: 0)
-                        owner.state.regionWeatherListSectionRelay.accept(owner.regionWeatherListSections)
+                        
                     } onFailure: { owner, error in
                         os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
                     }.disposed(by: owner.disposeBag)
-
-                
             }.disposed(by: disposeBag)
         
         
@@ -124,15 +134,11 @@ private extension RegionWeatherListViewModel {
         
         Single.zip(networkRequests)
             .subscribe(with: self) { owner, responseDTOList in
-                owner.regionWeatherListSections.removeAll()
-                
                 let regionWeatherList = responseDTOList.map { $0.toCurrentWeather() }
                 
-                let regionWeatherListItems =  regionWeatherList.map { RegionWeatherListItem.regionWeather($0) }
-                let regionWeatherListSection = RegionWeatherListSection.regionList(regionWeatherListItems)
+                let regionWeatherListSection = RegionWeatherListSection(items: regionWeatherList)
                 
-                owner.regionWeatherListSections.append(regionWeatherListSection)
-                owner.state.regionWeatherListSectionRelay.accept(owner.regionWeatherListSections)
+                owner.state.regionWeatherListSectionRelay.accept([regionWeatherListSection])
             } onFailure: { owner, error in
                 // TODO: 기존 데이터 전달
 //                owner.state.regionWeatherListRelay.accept(oldWeatherList)

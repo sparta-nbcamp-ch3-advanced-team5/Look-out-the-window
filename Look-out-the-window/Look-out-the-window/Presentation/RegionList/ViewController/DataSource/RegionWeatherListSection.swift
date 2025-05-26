@@ -9,34 +9,15 @@ import Foundation
 
 import RxDataSources
 
-enum RegionWeatherListSection {
-    case currLocation([RegionWeatherListItem])
-    case regionList([RegionWeatherListItem])
-}
-
-enum RegionWeatherListItem {
-    case currLocationWeather(CurrentWeather)
-    case regionWeather(CurrentWeather)
+struct RegionWeatherListSection {
+    var items: [CurrentWeather]
 }
 
 extension RegionWeatherListSection: SectionModelType {
-    typealias Item = RegionWeatherListItem
+    typealias Item = CurrentWeather
     
-    var items: [RegionWeatherListItem] {
-        switch self {
-        case .currLocation(let items):
-            return items.map { $0 }
-        case .regionList(let items):
-            return items.map { $0 }
-        }
-    }
-    
-    init(original: RegionWeatherListSection, items: [RegionWeatherListItem]) {
-        switch original {
-        case .currLocation(let items):
-            self = .currLocation(items)
-        case .regionList(let items):
-            self = .regionList(items)
-        }
+    init(original: RegionWeatherListSection, items: [CurrentWeather]) {
+        self = original
+        self.items = items
     }
 }
