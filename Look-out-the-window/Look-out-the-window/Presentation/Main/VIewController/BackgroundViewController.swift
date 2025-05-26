@@ -73,6 +73,10 @@ final class BackgroundViewController: UIViewController {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
         $0.showsVerticalScrollIndicator = false
+        // 스크롤 뷰 상단으로 튀지 않도록 자동 조정 방지
+        if #available(iOS 11.0, *) {
+            $0.contentInsetAdjustmentBehavior = .never
+        }
     }
     
     private let scrollContentView = UIView()
@@ -157,7 +161,8 @@ private extension BackgroundViewController {
         }
         
         scrollView.snp.makeConstraints {
-            $0.top.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
+            $0.top.equalToSuperview()
+            $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
             $0.bottom.equalTo(bottomHStackView.snp.top)
         }
         
@@ -358,14 +363,14 @@ private extension BackgroundViewController {
         containerView.addSubviews(backgroundView, bottomInfoView)
         
         containerView.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview()
+            $0.top.bottom.equalTo(scrollContentView)
             $0.width.equalTo(view.snp.width)
             $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
         }
         
         backgroundView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
-            $0.height.equalTo(view.snp.height)
+            $0.height.equalTo(UIScreen.main.bounds.height).multipliedBy(0.6)
         }
         
         bottomInfoView.snp.makeConstraints {
@@ -376,9 +381,10 @@ private extension BackgroundViewController {
         
         // scrollContentView 제약 재설정
         scrollContentView.snp.remakeConstraints {
+            $0.top.equalToSuperview()
             $0.edges.equalToSuperview()
             $0.width.equalTo(view.snp.width).multipliedBy(CGFloat(weatherInfoList.count))
-            $0.height.equalTo(view.snp.height).multipliedBy(CGFloat(2.0))
+            $0.height.equalTo(view.snp.height).multipliedBy(2.8)
         }
         
         // 하단 콜렉션뷰 데이터 설정
