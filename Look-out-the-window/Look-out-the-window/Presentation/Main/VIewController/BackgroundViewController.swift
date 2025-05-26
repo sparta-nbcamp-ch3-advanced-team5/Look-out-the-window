@@ -351,12 +351,12 @@ private extension BackgroundViewController {
         /// containerView = backgroundView + mainView
         let containerView = UIView()
         let backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
-        let weatherDetailView = WeatherDetailView()
+        let bottomInfoView = BottomInfoView()
         
         backgroundViewList.append(backgroundView)
         
         scrollContentView.addSubview(containerView)
-        containerView.addSubviews(backgroundView, weatherDetailView)
+        containerView.addSubviews(backgroundView, bottomInfoView)
         
         containerView.snp.makeConstraints {
             $0.top.bottom.equalToSuperview()
@@ -369,7 +369,7 @@ private extension BackgroundViewController {
             $0.height.equalTo(view.snp.height)
         }
         
-        weatherDetailView.snp.makeConstraints {
+        bottomInfoView.snp.makeConstraints {
             $0.top.equalTo(backgroundView.snp.bottom)
             $0.leading.trailing.bottom.equalToSuperview()
             $0.height.equalTo(view.snp.height)

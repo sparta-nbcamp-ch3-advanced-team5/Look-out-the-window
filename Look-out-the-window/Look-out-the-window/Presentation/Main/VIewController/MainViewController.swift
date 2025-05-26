@@ -30,7 +30,7 @@ import CoreLocation
 
 final class MainViewController: UIViewController {
     
-    private let weatherDetailView = WeatherDetailView()
+    private let bottomInfoView = BottomInfoView()
     private let disposeBag = DisposeBag()
     
     private var totalMinTemp = 0
@@ -78,7 +78,7 @@ final class MainViewController: UIViewController {
     )
     
     override func loadView() {
-        self.view = weatherDetailView
+        self.view = bottomInfoView
     }
     
     override func viewDidLoad() {
@@ -91,11 +91,11 @@ final class MainViewController: UIViewController {
 
 extension MainViewController: UICollectionViewDelegate {
     func setRxDataSource() {
-        weatherDetailView.collectionView.rx.setDelegate(self)
+        bottomInfoView.collectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
         sectionsRelay
-            .bind(to: weatherDetailView.collectionView.rx.items(dataSource: dataSource))
+            .bind(to: bottomInfoView.collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
 }

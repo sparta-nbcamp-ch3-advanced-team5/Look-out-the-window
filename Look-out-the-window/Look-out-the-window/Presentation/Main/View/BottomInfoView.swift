@@ -1,5 +1,5 @@
 //
-//  WeatherDetailView.swift
+//  BottomInfoView.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/20/25.
@@ -11,7 +11,7 @@ import SnapKit
 import Then
 import RxDataSources
 
-final class WeatherDetailView: UIView {
+final class BottomInfoView: UIView {
     
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: MainCompositionalLayout.create())
     
@@ -28,7 +28,7 @@ final class WeatherDetailView: UIView {
     }
 }
 
-private extension WeatherDetailView {
+private extension BottomInfoView {
     func setupUI() {
         setAppearance()
         setViewHierarchy()
