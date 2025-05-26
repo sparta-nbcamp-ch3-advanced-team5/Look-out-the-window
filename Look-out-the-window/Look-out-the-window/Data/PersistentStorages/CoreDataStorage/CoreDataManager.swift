@@ -13,11 +13,18 @@ final class CoreDataManager {
 
     private init() {}
 
+
+    //주형: 명시적 데이터 모델 로딩 방식 이유: model 엔티티가 중복되는 오류가 발생했었음
     lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "CoreDataStorage")
+        guard let modelURL = Bundle.main.url(forResource: "CoreDataStorage", withExtension: "momd"),
+              let model = NSManagedObjectModel(contentsOf: modelURL) else {
+            fatalError("CoreData 모델 로드 실패")
+        }
+
+        let container = NSPersistentContainer(name: "CoreDataStorage", managedObjectModel: model)
         container.loadPersistentStores { _, error in
             if let error = error {
-                fatalError("CoreData 로딩 실패: \(error)")
+                fatalError("CoreData PersistentStore 로딩 실패: \(error)")
             }
         }
         return container
@@ -27,7 +34,7 @@ final class CoreDataManager {
         persistentContainer.viewContext
     }
 
-    // MARK: create
+    // MARK: create 주형: 수정할 부분 위도,경도 param 필요없어짐
     func saveWeatherData(current: CurrentWeather, latitude: Double, longitude: Double) {
         let weather = WeatherDataEntity(context: context)
         weather.latitude = latitude
@@ -49,6 +56,7 @@ final class CoreDataManager {
         weather.rive = current.rive
         weather.currentMomentValue = current.currentMomentValue
         weather.timestamp = Date()
+        weather.isCurrLocation = false
 
 
         //모델에 속성명 맞게 수정
@@ -65,6 +73,7 @@ final class CoreDataManager {
         // 일별 날씨 저장 (DailyWeatherEntity)
         current.dailyModel.forEach { day in
             let daily = DailyWeatherEntity(context: context)
+            daily.currentTime = Int64(day.unixTime)
             daily.day = day.day
             daily.minTemp = day.low
             daily.maxTemp = day.high
@@ -85,8 +94,12 @@ final class CoreDataManager {
     func fetchWeatherData() -> [WeatherDataEntity] {
         let request: NSFetchRequest<WeatherDataEntity> = WeatherDataEntity.fetchRequest()
 
+        // hour.hour < unix 값이라 String값으로 변환 메서드 작성 불러온 값을 변환
+        // NSSet unix 값으로 들어오면 정렬하기
+
         do {
             let result = try context.fetch(request)
+            print("coredata fetch 출력 \(result)")
             return result
         } catch {
             print("\(error.localizedDescription)")
@@ -115,5 +128,55 @@ final class CoreDataManager {
         } catch {
             print("\(error.localizedDescription)")
         }
+    }
+
+    //주소 기반 fetch
+    func fetchWeather(for address: String?) -> WeatherDataEntity? {
+        guard let address = address else { return nil }
+
+        let request: NSFetchRequest<WeatherDataEntity> = WeatherDataEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "address == %@", address)
+        request.fetchLimit = 1
+
+        do {
+            return try context.fetch(request).first
+        } catch {
+            print("주소 기반 fetch 실패: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    //주형 동환님 앱 실행시 위도 경도 저장
+    func saveLatLngAppStarted(current: CurrentWeather, latitude: Double, longitude: Double) {
+        let weather = WeatherDataEntity(context: context)
+        weather.latitude = latitude
+        weather.longitude = longitude
+
+        do {
+            try context.save()
+        } catch {
+            print("\(error.localizedDescription)")
+        }
+    }
+}
+
+extension WeatherDataEntity {
+
+
+    // 시간별 날씨 정렬
+    var sortedHourlyArray: [HourlyWeatherEntity] {
+        guard let set = hourly as? Set<HourlyWeatherEntity> else { return [] }
+        //주형 임시 "" 처리
+        let hourlySetSorted = set.sorted { $0.time ?? "" < $1.time ?? "" }
+        print("hourlySetSorted가 정렬 되었는지 확인: \(hourlySetSorted)")
+        return hourlySetSorted
+    }
+
+    // 일별 날씨 정렬
+    var sortedDailyArray: [DailyWeatherEntity] {
+        guard let set = daily as? Set<DailyWeatherEntity> else { return [] }
+        let DailySetsorted = set.sorted { $0.currentTime < $1.currentTime }
+        print("DailySetsorted가 정렬 되었는지 확인: \(DailySetsorted)")
+        return DailySetsorted
     }
 }
