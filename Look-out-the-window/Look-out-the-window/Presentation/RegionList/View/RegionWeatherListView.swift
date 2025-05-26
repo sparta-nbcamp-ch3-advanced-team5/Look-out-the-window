@@ -15,17 +15,17 @@ final class RegionWeatherListView: UIView {
     
     // MARK: - UI Components
     
-    private lazy var regionListCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout()).then {
+    private lazy var regionListTableView = UITableView(frame: .zero, style: .insetGrouped).then {
         $0.backgroundColor = .clear
-        $0.showsHorizontalScrollIndicator = false
+        $0.separatorStyle = .none
         $0.showsVerticalScrollIndicator = false
     }
     // TODO: 토스트 메세지
     
     // MARK: - Getter
     
-    var getCollectionView: UICollectionView {
-        return regionListCollectionView
+    var getTableView: UITableView {
+        return regionListTableView
     }
     
     // MARK: - Initializer
@@ -49,33 +49,12 @@ private extension RegionWeatherListView {
     }
     
     func setViewHierarchy() {
-        self.addSubview(regionListCollectionView)
+        self.addSubview(regionListTableView)
     }
     
     func setConstraints() {
-        regionListCollectionView.snp.makeConstraints {
+        regionListTableView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-    }
-}
-
-private extension RegionWeatherListView {
-    func createLayout() -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout(section: createListSection())
-    }
-    
-    func createListSection() -> NSCollectionLayoutSection {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                              heightDimension: .absolute(220))
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
-        
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .estimated(1000))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
-        let section = NSCollectionLayoutSection(group: group)
-        
-        return section
     }
 }

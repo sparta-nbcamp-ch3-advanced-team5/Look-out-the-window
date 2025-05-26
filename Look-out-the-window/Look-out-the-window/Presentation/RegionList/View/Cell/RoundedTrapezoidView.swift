@@ -53,6 +53,7 @@ final class RoundedTrapezoidView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.frame = self.frame.inset(by: UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0))
     }
     
     required init?(coder: NSCoder) {

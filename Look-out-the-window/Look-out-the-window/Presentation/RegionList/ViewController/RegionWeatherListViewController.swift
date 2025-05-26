@@ -23,8 +23,8 @@ final class RegionWeatherListViewController: UIViewController {
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
-    private let dataSource = RxCollectionViewSectionedAnimatedDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
+    private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection> { dataSource, tableView, indexPath, item in
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
         cell.configure(model: item)
         return cell
     }
@@ -72,8 +72,10 @@ private extension RegionWeatherListViewController {
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
         
+        self.navigationItem.title = "날씨"
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
+        self.navigationController?.navigationBar.prefersLargeTitles = true
         
         searchController.searchBar.placeholder = "도시 또는 우편번호 검색"
         searchController.hidesNavigationBarDuringPresentation = true
@@ -100,7 +102,7 @@ private extension RegionWeatherListViewController {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherListSectionRelay
             .asDriver(onErrorJustReturn: [])
-            .drive(regionListView.getCollectionView.rx.items(dataSource: dataSource))
+            .drive(regionListView.getTableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
         
@@ -109,43 +111,47 @@ private extension RegionWeatherListViewController {
         
         
         // View ➡️ ViewController
-//        regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
-//            .asDriver()
-//            .drive(with: self) { owner, model in
-//                // TODO: Main 화면 present
-//                dump(model)
-//                os_log(.debug, log: owner.log, "Main 화면 present")
-//            }.disposed(by: disposeBag)
+        regionListView.getTableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
         
-        // 현재 index값 안받아와짐
-        Observable.zip(
-            regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self),
-            regionListView.getCollectionView.rx.itemSelected
-        )
-        .asDriver(onErrorDriveWith: .empty())
-        .drive(with: self) { owner, tuple in
-            let (model, indexPath) = tuple
-            
-            print("선택된 indexPath.row: \(indexPath.row)")
-            
-            let detailVC = WeatherDetailViewController(
-                viewModel: WeatherDetailViewModel(),
-                currentPage: indexPath.row // 인덱스 전달
-            )
-            owner.navigationController?.pushViewController(detailVC, animated: false)
-            
-            dump(model)
-            os_log(.debug, log: owner.log, "Main 화면 present")
-        }
-        .disposed(by: disposeBag)
+        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
+            .asDriver()
+            .drive(with: self) { owner, model in
+                // TODO: Main 화면 present
+                self.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
+                dump(model)
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
     }
 }
 
-// MARK: - UICollectionView Methods
+// MARK: - UITableView Methods
 
 private extension RegionWeatherListViewController {
     func configureCollectionView() {
-        regionListView.getCollectionView.register(RegionWeatherCell.self, forCellWithReuseIdentifier: RegionWeatherCell.identifier)
+        regionListView.getTableView.register(RegionWeatherCell.self, forCellReuseIdentifier: RegionWeatherCell.identifier)
+    }
+}
+
+extension RegionWeatherListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 220
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return UIView()
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        return UIView()
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
     }
 }
 

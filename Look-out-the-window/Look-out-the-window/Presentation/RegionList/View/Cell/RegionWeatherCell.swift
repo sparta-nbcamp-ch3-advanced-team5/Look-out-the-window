@@ -11,8 +11,8 @@ import RiveRuntime
 import SnapKit
 import Then
 
-/// 지역 날씨 리스트 `UICollectionViewCell`
-final class RegionWeatherCell: UICollectionViewCell {
+/// 지역 날씨 리스트 `UITableViewCell`
+final class RegionWeatherCell: UITableViewCell {
     
     // MARK: - Properties
     
@@ -92,8 +92,9 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Initializer
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
         setupUI()
     }
     
@@ -105,6 +106,8 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        self.contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0))
+        self.backgroundView?.frame = self.contentView.frame
         setGradient()
     }
     
@@ -116,6 +119,7 @@ final class RegionWeatherCell: UICollectionViewCell {
         lowTempLabel.text = "L: \(model.minTemp)°"
         locationIndicatorImageView.isHidden = !model.isCurrLocation
         addressLabel.text = model.address
+        // TODO: 애니메이션 싱크?
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
         weatherLabel.text = model.skyInfo
@@ -187,7 +191,7 @@ private extension RegionWeatherCell {
     }
     
     func setGradient() {
-        self.backgroundView = RoundedTrapezoidView(frame: self.frame)
+        self.backgroundView = RoundedTrapezoidView(frame: self.bounds)
         
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds
