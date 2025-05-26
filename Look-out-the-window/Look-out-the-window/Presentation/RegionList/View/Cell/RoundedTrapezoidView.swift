@@ -1,5 +1,5 @@
 //
-//  RegionWeatherCellBGView.swift
+//  RoundedTrapezoidView.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/22/25.
@@ -8,7 +8,7 @@
 import UIKit
 
 /// `RegionWeatherCell`에 사용되는 사다리꼴 모양 배경 `UIView`
-final class RegionWeatherCellBGView: UIView {
+final class RoundedTrapezoidView: UIView {
     
     // MARK: - Lifecycle
     

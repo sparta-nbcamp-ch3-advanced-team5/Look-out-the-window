@@ -60,7 +60,7 @@ extension CoreLocationManager {
 
         sleepTask = Task {
             repeat {
-                locationManager.requestLocation()
+                locationManager.startUpdatingLocation()
                 try await Task.sleep(nanoseconds: second * 60)
             } while !Task.isCancelled
         }
@@ -183,6 +183,7 @@ extension CoreLocationManager: CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         let lat = location.coordinate.latitude
         let lng = location.coordinate.longitude
+        locationManager.stopUpdatingLocation()
         os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
 
         Task {

@@ -187,7 +187,7 @@ private extension RegionWeatherCell {
     }
     
     func setGradient() {
-        self.backgroundView = RegionWeatherCellBGView(frame: self.frame)
+        self.backgroundView = RoundedTrapezoidView(frame: self.frame)
         
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds
