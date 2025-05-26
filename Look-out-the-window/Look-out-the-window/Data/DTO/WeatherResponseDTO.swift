@@ -173,9 +173,9 @@ extension WeatherResponseDTO {
         }
     }
     
-    func toCurrentWeather() -> CurrentWeather {
+    func toCurrentWeather(address: String? = nil, isCurrLocation: Bool = false) -> CurrentWeather {
         return CurrentWeather(
-            address: nil,
+            address: address,
             lat: lat,
             lng: lng,
             currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,
@@ -196,7 +196,8 @@ extension WeatherResponseDTO {
             windDeg: String(self.currentWeather.windDeg),
             rive: toRiveString(),
             hourlyModel: self.hourlyWeathers.map{ $0.toHourlyModel() },
-            dailyModel: self.dailyWeathers.map{ $0.toDailyModel() }
+            dailyModel: self.dailyWeathers.map{ $0.toDailyModel() },
+            isCurrLocation: isCurrLocation
         )
     }
 }

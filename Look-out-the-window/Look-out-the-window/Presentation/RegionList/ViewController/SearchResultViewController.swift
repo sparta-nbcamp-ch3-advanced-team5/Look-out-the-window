@@ -75,28 +75,24 @@ private extension SearchResultViewController {
                 owner.viewModel.action.onNext(.searchLocation(text: text))
             }.disposed(by: disposeBag)
         
-        searchResultView.getTableView.rx.itemSelected
-            .bind(with: self) { owner, indexPath in
-                if let cell = owner.searchResultView.getTableView.cellForRow(at: indexPath) as? SearchResultCell {
-                    owner.delegate?.cellDidTapped()
-                    owner.viewModel.action.onNext(.localSearch(location: cell.getLocationLabel.text ?? ""))
-                }
+        searchResultView.getTableView.rx.modelSelected(SearchResultModel.self)
+            .bind(with: self) { owner, model in
+                owner.delegate?.cellDidTapped()
+                owner.viewModel.action.onNext(.localSearch(location: model.address))
             }.disposed(by: disposeBag)
 
-        
+
         // ViewModel ➡️ ViewController
         viewModel.state.searchResults.asDriver(onErrorJustReturn: [])
-            .drive(searchResultView.getTableView.rx.items(cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { indexPath, result, cell in
-                if result.subtitle.isEmpty {
-                    cell.configure(location: "\(result.title)")
-                } else {
-                    cell.configure(location: "\(result.title) \(result.subtitle)")
-                }
-            }.disposed(by: disposeBag)
+            .drive(searchResultView.getTableView.rx.items(
+                cellIdentifier: SearchResultCell.identifier, cellType: SearchResultCell.self)) { _, model, cell in
+                    cell.configure(model: model)
+                }.disposed(by: disposeBag)
         
         viewModel.state.localSearchResult.asDriver(onErrorJustReturn: LocationModel())
             .drive(with: self) { owner, location in
                 // TODO: - Register 화면 present
+                dump(location)
                 os_log(.debug, log: owner.log, "Register 화면 present")
             }.disposed(by: disposeBag)
         

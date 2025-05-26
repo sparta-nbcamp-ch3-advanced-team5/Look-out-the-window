@@ -20,7 +20,7 @@ final class SearchResultViewModel: NSObject, ViewModelProtocol {
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     let disposeBag = DisposeBag()
-
+    
     private var currLocalSearch: MKLocalSearch?
     private let searchCompleter = MKLocalSearchCompleter()
     
@@ -39,7 +39,7 @@ final class SearchResultViewModel: NSObject, ViewModelProtocol {
     struct State {
         let actionSubject = PublishSubject<Action>()
         
-        let searchResults = BehaviorRelay<[MKLocalSearchCompletion]>(value: [])
+        let searchResults = BehaviorRelay<[SearchResultModel]>(value: [])
         let localSearchResult = PublishRelay<LocationModel>()
     }
     var state = State()
@@ -82,7 +82,7 @@ private extension SearchResultViewModel {
         
         currLocalSearch?.cancel()
         currLocalSearch = localSearch
-
+        
         defer {
             currLocalSearch = nil
         }
@@ -93,19 +93,19 @@ private extension SearchResultViewModel {
                 let response = try await localSearch.start()
                 guard let item = response.mapItems.first else { return }
                 let placemark = item.placemark
-                dump(placemark)
                 
-                guard let administrativeArea = placemark.administrativeArea else { return }
+                guard let country = placemark.country,
+                      let administrativeArea = placemark.administrativeArea,
+                      let coord = placemark.location?.coordinate else { return }
                 let locality = placemark.locality ?? ""
                 let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
-                let areasOfInterest = placemark.areasOfInterest?.first ?? ""
-                let coord = placemark.location?.coordinate
-                let location = LocationModel(administrativeArea: administrativeArea,
+                let location = LocationModel(country: country,
+                                             administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             areasOfInterest: areasOfInterest,
-                                             lat: coord?.latitude ?? 37.574187,
-                                             lng: coord?.longitude ?? 126.976882)
+                                             lat: coord.latitude,
+                                             lng: coord.longitude)
+                os_log(.debug, log: log, "MKLocalSearch: \(location.toAddress())")
                 
                 state.localSearchResult.accept(location)
             } catch {
@@ -119,7 +119,14 @@ private extension SearchResultViewModel {
 
 extension SearchResultViewModel: MKLocalSearchCompleterDelegate {
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        state.searchResults.accept(completer.results)
+        let models: [SearchResultModel] = completer.results.map {
+            if $0.subtitle.isEmpty {
+                return SearchResultModel(address: $0.title, titleHighlightRange: $0.titleHighlightRanges.first?.rangeValue)
+            } else {
+                return SearchResultModel(address: "\($0.title) \($0.subtitle)", titleHighlightRange: $0.titleHighlightRanges.first?.rangeValue)
+            }
+        }
+        state.searchResults.accept(models)
     }
     
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: any Error) {

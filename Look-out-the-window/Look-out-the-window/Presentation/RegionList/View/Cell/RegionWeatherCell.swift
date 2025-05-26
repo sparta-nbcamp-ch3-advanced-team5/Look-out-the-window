@@ -1,5 +1,5 @@
 //
-//  RegionCell.swift
+//  RegionWeatherCell.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/22/25.
@@ -7,25 +7,20 @@
 
 import UIKit
 
+import RiveRuntime
 import SnapKit
 import Then
 
-import RiveRuntime
-
-/// 지역 리스트 `UITableViewCell`
-final class RegionCell: UITableViewCell {
+/// 지역 날씨 리스트 `UICollectionViewCell`
+final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Properties
     
-    static let identifier = "RegionCell"
+    static let identifier = "RegionWeatherCell"
     
-    private(set) var riveViewModel: RiveViewModel
-    
-    
+    private var riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
     
     // MARK: - UI Components
-    
-    private lazy var riveView = RiveView()
     
     private let currTempLabel = UILabel().then {
         $0.text = "20°"
@@ -34,13 +29,13 @@ final class RegionCell: UITableViewCell {
     }
     
     private let highTempLabel = UILabel().then {
-        $0.text = "H: -10°"
+        $0.text = "H: --°"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
     
     private let lowTempLabel = UILabel().then {
-        $0.text = "L: -21°"
+        $0.text = "L: --°"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
     }
@@ -51,37 +46,54 @@ final class RegionCell: UITableViewCell {
         $0.spacing = 2
     }
     
-    private let locationLabel = UILabel().then {
+    private let locationIndicatorImageView = UIImageView().then {
+        $0.image = UIImage(systemName: "location.fill")?.withRenderingMode(.alwaysTemplate)
+        $0.contentMode = .scaleAspectFit
+        $0.tintColor = .label
+    }
+    
+    private let addressLabel = UILabel().then {
         $0.text = "Toronto, Canada"
         $0.textColor = .label
         $0.font = .systemFont(ofSize: 17)
     }
     
-    private let tempAndLocationStack = UIStackView().then {
+    private let locationIndicatorAddressStackView = UIStackView().then {
+        $0.axis = .horizontal
+        $0.alignment = .center
+        $0.spacing = 5
+    }
+    
+    private let tempLocationStackView = UIStackView().then {
         $0.axis = .vertical
         $0.alignment = .leading
         $0.spacing = 2
     }
     
-//    private let weatherImageView = UIImageView().then {
-//        $0.image = UIImage(systemName: "cloud.sun.rain.fill", withConfiguration: UIImage.SymbolConfiguration.preferringMulticolor())
-//        $0.contentMode = .scaleAspectFit
-//    }
+    private let riveView = RiveView()
     
-    private let windLabel = UILabel().then {
-        $0.text = "Fast Wind"
+    private let weatherLabel = UILabel().then {
+        $0.text = "--"
         $0.textColor = .label
-        $0.font = .systemFont(ofSize: 13)
+        $0.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
+    }
+    
+    private let lastUpdateLabel = UILabel().then {
+        $0.text = "업데이트: -/- -:--"
+        $0.textColor = .secondaryLabel
+        $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+    }
+    
+    private let weatherLastUpdateStackView = UIStackView().then {
+        $0.axis = .vertical
+        $0.alignment = .trailing
+        $0.spacing = 2
     }
     
     // MARK: - Initializer
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        // TODO: - 임시 fileName
-        self.riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.riveView = riveViewModel.createRiveView()
-        
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
     }
     
@@ -98,14 +110,23 @@ final class RegionCell: UITableViewCell {
     
     // MARK: - Methods
     
-    func configure() {
-        
+    func configure(model: CurrentWeather) {
+        currTempLabel.text = "\(model.temperature)°"
+        highTempLabel.text = "H: \(model.maxTemp)°"
+        lowTempLabel.text = "L: \(model.minTemp)°"
+        locationIndicatorImageView.isHidden = !model.isCurrLocation
+        addressLabel.text = model.address
+        riveViewModel = RiveViewModel(fileName: model.rive)
+        riveViewModel.setView(riveView)
+        weatherLabel.text = model.skyInfo
+        lastUpdateLabel.text = "업데이트 \(model.currentTime.convertUnixToHourMinuteAndMark())"
+        // TODO: M/d a h:mm 포맷 반영
     }
 }
 
 // MARK: - UI Methods
 
-private extension RegionCell {
+private extension RegionWeatherCell {
     func setupUI() {
         setAppearance()
         setViewHierarchy()
@@ -113,24 +134,24 @@ private extension RegionCell {
     }
     
     func setAppearance() {
-        self.selectionStyle = .none
         self.backgroundColor = .clear
-//        self.layer.masksToBounds = true
         self.riveView.preferredFramesPerSecond = 10
         self.riveView.isUserInteractionEnabled = false
     }
     
     func setViewHierarchy() {
-//        self.contentView.addSubviews(currTempLabel, weatherImageView,
-//                         tempAndLocationStack, windLabel)
-        
         self.contentView.addSubviews(currTempLabel, riveView,
-                         tempAndLocationStack, windLabel)
+                                     tempLocationStackView, weatherLastUpdateStackView)
         
-        tempAndLocationStack.addArrangedSubviews(highLowTempStackView,
-                                                 locationLabel)
+        tempLocationStackView.addArrangedSubviews(highLowTempStackView,
+                                                  locationIndicatorAddressStackView)
         
         highLowTempStackView.addArrangedSubviews(highTempLabel, lowTempLabel)
+        
+        locationIndicatorAddressStackView.addArrangedSubviews(locationIndicatorImageView, addressLabel)
+        
+        weatherLastUpdateStackView.addArrangedSubviews(weatherLabel,
+                                                       lastUpdateLabel)
     }
     
     func setConstraints() {
@@ -139,19 +160,13 @@ private extension RegionCell {
             $0.leading.equalToSuperview().inset(20)
         }
         
-//        weatherImageView.snp.makeConstraints {
-//            $0.top.equalToSuperview().inset(5)
-//            $0.trailing.equalToSuperview().inset(20)
-//            $0.width.height.equalTo(150)
-//        }
-        
         riveView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(-85)
-            $0.trailing.equalToSuperview().inset(-80)
-            $0.width.height.equalTo(350)
+            $0.trailing.equalToSuperview().inset(-70)
+            $0.width.height.equalTo(320)
         }
         
-        tempAndLocationStack.snp.makeConstraints {
+        tempLocationStackView.snp.makeConstraints {
             $0.leading.equalTo(currTempLabel)
             $0.bottom.equalToSuperview().inset(20)
             $0.width.greaterThanOrEqualTo(180)
@@ -161,14 +176,18 @@ private extension RegionCell {
             $0.width.equalTo(100)
         }
         
-        windLabel.snp.makeConstraints {
+        locationIndicatorImageView.snp.makeConstraints {
+            $0.width.height.equalTo(15)
+        }
+        
+        weatherLastUpdateStackView.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(tempAndLocationStack)
+            $0.bottom.equalTo(tempLocationStackView)
         }
     }
     
     func setGradient() {
-        self.backgroundView = RegionCellBGView(frame: self.frame)
+        self.backgroundView = RegionWeatherCellBGView(frame: self.frame)
         
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds

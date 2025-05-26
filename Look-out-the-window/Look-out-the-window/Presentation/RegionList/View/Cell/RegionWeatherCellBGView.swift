@@ -1,5 +1,5 @@
 //
-//  RegionCellBGView.swift
+//  RegionWeatherCellBGView.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/22/25.
@@ -7,8 +7,8 @@
 
 import UIKit
 
-/// `RegionCell`에 사용되는 사다리꼴 모양 배경 `UIView`
-final class RegionCellBGView: UIView {
+/// `RegionWeatherCell`에 사용되는 사다리꼴 모양 배경 `UIView`
+final class RegionWeatherCellBGView: UIView {
     
     // MARK: - Lifecycle
     

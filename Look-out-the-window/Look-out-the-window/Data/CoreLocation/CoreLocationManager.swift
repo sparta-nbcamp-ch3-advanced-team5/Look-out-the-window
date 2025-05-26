@@ -9,6 +9,8 @@ import Foundation
 import CoreLocation
 import OSLog
 
+import RxRelay
+
 /// `CoreLocation`을 관리하는 싱글톤 매니저
 final class CoreLocationManager: NSObject {
     
@@ -28,14 +30,13 @@ final class CoreLocationManager: NSObject {
     /// 사용자 국가
     private let locale = Locale(identifier: "Ko-kr")
     
-    /// 사용자 현재 위치 정보 (기본값: 광화문 광장)
-    var currLocation: LocationModel
+    /// 사용자 현재 위치 정보 `BehaviorRelay`
+    let currLocationRelay = BehaviorRelay<LocationModel?>(value: nil)
     
     // MARK: - Initializer
     
     private override init() {
         locationManager.allowsBackgroundLocationUpdates = true
-        currLocation = LocationModel()
         super.init()
         locationManager.delegate = self
     }
@@ -59,15 +60,14 @@ extension CoreLocationManager {
         
         sleepTask = Task {
             repeat {
-                do {
-                    locationManager.requestLocation()
-                    try await Task.sleep(nanoseconds: second * 60)
-                }
+                locationManager.requestLocation()
+                try await Task.sleep(nanoseconds: second * 60)
             } while !Task.isCancelled
         }
     }
     
-    /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때(GPS 사용 X, 대략 500m) 이동했을 때 위치를 업데이트하도록 변경하는 메서드
+    /// 마지막 위치에서 와이파이, 셀룰러 변경과 같은 상당한 위치 변경이 있을 때 위치를 업데이트하도록 변경하는 메서드
+    /// (GPS 사용 X, 대략 500m)
     func startUpdatingLocationInBackground() {
         os_log(.debug, log: log, #function)
         sleepTask?.cancel()
@@ -82,28 +82,28 @@ extension CoreLocationManager {
     ///
     /// - Parameter address: 주소
     /// - Returns: 관련 위치 정보 배열 `[LocationModel]`
-    func convertAddressToCoord(of address: String) async -> [LocationModel] {
+    func convertAddressToLocation(of address: String) async -> [LocationModel] {
         do {
             let placemarkList = try await geocoder.geocodeAddressString(address)
             var results = [LocationModel]()
             placemarkList.forEach {
-                guard let administrativeArea = $0.administrativeArea,
-                      let locality = $0.locality else { return }
+                guard let country = $0.country,
+                      let administrativeArea = $0.administrativeArea,
+                      let coord = $0.location?.coordinate else { return }
+                let locality = $0.locality ?? $0.subLocality ?? $0.thoroughfare ?? ""
                 let subLocality = $0.subLocality ?? $0.thoroughfare ?? ""
-                let areasOfInterest = $0.areasOfInterest?.first ?? ""
-                let coord = $0.location?.coordinate
                 
-                let location = LocationModel(administrativeArea: administrativeArea,
+                let location = LocationModel(country: country,
+                                             administrativeArea: administrativeArea,
                                              locality: locality,
                                              subLocality: subLocality,
-                                             areasOfInterest: areasOfInterest,
-                                             lat: coord?.latitude ?? 37.574187,
-                                             lng: coord?.longitude ?? 126.976882)
+                                             lat: coord.latitude,
+                                             lng: coord.longitude)
                 
                 results.append(location)
+                os_log(.debug, log: log, "Geocoding: \(location.toAddress())")
             }
             
-            os_log(.debug, log: log, "\(results)")
             return results
         } catch {
             os_log(.error, log: log, "Geocoding error: \(error.localizedDescription)")
@@ -114,37 +114,37 @@ extension CoreLocationManager {
     /// 사용자 현재 위치 좌표를 위치 정보(`LocationModel`)으로 변환(Reverse Geocoding)하는 비동기 메서드
     ///
     /// - Returns: 변환된 위치 정보 `LocationModel`
-    func convertCoordToAddress(lat: CLLocationDegrees, lng: CLLocationDegrees) async -> LocationModel? {
+    func convertCoordToLocation(lat: CLLocationDegrees, lng: CLLocationDegrees) async -> LocationModel? {
         do {
             let currCoord = CLLocation(latitude: lat, longitude: lng)
             let placemarkList = try await geocoder.reverseGeocodeLocation(currCoord, preferredLocale: locale)
             guard let placemark = placemarkList.last,
+                  let country = placemark.country,
                   let administrativeArea = placemark.administrativeArea,
-                  let locality = placemark.locality else { return currLocation }
+                  let coord = placemark.location?.coordinate else { return nil }
+            let locality = placemark.locality ?? placemark.subLocality ?? placemark.thoroughfare ?? ""
             let subLocality = placemark.subLocality ?? placemark.thoroughfare ?? ""
-            let areasOfInterest = placemark.areasOfInterest?.first ?? ""
-            let coord = placemark.location?.coordinate
             
-            let location = LocationModel(administrativeArea: administrativeArea,
+            let location = LocationModel(country: country,
+                                         administrativeArea: administrativeArea,
                                          locality: locality,
                                          subLocality: subLocality,
-                                         areasOfInterest: areasOfInterest,
-                                         lat: coord?.latitude ?? 37.574187,
-                                         lng: coord?.longitude ?? 126.976882)
+                                         lat: coord.latitude,
+                                         lng: coord.longitude)
             
-            dump(location)
+            os_log(.debug, log: log, "Reverse Geocoding: \(location.toAddress())")
             return location
             
         } catch {
             os_log(.error, log: log, "Reverse Geocoding error: \(error.localizedDescription)")
+            return nil
         }
-        return currLocation
     }
 }
 
 // MARK: - Location Auth Methods
 
-private extension CoreLocationManager {
+extension CoreLocationManager {
     /// 디바이스 위치 서비스가 활성화 상태인지 확인
     func checkDeviceLocationService() -> Bool {
         if CLLocationManager.locationServicesEnabled() {
@@ -170,10 +170,9 @@ extension CoreLocationManager: CLLocationManagerDelegate {
             os_log(.debug, log: log, "위치 서비스 권한: 사용하는 동안 허용됨")
         case .restricted, .denied:
             os_log(.debug, log: log, "위치 서비스 권한: 차단됨")
-            // TODO: 허용 Alert?
         case .notDetermined:
             os_log(.debug, log: log, "위치 서비스 권한: 설정 필요")
-            // TODO: 허용 Alert?
+            locationManager.requestWhenInUseAuthorization()
             locationManager.requestAlwaysAuthorization()
         @unknown default:
             break
@@ -187,7 +186,7 @@ extension CoreLocationManager: CLLocationManagerDelegate {
         os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
         
         Task {
-            await currLocation = convertCoordToAddress(lat: lat, lng: lng) ?? currLocation
+            await currLocationRelay.accept(convertCoordToLocation(lat: lat, lng: lng))
         }
     }
     
