@@ -83,7 +83,7 @@ private extension DailyCell {
     }
     
     func setAppearance() {
-        self.backgroundColor = .mainBackground
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {

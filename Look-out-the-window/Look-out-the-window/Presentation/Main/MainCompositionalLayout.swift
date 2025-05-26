@@ -30,7 +30,7 @@ struct MainCompositionalLayout {
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
-                section.interGroupSpacing = 4
+                section.interGroupSpacing = 8
                 section.orthogonalScrollingBehavior = .continuous
                 
                 section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 32, trailing: 16)

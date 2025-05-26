@@ -24,6 +24,14 @@ import CoreLocation
 
 // TODO: - DetailCell Header, customView 추가
 // TODO: - CoreData 관련 로직 추가
+// TODO: - Scroll Indicator 삭제? hidden 처리
+/*
+ hourly -> 24개 / 24시간제
+ progress bar 너비 줄이기
+ 요일은 우선 한국어
+ 합치는 작업 시 scroll
+ MainView 이름 변경 ex) WeatherDetailView...
+ */
 
 final class MainViewController: UIViewController {
     

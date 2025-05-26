@@ -87,7 +87,7 @@ private extension DetailCell {
     }
     
     func setAppearance() {
-        contentView.backgroundColor = .mainBackground
+        contentView.backgroundColor = .systemFill
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
     }

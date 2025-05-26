@@ -56,7 +56,7 @@ private extension HourlyCell {
     }
     
     func setAppearance() {
-        self.backgroundColor = .mainBackground
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {
