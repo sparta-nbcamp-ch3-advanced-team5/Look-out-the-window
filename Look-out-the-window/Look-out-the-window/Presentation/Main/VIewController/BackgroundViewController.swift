@@ -67,6 +67,8 @@ final class BackgroundViewController: UIViewController {
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
     
+    private lazy var topLoadingIndicatorView = LoadingIndicatorView()
+    
     private lazy var backgroundViewList = [BackgroundTopInfoView]()
     
     private lazy var scrollView = UIScrollView().then {
@@ -156,12 +158,18 @@ private extension BackgroundViewController {
         view.addSubviews(dimView, scrollView, bottomSepartorView, bottomHStackView, loadingIndicatorView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
-        scrollView.addSubview(scrollContentView)
+        scrollView.addSubviews(topLoadingIndicatorView, scrollContentView)
     }
     
     func setConstraints() {
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
+        }
+        
+        topLoadingIndicatorView.snp.makeConstraints {
+            $0.width.leading.trailing.equalToSuperview()
+            $0.height.equalTo(50)
+            $0.bottom.equalTo(scrollView.snp.top)
         }
         
         scrollView.snp.makeConstraints {
@@ -176,7 +184,7 @@ private extension BackgroundViewController {
         
         bottomSepartorView.snp.makeConstraints {
             $0.bottom.equalTo(bottomHStackView.snp.top)
-            $0.width.equalToSuperview()
+            $0.width.horizontalEdges.equalToSuperview()
             $0.height.equalTo(0.2)
         }
         
@@ -249,6 +257,27 @@ private extension BackgroundViewController {
                 self.previousPage = currentPage
             })
             .disposed(by: disposeBag)
+        
+        scrollView.rx.contentOffset
+            .skip(10)
+            .observe(on: MainScheduler.asyncInstance)
+            .subscribe(with: self) { owner, offset in
+                if offset.y < -60 && !owner.scrollView.isDragging {
+                    
+                    UIView.animate(withDuration: 0.2) {
+                        owner.scrollView.contentInset.top = 50
+                    }
+                    owner.topLoadingIndicatorView.play()
+                    
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                        UIView.animate(withDuration: 0.2) {
+                            owner.scrollView.contentInset.top = 0
+                        }
+                        owner.topLoadingIndicatorView.pause()
+                    })
+                }
+                
+            }.disposed(by: disposeBag)
         
         // MARK: - Test
         // 테스트로 왼쪽 하단 위치 버튼 클릭 시 날씨 추가
