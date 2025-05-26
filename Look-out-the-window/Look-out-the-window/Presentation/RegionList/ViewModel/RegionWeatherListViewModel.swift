@@ -48,18 +48,18 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
         
         CoreLocationManager.shared.currLocationRelay
+            .compactMap { $0 }
             .subscribe(with: self) { owner, currLocation in
                 
                 // 현재 위치가 nil이 아니면 업데이트
-                guard let currLocation,
-                      let request = APIEndpoints.getURLRequest(
-                        .weather,
-                        parameters: WeatherParameters(
-                            lat: currLocation.lat,
-                            lng: currLocation.lng,
-                            appid: apiKey
-                        ).makeParameterDict()
-                      ) else { return }
+                guard let request = APIEndpoints.getURLRequest(
+                    .weather,
+                    parameters: WeatherParameters(
+                        lat: currLocation.lat,
+                        lng: currLocation.lng,
+                        appid: apiKey
+                    ).makeParameterDict()
+                ) else { return }
                 
                 let networkRequests: Single<WeatherResponseDTO> = owner.networkManager.fetch(urlRequest: request)
                 networkRequests
@@ -72,7 +72,8 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                             // 현 위치 주소와 같은 날씨 데이터가 savedRegionWeatherList에 있는지 확인
                             if let index = regionWeatherList.firstIndex(where: { $0.address == currLocation.toAddress() }) {
                                 // 같으면 해당 데이터를 0번째 인덱스로 순서 변경 후
-                                let currLocationWeather = regionWeatherList.remove(at: index)
+                                var currLocationWeather = regionWeatherList.remove(at: index)
+                                currLocationWeather.isCurrLocation = true
                                 regionWeatherList.insert(currLocationWeather, at: 0)
                                 
                                 // savedRegionWeatherList를 Relay에 accept
@@ -116,7 +117,7 @@ private extension RegionWeatherListViewModel {
         // CoreData에 현재 위치 날씨 정보가 없다고 가정
         
         // Mock Data
-        let oldWeatherList = mockCoordList
+        let oldWeatherList = mockCurrentWeatherList
         
         let networkRequests: [Single<WeatherResponseDTO>] = oldWeatherList.compactMap { model in
             guard let request = APIEndpoints.getURLRequest(
@@ -132,7 +133,15 @@ private extension RegionWeatherListViewModel {
         
         Single.zip(networkRequests)
             .subscribe(with: self) { owner, responseDTOList in
-                let regionWeatherList = responseDTOList.map { $0.toCurrentWeather() }
+                var regionWeatherList = responseDTOList.enumerated().map { $0.element.toCurrentWeather(address: oldWeatherList[$0.offset].address) }
+                
+                // 현 위치에 해당하는 날씨 데이터가 API로부터 전달받은 데이터에 있는지 확인하는 과정
+                if let currLocation = CoreLocationManager.shared.currLocationRelay.value,
+                   let index = regionWeatherList.firstIndex(where: { $0.address == currLocation.toAddress() }) {
+                    var currLocationWeather = regionWeatherList.remove(at: index)
+                    currLocationWeather.isCurrLocation = true
+                    regionWeatherList.insert(currLocationWeather, at: 0)
+                }
                 
                 owner.savedRegionWeatherListSections = [RegionWeatherListSection(items: regionWeatherList)]
                 owner.state.regionWeatherListSectionRelay.accept(owner.savedRegionWeatherListSections)

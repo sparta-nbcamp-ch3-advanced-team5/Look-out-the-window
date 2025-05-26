@@ -23,9 +23,6 @@ final class RegionWeatherListViewController: UIViewController {
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
-//    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
-//    private let itemSpacing: CGFloat = 30
-    
     private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
         cell.configure(model: item)
