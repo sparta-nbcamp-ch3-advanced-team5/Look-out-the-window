@@ -18,6 +18,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         if let _ = launchOptions?[.location] {
             CoreLocationManager.shared.startUpdatingLocationInBackground()
         }
+        PushNotificationCenter.shared.setPushNotificationAuthorization()
         
         return true
     }
