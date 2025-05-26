@@ -18,6 +18,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         if let _ = launchOptions?[.location] {
             CoreLocationManager.shared.startUpdatingLocationInBackground()
         }
+        // 푸쉬알림 권한 여부 입력받기
+        PushNotificationCenter.shared.setPushNotificationAuthorization()
         
         return true
     }
