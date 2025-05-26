@@ -8,13 +8,10 @@
 import UIKit
 import Then
 
-// TODO: - SF Symbol 컬러
-
 final class DailyCell: UICollectionViewCell {
     static let id = "DailyCell"
     
     private let dayLabel = UILabel().then {
-        $0.text = "Now"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
@@ -22,20 +19,16 @@ final class DailyCell: UICollectionViewCell {
     
     private let weatherIcon = UIImageView().then {
         $0.contentMode = .scaleAspectFill
-        $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .yellow
     }
     
     private let lowTempLabel = UILabel().then {
-        $0.text = "18'C"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
     }
     
     private let highTempLabel = UILabel().then {
-        $0.text = "30'C"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
@@ -57,22 +50,23 @@ final class DailyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
-        dayLabel.text = model.day // 요일
-        weatherIcon.image = UIImage(systemName: model.weatherInfo) // icon
-        lowTempLabel.text = "\(model.low)'C" // minTemp
-        highTempLabel.text = "\(model.high)'C" // maxTemp
-        separatorView.isHidden = isBottom // 구분선 hidden 처리 여부
-        
+    func bind(model: DailyModel, isFirst: Bool, isBottom: Bool, totalMin: Int, totalMax: Int) {
+        dayLabel.text = isFirst ? "오늘" : model.day
+        let config = UIImage.SymbolConfiguration.preferringMulticolor()
+        weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
+        lowTempLabel.text = model.low + "°"
+        highTempLabel.text = model.high + "°"
+        separatorView.isHidden = isBottom
+
         let minTemp = Int(model.low)
         let maxTemp = Int(model.high)
-        
+
         progressBar.minTemp = minTemp ?? 0
         progressBar.maxTemp = maxTemp ?? 0
         progressBar.totalMinTemp = totalMin
         progressBar.totalMaxTemp = totalMax
-        progressBar.updateProgress()
     }
+
 }
 
 private extension DailyCell {
@@ -83,7 +77,7 @@ private extension DailyCell {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {
@@ -94,7 +88,6 @@ private extension DailyCell {
         dayLabel.snp.makeConstraints{
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
-            // width값 추가
             $0.width.equalTo(35)
         }
         
@@ -108,13 +101,12 @@ private extension DailyCell {
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(weatherIcon.snp.trailing).offset(12)
         }
-        
-        // TODO: Progress Bar
+
         progressBar.snp.makeConstraints{
             $0.height.equalTo(5)
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(6)
-            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-6)
+            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(30)
+            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-30)
         }
         
         highTempLabel.snp.makeConstraints{

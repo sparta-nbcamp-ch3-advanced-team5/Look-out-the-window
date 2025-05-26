@@ -21,7 +21,6 @@ final class HourlyCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFill
         $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
-        $0.tintColor = .yellow
     }
     
     private let tempLabel = UILabel().then {
@@ -41,9 +40,10 @@ final class HourlyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: HourlyModel) {
-        hourLabel.text = model.hour
-        weatherIcon.image = UIImage(systemName: model.weatherInfo)
+    func bind(model: HourlyModel, isFirst: Bool) {
+        hourLabel.text = isFirst ? "Now" : String(format: "%02d시", model.hour)
+        let config = UIImage.SymbolConfiguration.preferringMulticolor()
+        weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         tempLabel.text = model.temperature
     }
 }
@@ -56,7 +56,7 @@ private extension HourlyCell {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {

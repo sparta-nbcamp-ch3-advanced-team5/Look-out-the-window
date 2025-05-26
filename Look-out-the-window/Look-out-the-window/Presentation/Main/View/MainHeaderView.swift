@@ -7,7 +7,7 @@
 
 import UIKit
 import Then
-// TODO: 아이콘, 제목 섹션마다 다르게
+
 final class MainHeaderView: UICollectionReusableView {
     
     static let id = "MainHeaderView"
@@ -54,7 +54,7 @@ private extension MainHeaderView {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(red: 58/255.0, green: 57/255.0, blue: 91/255.0, alpha: 1.0)
+        self.backgroundColor = .clear
     }
     
     func setViewHierarchy() {

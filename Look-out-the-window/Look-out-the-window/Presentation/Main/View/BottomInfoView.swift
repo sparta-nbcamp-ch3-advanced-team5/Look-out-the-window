@@ -1,5 +1,5 @@
 //
-//  MainView.swift
+//  BottomInfoView.swift
 //  Look-out-the-window
 //
 //  Created by 서동환 on 5/20/25.
@@ -11,7 +11,7 @@ import SnapKit
 import Then
 import RxDataSources
 
-final class MainView: UIView {
+final class BottomInfoView: UIView {
     
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: MainCompositionalLayout.create())
     
@@ -28,7 +28,7 @@ final class MainView: UIView {
     }
 }
 
-private extension MainView {
+private extension BottomInfoView {
     func setupUI() {
         setAppearance()
         setViewHierarchy()
@@ -37,8 +37,8 @@ private extension MainView {
     }
     
     func setAppearance() {
-        self.backgroundColor = UIColor(named: "MainBackground")
-        collectionView.backgroundColor = UIColor(named: "MainBackground")
+        self.backgroundColor = .mainBackground
+        collectionView.backgroundColor = .mainBackground
     }
     
     func setViewHierarchy() {

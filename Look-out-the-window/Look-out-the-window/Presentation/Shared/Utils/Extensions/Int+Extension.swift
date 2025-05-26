@@ -74,5 +74,13 @@ extension Int {
         
         return dateFormatter.string(from: date)
     }
+    
+    /// 유닉스 타임스탬프를 1~24시(24시간제) Int로 변환
+    func to24HourInt() -> Int {
+        let date = Date(timeIntervalSince1970: TimeInterval(self))
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: date) // 0~23
+        return hour == 0 ? 24 : hour // 0시 -> 24시
+    }
 
 }

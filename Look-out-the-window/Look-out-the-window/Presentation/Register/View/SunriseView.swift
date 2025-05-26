@@ -65,7 +65,7 @@ final class SunriseView: UIView {
     /// 기본 생성자
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = .systemBlue
+        self.backgroundColor = .clear
         setupUI()
     }
     /// 스토리보드 사용 비활성화
