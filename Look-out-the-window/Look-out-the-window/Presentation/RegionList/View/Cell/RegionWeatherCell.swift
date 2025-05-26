@@ -160,7 +160,6 @@ private extension RegionWeatherCell {
             $0.leading.equalToSuperview().inset(20)
         }
         
-        // TODO: 이미지 크기 조절
         riveView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(-85)
             $0.trailing.equalToSuperview().inset(-70)

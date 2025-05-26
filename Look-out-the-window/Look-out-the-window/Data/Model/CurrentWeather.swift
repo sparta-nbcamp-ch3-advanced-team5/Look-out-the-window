@@ -54,4 +54,6 @@ struct CurrentWeather {
     let hourlyModel: [HourlyModel]
     /// 일별 날씨 정보 배열
     let dailyModel: [DailyModel]
+    /// 현재 위치를 나타내는 데이터인지 판별하는 변수
+    var isCurrLocation: Bool
 }
