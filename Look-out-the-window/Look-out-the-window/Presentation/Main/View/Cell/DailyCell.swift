@@ -14,7 +14,6 @@ final class DailyCell: UICollectionViewCell {
     static let id = "DailyCell"
     
     private let dayLabel = UILabel().then {
-        $0.text = "Now"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
@@ -22,19 +21,16 @@ final class DailyCell: UICollectionViewCell {
     
     private let weatherIcon = UIImageView().then {
         $0.contentMode = .scaleAspectFill
-        $0.layer.masksToBounds = true
         $0.image = UIImage(systemName: "sun.max")
     }
     
     private let lowTempLabel = UILabel().then {
-        $0.text = "18'C"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
     }
     
     private let highTempLabel = UILabel().then {
-        $0.text = "30'C"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
@@ -56,8 +52,8 @@ final class DailyCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func bind(model: DailyModel, isBottom: Bool, totalMin: Int, totalMax: Int) {
-        dayLabel.text = model.day
+    func bind(model: DailyModel, isFirst: Bool, isBottom: Bool, totalMin: Int, totalMax: Int) {
+        dayLabel.text = isFirst ? "오늘" : model.day
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
         weatherIcon.image = UIImage(systemName: model.weatherInfo, withConfiguration: config)
         lowTempLabel.text = model.low + "°"

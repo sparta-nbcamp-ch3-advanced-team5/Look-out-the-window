@@ -54,7 +54,7 @@ final class MainViewController: UIViewController {
             case .daily(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
                 let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isBottom: isLast, totalMin: self.totalMinTemp, totalMax: self.totalMaxTemp)
+                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast, totalMin: self.totalMinTemp, totalMax: self.totalMaxTemp)
                 return cell
             case .detail(let model):
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
