@@ -81,6 +81,10 @@ final class BackgroundViewController: UIViewController {
     
     private let scrollContentView = UIView()
     
+    private lazy var bottomSepartorView = UIView().then {
+        $0.backgroundColor = .secondaryLabel
+    }
+    
     private lazy var bottomHStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .fill
@@ -149,7 +153,7 @@ private extension BackgroundViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, scrollView, bottomHStackView, loadingIndicatorView)
+        view.addSubviews(dimView, scrollView, bottomSepartorView, bottomHStackView, loadingIndicatorView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         scrollView.addSubview(scrollContentView)
@@ -163,15 +167,21 @@ private extension BackgroundViewController {
         scrollView.snp.makeConstraints {
             $0.top.equalToSuperview()
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
-            $0.bottom.equalTo(bottomHStackView.snp.top)
+            $0.bottom.equalTo(bottomSepartorView.snp.top)
         }
         
         scrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         
+        bottomSepartorView.snp.makeConstraints {
+            $0.bottom.equalTo(bottomHStackView.snp.top)
+            $0.width.equalToSuperview()
+            $0.height.equalTo(0.2)
+        }
+        
         bottomHStackView.snp.makeConstraints {
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(20)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(10)
             $0.horizontalEdges.equalToSuperview().inset(20)
         }
         
