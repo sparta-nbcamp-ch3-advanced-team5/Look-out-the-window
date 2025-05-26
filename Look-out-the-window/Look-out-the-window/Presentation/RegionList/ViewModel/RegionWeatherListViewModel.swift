@@ -21,6 +21,8 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     
     private let networkManager = NetworkManager()
     
+    private var regionWeatherListSections = [RegionWeatherListSection]()
+    
     // MARK: - Action (ViewController ➡️ ViewModel)
     
     enum Action {
@@ -36,20 +38,54 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     struct State {
         let actionSubject = PublishSubject<Action>()
         
-        let regionWeatherList = PublishRelay<[CurrentWeather]>()
-        let currLocationWeather = PublishRelay<CurrentWeather>()
+        let regionWeatherListSectionRelay = PublishRelay<[RegionWeatherListSection]>()
     }
     var state = State()
     
     // MARK: - Initializer
     
     init() {
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
+        
+        CoreLocationManager.shared.currLocationRelay
+            .subscribe(with: self) { owner, currLocation in
+                // 현재 위치가 nil이 아니면 업데이트
+                // TODO: CoreData에 현재위치인지 식별하는 변수 필요
+                guard let currLocation,
+                      let request = APIEndpoints.getURLRequest(
+                        .weather,
+                        parameters: WeatherParameters(
+                            lat: currLocation.lat,
+                            lng: currLocation.lng,
+                            appid: apiKey
+                        ).makeParameterDict()
+                      ) else { return }
+                
+                let networkRequests: Single<WeatherResponseDTO> = owner.networkManager.fetch(urlRequest: request)
+                
+                networkRequests
+                    .subscribe(with: self) { owner, responseDTO in
+                        let currLocationWeather = responseDTO.toCurrentWeather()
+                        
+                        let currLocationWeatherItems =  [currLocationWeather].map { RegionWeatherListItem.currLocationWeather($0) }
+                        
+                        let regionWeatherListSection = RegionWeatherListSection.currLocation(currLocationWeatherItems)
+                        
+                        owner.regionWeatherListSections.insert(regionWeatherListSection, at: 0)
+                        owner.state.regionWeatherListSectionRelay.accept(owner.regionWeatherListSections)
+                    } onFailure: { owner, error in
+                        os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
+                    }.disposed(by: owner.disposeBag)
+
+                
+            }.disposed(by: disposeBag)
+        
+        
         state.actionSubject
             .subscribe(with: self) { owner, action in
                 switch action {
                 case .viewDidLoad:
                     owner.fetchAndUpdateRegionWeatherList()  // CoreData에 있는 데이터 fetch & API 호출을 통한 업데이트
-                    owner.updateCurrLocationWeather()  // 이후 API 호출을 통해 현재 위치 업데이트
                 }
             }.disposed(by: disposeBag)
     }
@@ -59,6 +95,8 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
 
 private extension RegionWeatherListViewModel {
     func fetchAndUpdateRegionWeatherList() {
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
+        
         // TODO: CoreData에서 지역 데이터 가져옴
         // - CoreData에서 현재 위치 데이터 있는지 확인
         // - 없으면
@@ -71,8 +109,6 @@ private extension RegionWeatherListViewModel {
         
         // Mock Data
         let oldWeatherList = mockCoordList
-        
-        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
         
         let networkRequests: [Single<WeatherResponseDTO>] = oldWeatherList.compactMap { model in
             guard let request = APIEndpoints.getURLRequest(
@@ -88,40 +124,19 @@ private extension RegionWeatherListViewModel {
         
         Single.zip(networkRequests)
             .subscribe(with: self) { owner, responseDTOList in
-                let currentWeatherList = responseDTOList.map { $0.toCurrentWeather() }
-                owner.state.regionWeatherList.accept(currentWeatherList)
+                owner.regionWeatherListSections.removeAll()
+                
+                let regionWeatherList = responseDTOList.map { $0.toCurrentWeather() }
+                
+                let regionWeatherListItems =  regionWeatherList.map { RegionWeatherListItem.regionWeather($0) }
+                let regionWeatherListSection = RegionWeatherListSection.regionList(regionWeatherListItems)
+                
+                owner.regionWeatherListSections.append(regionWeatherListSection)
+                owner.state.regionWeatherListSectionRelay.accept(owner.regionWeatherListSections)
             } onFailure: { owner, error in
                 // TODO: 기존 데이터 전달
-//                owner.state.regionWeatherList.accept(oldWeatherList)
+//                owner.state.regionWeatherListRelay.accept(oldWeatherList)
                 os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
-            }.disposed(by: disposeBag)
-    }
-    
-    /// 업데이트된 위치를 기반으로 `RegionWeatherListView`의 현 위치 셀을 업데이트하는 메서드
-    func updateCurrLocationWeather() {
-        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
-        
-        CoreLocationManager.shared.currLocation
-            .subscribe(with: self) { owner, currLocation in
-                // 현재 위치가 nil이 아니면 업데이트
-                // TODO: CoreData에 현재위치인지 식별하는 변수 필요
-                guard let currLocation,
-                      let request = APIEndpoints.getURLRequest(
-                        .weather,
-                        parameters: WeatherParameters(
-                            lat: currLocation.lat,
-                            lng: currLocation.lng,
-                            appid: apiKey
-                        ).makeParameterDict()
-                      ) else { return }
-                let networkRequest: Single<WeatherResponseDTO> = owner.networkManager.fetch(urlRequest: request)
-                networkRequest
-                    .subscribe(with: self) { owner, responseDTO in
-                        let currentWeather = responseDTO.toCurrentWeather()
-                        owner.state.currLocationWeather.accept(currentWeather)
-                    } onFailure: { owner, error in
-                        os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
-                    }.disposed(by: owner.disposeBag)
             }.disposed(by: disposeBag)
     }
 }

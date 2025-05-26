@@ -31,7 +31,7 @@ final class CoreLocationManager: NSObject {
     private let locale = Locale(identifier: "Ko-kr")
     
     /// 사용자 현재 위치 정보 `BehaviorRelay`
-    let currLocation = BehaviorRelay<LocationModel?>(value: nil)
+    let currLocationRelay = BehaviorRelay<LocationModel?>(value: nil)
     
     // MARK: - Initializer
     
@@ -186,7 +186,7 @@ extension CoreLocationManager: CLLocationManagerDelegate {
         os_log(.debug, log: log, "lat: \(lat), lng: \(lng)")
         
         Task {
-            await currLocation.accept(convertCoordToLocation(lat: lat, lng: lng))
+            await currLocationRelay.accept(convertCoordToLocation(lat: lat, lng: lng))
         }
     }
     

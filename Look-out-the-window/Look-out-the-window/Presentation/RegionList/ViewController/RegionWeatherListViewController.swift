@@ -9,6 +9,7 @@ import UIKit
 import OSLog
 
 import RxCocoa
+import RxDataSources
 import RxSwift
 import SnapKit
 
@@ -22,8 +23,25 @@ final class RegionWeatherListViewController: UIViewController {
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
-    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
-    private let itemSpacing: CGFloat = 30
+//    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
+//    private let itemSpacing: CGFloat = 30
+    
+    private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
+        switch item {
+        case let .currLocationWeather(weather):
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
+            
+            cell.configure(model: weather)
+            return cell
+            
+        case let .regionWeather(weather):
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
+            
+            cell.configure(model: weather)
+            return cell
+            
+        }
+    }
     
     // MARK: - UI Components
     
@@ -50,7 +68,7 @@ final class RegionWeatherListViewController: UIViewController {
         super.viewDidLoad()
         
         setupUI()
-        configureTableView()
+        configureCollectionView()
     }
 }
 
@@ -94,18 +112,20 @@ private extension RegionWeatherListViewController {
     
     func bind() {
         // ViewModel ➡️ ViewController
-        viewModel.state.regionWeatherList
-            .asDriver(onErrorJustReturn: [])
-            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ indexPath, model, cell in
-                if CoreLocationManager.shared.currLocation.value != nil && indexPath == 0 {
-                    // 현 위치 셀 세팅
-                } else {
-                    cell.configure(model: model)
-                }
-            }).disposed(by: disposeBag)
+//        viewModel.state.regionWeatherListSectionRelay
+//            .asDriver(onErrorJustReturn: [])
+//            .drive(regionListView.getCollectionView.rx.items(cellIdentifier: RegionWeatherCell.identifier, cellType: RegionWeatherCell.self)) ({ indexPath, model, cell in
+//                if CoreLocationManager.shared.currLocationRelay.value != nil && indexPath == 0 {
+//                    // 현 위치 셀 세팅
+//                } else {
+//                    cell.configure(model: model)
+//                }
+//            }).disposed(by: disposeBag)
         
-//        viewModel.state.currLocationWeather
-//            .bind(to: regionListView.getCollectionView.rx.)
+        viewModel.state.regionWeatherListSectionRelay
+            .asDriver(onErrorJustReturn: [])
+            .drive(regionListView.getCollectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
         
         
         // ViewController ➡️ ViewModel
@@ -113,9 +133,6 @@ private extension RegionWeatherListViewController {
         
         
         // View ➡️ ViewController
-        regionListView.getCollectionView.rx.setDelegate(self)
-            .disposed(by: disposeBag)
-        
         regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
             .asDriver()
             .drive(with: self) { owner, model in
@@ -126,27 +143,11 @@ private extension RegionWeatherListViewController {
     }
 }
 
-// MARK: - UITableView Methods
+// MARK: - UICollectionView Methods
 
 private extension RegionWeatherListViewController {
-    func configureTableView() {
+    func configureCollectionView() {
         regionListView.getCollectionView.register(RegionWeatherCell.self, forCellWithReuseIdentifier: RegionWeatherCell.identifier)
-    }
-}
-
-extension RegionWeatherListViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width: CGFloat = collectionView.frame.width - sectionInset.left * 2
-        let height: CGFloat = 200
-        return CGSize(width: width, height: height)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return sectionInset
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return itemSpacing
     }
 }
 
