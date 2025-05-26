@@ -34,7 +34,7 @@ final class CoreDataManager {
         persistentContainer.viewContext
     }
 
-    // MARK: create
+    // MARK: create 주형: 수정할 부분 위도,경도 param 필요없어짐
     func saveWeatherData(current: CurrentWeather, latitude: Double, longitude: Double) {
         let weather = WeatherDataEntity(context: context)
         weather.latitude = latitude
@@ -72,6 +72,7 @@ final class CoreDataManager {
         // 일별 날씨 저장 (DailyWeatherEntity)
         current.dailyModel.forEach { day in
             let daily = DailyWeatherEntity(context: context)
+            daily.currentTime = Int64(day.unixTime)
             daily.day = day.day
             daily.minTemp = day.low
             daily.maxTemp = day.high
@@ -91,6 +92,10 @@ final class CoreDataManager {
     //MARK: fetch
     func fetchWeatherData() -> [WeatherDataEntity] {
         let request: NSFetchRequest<WeatherDataEntity> = WeatherDataEntity.fetchRequest()
+
+        // hour.hour < unix 값이라 String값으로 변환 메서드 작성 불러온 값을 변환
+        // NSSet unix 값으로 들어오면 정렬하기
+        
 
         do {
             let result = try context.fetch(request)
@@ -152,5 +157,15 @@ final class CoreDataManager {
         } catch {
             print("\(error.localizedDescription)")
         }
+    }
+}
+
+extension WeatherDataEntity {
+
+    var sortedDailyArray: [DailyWeatherEntity] {
+        let set = daily as? Set<DailyWeatherEntity> ?? []
+        let sortedSet = set.sorted { $0.currentTime < $1.currentTime }
+        print("sortedSet가 정렬 되었는지 확인: \(sortedSet)")
+        return sortedSet
     }
 }

@@ -25,6 +25,7 @@ final class MainViewModel: ViewModelProtocol {
         return state.actionSubject.asObserver()
     }
 
+
     // MARK: - State (ViewModel ➡️ ViewController)
 
     struct State {
@@ -96,8 +97,6 @@ final class MainViewModel: ViewModelProtocol {
                  savedList.forEach { weather in
                      print("🌍 \(weather.latitude), \(weather.longitude) | \(weather.temperature ?? "-")º ")
                  }
-
-                 // 예: self?.tableView.reloadData() or self?.adapter.applySnapshot(...)
              })
              .disposed(by: disposeBag)
     }
