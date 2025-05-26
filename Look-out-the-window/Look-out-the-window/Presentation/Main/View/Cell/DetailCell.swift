@@ -61,18 +61,15 @@ final class DetailCell: UICollectionViewCell {
             let components = model.value.components(separatedBy: " ")
             let speed = Double(components.first?.replacingOccurrences(of: "m/s", with: "") ?? "0") ?? 0
             let degree = Double(components.last ?? "0") ?? 0
-            print("#########    Component  ###########")
-            print(components)
-            print("#########       speeed       ###########")
-            print(speed)
-            print("######    degree   ##############")
-            print(degree)
-            print("####################")
+            
+            // 여기서 WindView 인스턴스 생성!
             let windView = WindView()
-            windView.bind(degree: CGFloat(degree - 90), speed: speed) // -90도 보정!
+            // radius 60 기준이 140 (cell 너비 - 20) / 2
+            windView.bind(degree: degree - 90, speed: speed)
             containerView.addSubview(windView)
             windView.snp.makeConstraints {
                 $0.edges.equalToSuperview()
+                $0.height.equalTo(windView.snp.width) // 정사각형 보장
             }
             
         case .sunriseSunsetView:

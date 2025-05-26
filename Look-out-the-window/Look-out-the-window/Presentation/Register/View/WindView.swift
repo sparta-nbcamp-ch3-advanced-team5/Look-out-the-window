@@ -47,15 +47,15 @@ final class WindView: UIView {
     /// 중심에 표시되는 풍속 레이블 (예: 9 km/h)
     private let windSpeedLabel = UILabel().then {
         $0.numberOfLines = 2
-        $0.font = .systemFont(ofSize: 20, weight: .regular)
-        $0.textColor = .gray
+        $0.font = .systemFont(ofSize: 20, weight: .semibold)
+        $0.textColor = .white
         $0.textAlignment = .center
     }
     
     private let unitLabel = UILabel().then {
         $0.text = "km/h"
-        $0.font = .systemFont(ofSize: 20, weight: .regular)
-        $0.textColor = .gray
+        $0.font = .systemFont(ofSize: 20, weight: .semibold)
+        $0.textColor = .white
         $0.textAlignment = .center
     }
     
@@ -125,6 +125,8 @@ private extension WindView {
 private extension WindView {
     /// 원형 점선과 방향 선 등을 포함한 전체 경로를 그립니다.
     func drawPaths() {
+        // cell의 크기에 따라 동적으로 계산
+        self.radius = min(bounds.width, bounds.height) / 2 - 10 // 여백 조정
         let center = CGPoint(x: self.bounds.midX, y: self.bounds.midY)
         let circlePath = UIBezierPath(arcCenter: center,
                                       radius: radius,
