@@ -77,10 +77,10 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                                 regionWeatherList.insert(currLocationWeather, at: 0)
                                 
                                 // savedRegionWeatherList를 Relay에 accept
-                                owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(items: regionWeatherList)])
+                                owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .savedRegionList, items: regionWeatherList)])
                             } else {
                                 // 없으면 currLocationWeatherSection에 현 위치 데이터 추가, 섹션 반영
-                                owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(items: [currLocationWeather])] + owner.savedRegionWeatherListSections)
+                                owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .currLocation, items: [currLocationWeather])] + owner.savedRegionWeatherListSections)
                             }
                         }
                     } onFailure: { owner, error in
@@ -143,7 +143,7 @@ private extension RegionWeatherListViewModel {
                     regionWeatherList.insert(currLocationWeather, at: 0)
                 }
                 
-                owner.savedRegionWeatherListSections = [RegionWeatherListSection(items: regionWeatherList)]
+                owner.savedRegionWeatherListSections = [RegionWeatherListSection(header: .savedRegionList, items: regionWeatherList)]
                 owner.state.regionWeatherListSectionRelay.accept(owner.savedRegionWeatherListSections)
             } onFailure: { owner, error in
                 // TODO: 기존 데이터 전달

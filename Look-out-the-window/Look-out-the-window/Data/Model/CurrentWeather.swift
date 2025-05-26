@@ -7,11 +7,13 @@
 
 import Foundation
 
+import RxDataSources
+
 /// 화면에 표시될 현재 날씨 정보를 나타내는 뷰 모델 또는 도메인 모델입니다.
 /// API 응답 데이터를 사람이 읽기 쉬운 형식의 문자열로 가공하여 담고 있습니다.
-struct CurrentWeather {
+struct CurrentWeather: Hashable {
     /// 위치 또는 주소 정보 (예: "서울특별시 강남구")
-    let address: String?
+    let address: String
     /// 요청된 위치의 위도
     let lat: Double
     /// 요청된 위치의 경도
@@ -56,4 +58,12 @@ struct CurrentWeather {
     let dailyModel: [DailyModel]
     /// 현재 위치를 나타내는 데이터인지 판별하는 변수
     var isCurrLocation: Bool
+}
+
+extension CurrentWeather: IdentifiableType, Equatable {
+    typealias Identity = String
+    
+    var identity: String {
+        return address
+    }
 }

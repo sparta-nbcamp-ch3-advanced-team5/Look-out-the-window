@@ -20,6 +20,7 @@ final class RegionWeatherListView: UIView {
         $0.showsHorizontalScrollIndicator = false
         $0.showsVerticalScrollIndicator = false
     }
+    // TODO: 토스트 메세지
     
     // MARK: - Getter
     
