@@ -23,7 +23,7 @@ final class RegionWeatherListViewController: UIViewController {
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
-    private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection> { dataSource, tableView, indexPath, item in
+    private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
         cell.configure(model: item)
         return cell
@@ -53,8 +53,9 @@ final class RegionWeatherListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureTableView()
+        configureDataSource()
         setupUI()
-        configureCollectionView()
     }
 }
 
@@ -107,6 +108,13 @@ private extension RegionWeatherListViewController {
         
         
         // ViewController ➡️ ViewModel
+        regionListView.getTableView.rx.itemDeleted
+            .subscribe(with: self) { owner, indexPath in
+                owner.viewModel.action.onNext(.itemDeleted(indexPath: indexPath))
+            } onError: { owner, error in
+                os_log(.error, log: owner.log, "itemDeleted: \(error.localizedDescription)")
+            }.disposed(by: disposeBag)
+
         viewModel.action.onNext(.viewDidLoad)
         
         
@@ -128,7 +136,22 @@ private extension RegionWeatherListViewController {
 // MARK: - UITableView Methods
 
 private extension RegionWeatherListViewController {
-    func configureCollectionView() {
+    func configureDataSource() {
+        dataSource.canEditRowAtIndexPath = { dataSource, indexPath in
+            do {
+                if let model = try dataSource.model(at: indexPath) as? CurrentWeather,
+                   model.isCurrLocation {
+                    return false
+                }
+                return true
+            } catch {
+                os_log(.error, log: self.log, "canEditRowAtIndexPath: \(error.localizedDescription)")
+                return false
+            }
+        }
+    }
+    
+    func configureTableView() {
         regionListView.getTableView.register(RegionWeatherCell.self, forCellReuseIdentifier: RegionWeatherCell.identifier)
     }
 }
