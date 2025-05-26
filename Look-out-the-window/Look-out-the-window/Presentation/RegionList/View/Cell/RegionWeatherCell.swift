@@ -127,7 +127,7 @@ final class RegionWeatherCell: UITableViewCell {
         let customFormat = Date.FormatStyle()
             .month(.defaultDigits)
             .day(.twoDigits)
-            .hour(.defaultDigits(amPM: .abbreviated))
+            .hour(.defaultDigits(amPM: .omitted))
             .minute(.defaultDigits)
         lastUpdateLabel.text = "업데이트 \(date.formatted(customFormat))"
         // TODO: M/d a h:mm 포맷 반영
