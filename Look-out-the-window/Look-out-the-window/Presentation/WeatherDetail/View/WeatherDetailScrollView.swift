@@ -60,10 +60,11 @@ final class WeatherDetailScrollView: UIView {
 private extension WeatherDetailScrollView {
     func setupUI() {
         topLoadingIndicatorView.isHidden = true
+        weatherDetailCollectionView.isScrollEnabled = false
+        configureMainSectionsAndHeight()
         setViewHierarchy()
         setConstraints()
         setRxDataSource(weatherDetailCollectionView: weatherDetailCollectionView)
-        setMainSections()
     }
     
     func setViewHierarchy() {
@@ -86,12 +87,12 @@ private extension WeatherDetailScrollView {
         verticalScrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.width.equalToSuperview()
-            $0.height.equalTo(UIScreen.main.bounds.height * 2.8)
+            $0.height.equalTo(1000) // 초기값
         }
         
         backgroundTopInfoView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
-            $0.height.equalTo(UIScreen.main.bounds.height * 0.5)
+            $0.height.equalToSuperview().multipliedBy(0.6)
         }
         
         weatherDetailCollectionView.snp.makeConstraints {
@@ -131,12 +132,36 @@ private extension WeatherDetailScrollView {
             .disposed(by: disposeBag)
     }
     
-    func setMainSections() {
+    func configureMainSectionsAndHeight() {
         let sections = convertToMainSections(from: weather)
         
+        // dataSource 추가
         Observable.just(sections)
             .bind(to: weatherDetailCollectionView.rx.items(dataSource: weatherDetailCollectionView.detailDataSource))
             .disposed(by: disposeBag)
+        
+        // 높이 동적 조정
+        Observable.just(sections)
+            .observe(on: MainScheduler.instance)
+            .flatMapLatest { _ in
+                Observable<CGFloat>.create { observer in
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        weatherDetailCollectionView.layoutIfNeeded()
+                        let height = backgroundTopInfoView.frame.height + weatherDetailCollectionView.contentSize.height + 40
+                        observer.onNext(height)
+                        observer.onCompleted()
+                    }
+                    return Disposables.create()
+                }
+            }
+            .subscribe(onNext: { [weak self] height in
+                self?.verticalScrollContentView.snp.updateConstraints {
+                    $0.height.equalTo(height)
+                }
+            })
+            .disposed(by: disposeBag)
+        
     }
 }
 
