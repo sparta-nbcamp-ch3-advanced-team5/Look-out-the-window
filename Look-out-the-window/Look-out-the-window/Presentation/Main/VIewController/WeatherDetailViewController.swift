@@ -282,7 +282,7 @@ private extension WeatherDetailViewController {
                     lat: 37.4979,
                     lng: 127.0276,
                     currentTime: Int(Date().timeIntervalSince1970),
-                    currentMomentValue: 0.3,
+                    currentMomentValue: 0.1,
                     sunriseTime: 1684924800,
                     sunsetTime: 1684978800,
                     temperature: "23",

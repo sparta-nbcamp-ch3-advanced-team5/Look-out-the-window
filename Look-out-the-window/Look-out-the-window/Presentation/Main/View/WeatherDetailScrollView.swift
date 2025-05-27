@@ -78,7 +78,7 @@ private extension WeatherDetailScrollView {
         
         backgroundView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
-            $0.height.equalTo(UIScreen.main.bounds.height * 0.6)
+            $0.height.equalTo(UIScreen.main.bounds.height * 0.5)
         }
         
         bottomInfoView.snp.makeConstraints {
@@ -94,7 +94,7 @@ private extension WeatherDetailScrollView {
             .subscribe(with: self) { owner, offset in
                 if offset.y < -60 && !owner.verticalScrollView.isDragging {
                     UIView.animate(withDuration: 0.2) {
-                        owner.verticalScrollView.contentInset.top = 50
+                        owner.verticalScrollView.contentInset.top = 150
                     }
                     owner.topLoadingIndicatorView.play()
                     
