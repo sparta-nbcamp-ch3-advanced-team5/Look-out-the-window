@@ -94,7 +94,7 @@ private extension SearchResultViewController {
                 // TODO: - isSavedLocation 수정
                 let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: false)
                 let naviVC = UINavigationController(rootViewController: registerVC)
-                self.present(naviVC, animated: true)
+                owner.present(naviVC, animated: true)
                 os_log(.debug, log: owner.log, "Register 화면 present")
             }.disposed(by: disposeBag)
         
