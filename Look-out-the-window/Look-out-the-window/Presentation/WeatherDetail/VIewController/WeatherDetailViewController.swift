@@ -184,21 +184,29 @@ private extension WeatherDetailViewController {
         
         // 스크롤의 감속이 끝났을 때 페이징
         horizontalScrollView.rx.didEndDecelerating
+            .observe(on: MainScheduler.instance)
             .map { [weak self] _ -> Int in
                 guard let self else { return 0 }
-                let currentPage = self.pageController.currentPage
                 // scrollView 내부 콘첸트가 수평으로 얼마나 스크롤 됐는지 / scrollView가 화면에 차지하는 너비
-                let page = Int(round(horizontalScrollView.contentOffset.x / horizontalScrollView.frame.width))
-                // 페이징 직전 페이지 rive 중지
-                weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.pause()
-                return page
+                let newPage = Int(round(horizontalScrollView.contentOffset.x / horizontalScrollView.frame.width))
+                return newPage
             }
-            .do(onNext: { [weak self] page in
+            .do(onNext: { [weak self] newPage in
                 guard let self else { return }
-                self.applyGradientBackground(time: Double(self.weatherInfoList[page].currentTime))
                 
-                // 페이징 후 페이지 rive 재생
-                weatherDetailViewList[page].backgroundTopInfoView.riveViewModel.play()
+                // 페이지가 변경 되었을 때만 조정
+                if newPage != previousPage {
+                    
+                    // 이전 페이지 rive 중지
+                    self.weatherDetailViewList[self.previousPage].backgroundTopInfoView.riveViewModel.pause()
+                    
+                    self.applyGradientBackground(time: Double(self.weatherInfoList[newPage].currentTime))
+                    
+                    handlePageChanged(to: newPage)
+                    
+                    // 페이징 후 페이지 rive 재생
+                    weatherDetailViewList[newPage].backgroundTopInfoView.riveViewModel.play()
+                }
             })
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
@@ -206,6 +214,7 @@ private extension WeatherDetailViewController {
         // 페이징이 되었을 시 동작 (페이지 컨트롤 클릭 시 대응)
         // 기본적으로 페이지 컨트롤 클릭 시 페이지 값이 변경되어 .valueChaned로 구현
         pageController.rx.controlEvent(.valueChanged)
+            .observe(on: MainScheduler.instance)
             .map { [weak self] _ -> Int in
                 guard let self else { return 0 }
                 let currentPage = self.pageController.currentPage
@@ -337,7 +346,10 @@ private extension WeatherDetailViewController {
     func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
         
         let weatherDetailScrollView = WeatherDetailScrollView(frame: .zero, weather: weather)
+        
+        // 델리게이트 설정
         weatherDetailScrollView.pullToRefreshDelegate = self
+        
         weatherDetailViewList.append(weatherDetailScrollView)
         
         horizontalScrollContentView.addSubview(weatherDetailScrollView)
@@ -356,13 +368,14 @@ private extension WeatherDetailViewController {
         return weatherDetailScrollView.backgroundTopInfoView
     }
     
-    // 페이징 후 스크롤 이동 및 배경 처리 등
+    /// 페이징 후 스크롤 이동, 배경 처리, 레이아웃 조정
     func handlePageChanged(to currentPage: Int) {
-        // 페이징 후 스크롤 상단
-        pageChangeDelegate?.scrollToTop()
         // 이전 페이지 정지, 현재 페이지 재생
         weatherDetailViewList[previousPage].backgroundTopInfoView.riveViewModel.pause()
         weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.play()
+        
+        self.pageChangeDelegate = weatherDetailViewList[currentPage]
+        weatherDetailViewList[currentPage].scrollToTop()
         
         let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
         self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)

@@ -231,6 +231,6 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
 
 extension WeatherDetailScrollView: PageChange {
     func scrollToTop() {
-        verticalScrollView.scrollsToTop = true
+        verticalScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
     }
 }
