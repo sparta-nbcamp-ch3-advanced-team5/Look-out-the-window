@@ -10,7 +10,6 @@ import Foundation
 import RxRelay
 import RxSwift
 
-
 final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Properties

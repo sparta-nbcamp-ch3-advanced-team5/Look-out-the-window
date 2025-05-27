@@ -12,7 +12,7 @@ import SnapKit
 import Then
 import RiveRuntime
 import RxCocoa
-import RxDataSources
+import CoreLocation
 
 final class WeatherDetailViewController: UIViewController {
     
@@ -27,6 +27,8 @@ final class WeatherDetailViewController: UIViewController {
     )
     
     var currentPage: Int
+    
+    private lazy var locationManager = CLLocationManager()
     
     // MARK: - UI Components
     /// 밝기관련 뷰 시간에 따라 어두워짐.
@@ -104,7 +106,11 @@ final class WeatherDetailViewController: UIViewController {
             print("Documents Directory: \(documentsDirectoryURL)")
         }
         
+        // CLLocationManagerDelegate 프로토콜 연결
+        locationManager.delegate = self
+        
         navigationItem.hidesBackButton = true
+        
         riveViewModel.play()
         bindViewModel()
         setupUI()
@@ -381,6 +387,64 @@ private extension WeatherDetailViewController {
         self.currentPage = currentPage + 1
         print(self.currentPage)
     }
+    
+    // 사용자에게 권한 요청을 하기 위해 iOS 위치 서비스 활성화 여부 체크
+    func checkDeviceLocationAuthorization() {
+        DispatchQueue.global().async {
+            
+            if CLLocationManager.locationServicesEnabled() {
+                
+                let authorization: CLAuthorizationStatus
+                
+                if #available(iOS 14.0, *) {
+                    authorization = self.locationManager.authorizationStatus
+                } else {
+                    authorization = CLLocationManager.authorizationStatus()
+                }
+                DispatchQueue.main.async {
+                    self.checkCurrentLocationAuthorization(status: authorization)
+                }
+            } else {
+                print("위치 서비스 꺼져 있어서, 위치 권한 요청을 할 수 없습니다.")
+                self.showLocationSettingAlert()
+            }
+        }
+    }
+    // 사용자 위치 권한 상태 확인 -> 권한 요청
+    func checkCurrentLocationAuthorization(status: CLAuthorizationStatus) {
+        let status = locationManager.authorizationStatus
+        
+        switch status {
+            
+        case .notDetermined:
+            print("notDetermined - 이 권한에서만 권한 문구를 띄울 수 있음")
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.requestWhenInUseAuthorization() // info.plist에서 허용한 권한관 동일
+        case .denied:
+            print("denied - 설정으로 이동하는 Alert 띄우기")
+            showLocationSettingAlert()
+        case .authorizedWhenInUse:
+            print("authorizationWhenInUse - 정상 로직 실행하면 됨.")
+            locationManager.startUpdatingLocation() // GPS 기능 정상 작동
+        default:
+            print("default - 오류 발생")
+        }
+    }
+    
+    // 설정 이동 Alert
+    func showLocationSettingAlert() {
+        let alert = UIAlertController(title: "위치 정보 이용",
+                                      message: "위치 서비스를 사용할 수 없습니다. 기기의 '설정 > 개인정보 보호'에서 위치 서비스를 켜주세요", preferredStyle: .alert)
+        let goSetting = UIAlertAction(title: "설정으로 이동", style: .default) { _ in
+            if let setting = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(setting)
+            }
+        }
+        let cancel = UIAlertAction(title: "취소", style: .cancel)
+        alert.addAction(goSetting)
+        alert.addAction(cancel)
+        present(alert, animated: true)
+    }
 }
 
 extension WeatherDetailViewController: PullToRefresh {
@@ -388,5 +452,28 @@ extension WeatherDetailViewController: PullToRefresh {
     // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
     func updateAndSave() {
         viewModel.action.onNext(.pullToRefresh)
+    }
+}
+
+
+extension WeatherDetailViewController: CLLocationManagerDelegate {
+    // 위치 권한 허용 O
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+    }
+    
+    // 위치 권한 허용 X
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+
+    }
+    
+    // iOS 14+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        checkDeviceLocationAuthorization()
+    }
+    
+    // iOS 14 미만
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        checkDeviceLocationAuthorization()
     }
 }
