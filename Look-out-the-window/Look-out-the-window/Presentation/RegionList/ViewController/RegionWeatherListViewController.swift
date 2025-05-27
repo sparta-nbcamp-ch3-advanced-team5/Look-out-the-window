@@ -22,7 +22,9 @@ final class RegionWeatherListViewController: UIViewController {
 
     public let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
-    
+    private var initialAppLoaded = false
+    //init 시점으로 바꾸기
+
     private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
     private var initialAppLoaded = false
@@ -60,42 +62,39 @@ final class RegionWeatherListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureTableView()
         configureDataSource()
         setupUI()
+
     }
 
+    //MARK: 동환님 데이터 생성이후에 추가 예정
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        guard !initialAppLoaded else { return }
+//
+//        let sections = viewModel.state.regionWeatherListSectionRelay.value
+////      init 시점에 coredata로 가져옴
+//
+//        if let saved = UserDefaults.standard.string(forKey: "LastViewedWeatherAddress"),
+//           let entity = CoreDataManager.shared.fetchWeather(for: saved) {
+//            let vm = WeatherDetailViewModel(entity: entity)
+//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
+//            navigationController?.pushViewController(vc, animated: false)
+//            initialAppLoaded = true
+//            return
+//        }
+//
+//        if let first = sections.first?.items.first,
+//           let entity = CoreDataManager.shared.fetchWeather(for: first.address) {
+//            let vm = WeatherDetailViewModel(entity: entity)
+//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
+//            navigationController?.pushViewController(vc, animated: false)
+//            initialAppLoaded = true
+//        }
+//    }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-
-        guard !initialAppLoaded else { return }
-
-        // 저장된 주소가 있다면 해당 셀로 자동 진입
-        // coredata 임시 추가로 화면 전환 확인 완료
-        if let savedAddress = UserDefaults.standard.string(forKey: "LastViewedWeatherAddress"),
-           let entity = CoreDataManager.shared.fetchWeather(for: savedAddress) {
-            let viewModel = WeatherDetailViewModel(entity: entity)
-            let detailVC = WeatherDetailViewController(viewModel: viewModel)
-            navigationController?.pushViewController(detailVC, animated: false)
-            initialAppLoaded = true
-
-            // 없으면 첫 번째 셀로 자동 진입 여기 수정
-        }
-        guard let first = viewModel.state.regionWeatherListSectionRelay.value.first?.items.first,
-              let address = first.address,
-              let entity = CoreDataManager.shared.fetchWeather(for: address)
-        else {
-            initialAppLoaded = true
-            return
-        }
-
-        let viewModel = WeatherDetailViewModel(entity: entity)
-        let detailVC = WeatherDetailViewController(viewModel: viewModel)
-        navigationController?.pushViewController(detailVC, animated: false)
-        initialAppLoaded = true
-    }
 }
 
 // MARK: - UI Methods
@@ -160,27 +159,26 @@ private extension RegionWeatherListViewController {
         // View ➡️ ViewController
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
-        
-//        regionListView.getTableView.rx.itemSelected
-//            .asDriver()
-//            .drive(with: self) { owner, model in
-//                // TODO: Main 화면 present
-//                owner.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
-                dump(model)
-                // 주형: index 아이템 클릭시 주소 저장
-                if let address = model.address {
-                     UserDefaults.standard.set(address, forKey: "LastViewedWeatherAddress")
-                 }
 
-                 if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
-                     let viewModel = WeatherDetailViewModel(entity: entity)
-                     let detailVC = WeatherDetailViewController(viewModel: viewModel)
-                     owner.navigationController?.pushViewController(detailVC, animated: true)
-                 }
+        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
+            .asDriver()
+            .drive(with: self) { owner, model in
+                // TODO: Main 화면 present
+                dump(model)
+
+                // 주형: index 아이템 클릭시 주소 저장
+                UserDefaults.standard.set(model.address, forKey: "LastViewedWeatherAddress")
+                // CoreData에서 해당 주소 날씨 fetch → 상세화면 push
+                if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
+                    let viewModel = WeatherDetailViewModel(entity: entity)
+                    let detailVC = WeatherDetailViewController(viewModel: viewModel, currentPage: 0)
+                    owner.navigationController?.pushViewController(detailVC, animated: true)
+                }
+
                 os_log(.debug, log: owner.log, "Main 화면 present")
             }.disposed(by: disposeBag)
-        
-        
+
+
         // MARK: - 근호님 코드
         // 현재 index값 안받아와짐
         Observable.zip(
