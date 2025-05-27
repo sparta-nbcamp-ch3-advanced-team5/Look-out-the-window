@@ -301,7 +301,6 @@ private extension WeatherDetailViewController {
         gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
-        //        gradientLayer.locations = [0.4, 0.6]
         gradientLayer.frame = view.bounds
         dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.5))
         // 배경이니 제일 하단에 위치하도록
