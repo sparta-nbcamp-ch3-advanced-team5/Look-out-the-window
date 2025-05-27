@@ -22,6 +22,8 @@ struct CurrentWeather: Hashable {
     let currentTime: Int
     /// 현재 순간(새벽, 아침, 낮, 오후, 밤) 기준 투명값 (0.0 ~ 0.5)
     let currentMomentValue: Double
+    /// UTC 기준 오프셋 값
+    let timeOffset: Int
     /// 일출시간
     let sunriseTime: Int
     /// 일몰시간
@@ -106,7 +108,7 @@ extension CurrentWeather {
 
         let detailModels: [DetailModel] = [
             DetailModel(title: .uvIndex, value: self.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(self.sunriseTime)/\(self.sunsetTime)"),
+            DetailModel(title: .sunriseSunset, value: "\(self.currentTime)/\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)"),
             DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)"),
             DetailModel(title: .rainSnow, value: "-"),
             DetailModel(title: .feelsLike, value: self.tempFeelLike),

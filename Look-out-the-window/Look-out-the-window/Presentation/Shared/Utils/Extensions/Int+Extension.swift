@@ -40,20 +40,15 @@ extension Int {
     /// 특정 유닉스 시간에 해당하는 날짜의 시작과 끝 시간(유닉스 타임스탬프)을 계산합니다.
     /// - Parameter unixTime: 기준이 되는 유닉스 시간 (초 단위).
     /// - Returns: 해당 날짜의 시작 시각과 끝 시각의 유닉스 시간 범위를 튜플로 반환합니다.
-    func getUnixRange(unixTime: TimeInterval) -> (startUnix: TimeInterval, endUnix: TimeInterval)? {
-        let current = Date(timeIntervalSince1970: unixTime)
-        let calendar = Calendar.current
+    func getUnixRange(unixTime: TimeInterval, timeOffset: Int) -> (startUnix: TimeInterval, endUnix: TimeInterval)? {
+        let current = Int(unixTime) + timeOffset
         
-        guard let startDate = calendar.startOfDay(for: current) as Date? else {
-            return nil
-        }
+        let startOffset = current % 86400
+        let startUnix = current - startOffset
         
-        let endDate = startDate.addingTimeInterval(86400 - 1)
+        let endUnix = startUnix + 86399
         
-        let startUnix = startDate.timeIntervalSince1970
-        let endUnix = endDate.timeIntervalSince1970
-        
-        return (startUnix: startUnix, endUnix: endUnix)
+        return (startUnix: TimeInterval(startUnix), endUnix: TimeInterval(endUnix))
     }
     /// 유닉스 타임스탬프(Int)를 "h:mm a" 형식의 문자열로 변환합니다.
     /// - Returns: 오전/오후 표시가 포함된 시간 문자열 (예: "8:15 AM").
@@ -83,10 +78,11 @@ extension Int {
         return hour == 0 ? 24 : hour // 0시 -> 24시
     }
     
-    func to12HourInt() -> String {
+    func to12HourInt(timeOffset: Int) -> String {
         let date = self.convertUnixTimeToDate()
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "ko_KR")
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: timeOffset)
         dateFormatter.dateFormat = "a h:mm"
         return dateFormatter.string(from: date)
     }

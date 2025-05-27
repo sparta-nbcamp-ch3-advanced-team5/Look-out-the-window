@@ -42,6 +42,7 @@ final class CoreDataManager {
         weather.address = current.address
         weather.temperature = current.temperature
         weather.currentTime = Int64(current.currentTime)
+        weather.timeOffset = Int32(current.timeOffset)
         weather.maxTemp = current.maxTemp
         weather.minTemp = current.minTemp
         weather.tempFeelLike = current.tempFeelLike
@@ -235,6 +236,7 @@ extension WeatherDataEntity {
             lng: self.longitude,
             currentTime: Int(self.currentTime),
             currentMomentValue: self.currentMomentValue,
+            timeOffset: Int(self.timeOffset),
             sunriseTime: Int(self.sunriseTime),
             sunsetTime: Int(self.sunsetTime),
             temperature: self.temperature ?? "--",
