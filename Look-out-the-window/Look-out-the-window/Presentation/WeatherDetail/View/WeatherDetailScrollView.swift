@@ -216,15 +216,14 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
         let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
         
         let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: weather.uvi),
-//            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
-            DetailModel(title: .sunriseSunset, value: "\(weather.currentTime)/\(weather.sunriseTime)/\(weather.sunsetTime)/\(weather.timeOffset)"),
-            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
-            DetailModel(title: .rainSnow, value: "-"),
-            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
-            DetailModel(title: .humidity, value: weather.humidity),
-            DetailModel(title: .visibility, value: weather.visibility),
-            DetailModel(title: .clouds, value: weather.clouds)
+            DetailModel(title: .uvIndex, value: weather.uvi, someData: ""),
+            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)", someData: ""),
+            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)", someData: ""),
+            DetailModel(title: .rainSnow, value: "-", someData: ""),
+            DetailModel(title: .feelsLike, value: weather.tempFeelLike, someData: ""),
+            DetailModel(title: .humidity, value: weather.humidity, someData: ""),
+            DetailModel(title: .visibility, value: weather.visibility, someData: ""),
+            DetailModel(title: .clouds, value: weather.clouds, someData: "")
         ]
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
         

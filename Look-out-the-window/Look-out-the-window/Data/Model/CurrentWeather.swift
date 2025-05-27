@@ -107,15 +107,16 @@ extension CurrentWeather {
         let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
 
         let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: self.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(self.currentTime)/\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)"),
-            DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)"),
-            DetailModel(title: .rainSnow, value: "\(self.rainPerHour)mm \n / \(self.snowPerHour)mm"),
-            DetailModel(title: .feelsLike, value: self.tempFeelLike),
-            DetailModel(title: .humidity, value: self.humidity),
-            DetailModel(title: .visibility, value: self.visibility),
-            DetailModel(title: .clouds, value: self.clouds)
+            DetailModel(title: .uvIndex, value: self.uvi, someData: ""),
+            DetailModel(title: .sunriseSunset, value: "\(self.currentTime)/\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)", someData: ""),
+            DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)", someData: ""),
+            DetailModel(title: .rainSnow, value: "\(self.rainPerHour)mm \n / \(self.snowPerHour)mm", someData: "\(self.rainPerHour)/\(self.snowPerHour)"),
+            DetailModel(title: .feelsLike, value: self.tempFeelLike, someData: "\(self.temperature)"),
+            DetailModel(title: .humidity, value: self.humidity, someData: ""),
+            DetailModel(title: .visibility, value: self.visibility, someData: ""),
+            DetailModel(title: .clouds, value: self.clouds, someData: "")
         ]
+        
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
         
         return [

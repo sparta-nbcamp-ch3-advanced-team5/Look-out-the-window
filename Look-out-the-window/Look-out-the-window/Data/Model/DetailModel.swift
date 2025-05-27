@@ -63,4 +63,5 @@ enum DetailType {
 struct DetailModel {
     let title: DetailType
     let value: String
+    let someData: String
 }
