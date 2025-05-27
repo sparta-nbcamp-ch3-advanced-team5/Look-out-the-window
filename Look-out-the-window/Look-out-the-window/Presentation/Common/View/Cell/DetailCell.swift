@@ -152,14 +152,14 @@ private extension DetailCell {
     
     func setConstraints() {
         cellIcon.snp.makeConstraints{
-            $0.top.equalToSuperview().offset(6)
-            $0.leading.equalToSuperview().offset(4)
+            $0.top.equalToSuperview().offset(10)
+            $0.leading.equalToSuperview().offset(8)
             $0.size.equalTo(16)
         }
         
         titleLabel.snp.makeConstraints{
-            $0.top.equalToSuperview().offset(4)
-            $0.leading.equalTo(cellIcon.snp.trailing).offset(4)
+            $0.top.equalToSuperview().offset(10)
+            $0.leading.equalTo(cellIcon.snp.trailing).offset(6)
         }
         
         containerView.snp.makeConstraints {
