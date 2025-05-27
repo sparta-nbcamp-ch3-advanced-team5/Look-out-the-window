@@ -22,6 +22,8 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     private let coreDataManager = CoreDataManager.shared
     private var latestWeather: CurrentWeather?
     
+    /// 현재 WeatherDetailView 페이지
+    var currentPage: Int
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -45,7 +47,9 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Initializer
     
-    init() {
+    init(currentPage: Int) {
+        self.currentPage = currentPage
+        
         // URLRequset 설정
         self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(
             lat: currentLocation.value?.lat ?? 0.0,

@@ -18,16 +18,13 @@ protocol PageChange: AnyObject {
     func scrollToTop()
 }
 
-final class WeatherDetailViewController: UIViewController {
+final class WeatherDetailViewController: UIViewController, UIViewControllerTransitioningDelegate {
     
     private let viewModel: WeatherDetailViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
     private var weatherInfoList = [CurrentWeather]()
     private var contentViewWidthConstraint: Constraint?
-    
-    /// 현재 WeatherDetailView 페이지
-    var currentPage: Int
     
     weak var pageChangeDelegate: PageChange?
     
@@ -85,9 +82,8 @@ final class WeatherDetailViewController: UIViewController {
     }
     
     // MARK: - Initializers
-    init(viewModel: WeatherDetailViewModel, currentPage: Int) {
+    init(viewModel: WeatherDetailViewModel) {
         self.viewModel = viewModel
-        self.currentPage = currentPage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -119,7 +115,7 @@ private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        setInitalBackgroundViews(currentPage: currentPage)
+        setInitalBackgroundViews(currentPage: viewModel.currentPage)
     }
     
     //    func setAppearance() {
@@ -234,7 +230,7 @@ private extension WeatherDetailViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                self.currentPage = 0
+                viewModel.currentPage = 0
                 self.pageController.currentPage = 0
                 handlePageChanged(to: 0)
             })
@@ -245,7 +241,8 @@ private extension WeatherDetailViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                navigationController?.popViewController(animated: false)
+                navigationController?.topViewController?.transitioningDelegate = self
+                navigationController?.popViewController(animated: true)
             })
             .disposed(by: disposeBag)
     }
@@ -258,8 +255,8 @@ private extension WeatherDetailViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] (weather) in
                 guard let self else { return }
-                if self.weatherInfoList.indices.contains(self.currentPage) {
-                    self.weatherInfoList[self.currentPage] = weather
+                if self.weatherInfoList.indices.contains(viewModel.currentPage) {
+                    self.weatherInfoList[viewModel.currentPage] = weather
                     self.reloadWeatherDetailView(with: weather)
                 } else {
                     self.weatherInfoList.append(weather)
@@ -353,9 +350,9 @@ private extension WeatherDetailViewController {
     }
     
     func reloadWeatherDetailView(with weather: CurrentWeather) {
-        guard currentPage < weatherDetailViewList.count else { return }
+        guard viewModel.currentPage < weatherDetailViewList.count else { return }
         
-        let weatherDetailView = weatherDetailViewList[currentPage]
+        let weatherDetailView = weatherDetailViewList[viewModel.currentPage]
         
         // 이 안에서 weather를 다시 넣고 UI 갱신
         weatherDetailView.updateWeather(newWeather: weather)
@@ -403,8 +400,8 @@ private extension WeatherDetailViewController {
         // 이전 페이지 업데이트
         self.previousPage = currentPage
         // 현재 페이지 업데이트
-        self.currentPage = currentPage + 1
-        print(self.currentPage)
+        viewModel.currentPage = currentPage + 1
+        print("currentPage: \(viewModel.currentPage)")
     }
 }
 
