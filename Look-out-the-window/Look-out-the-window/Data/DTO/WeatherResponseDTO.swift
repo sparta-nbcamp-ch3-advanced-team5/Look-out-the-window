@@ -162,8 +162,8 @@ extension WeatherResponseDTO {
     /// - 주의사항:
     ///   - `getUnixRange(unixTime:)`가 실패할 경우, 오류 로그를 출력하고 기본값 `0.0`을 반환합니다.
     func toMomentValue() -> Double {
-        let time = self.currentWeather.currentTime + self.timeZoneOffset - 32400
-        guard let (startUnix, _) = time.getUnixRange(unixTime: TimeInterval(time)) else {
+        let time = self.currentWeather.currentTime
+        guard let (startUnix, _) = time.getUnixRange(unixTime: TimeInterval(time), timeOffset: self.timeZoneOffset) else {
             print("ERROR \(#function)")
             return 0.0
         }
@@ -194,10 +194,11 @@ extension WeatherResponseDTO {
             address: address ?? "",
             lat: lat,
             lng: lng,
-            currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,
+            currentTime: self.currentWeather.currentTime,
             currentMomentValue: toMomentValue(),
-            sunriseTime: self.currentWeather.sunriseTime + self.timeZoneOffset - 32400,
-            sunsetTime: self.currentWeather.sunsetTime + self.timeZoneOffset - 32400,
+            timeOffset: self.timeZoneOffset,
+            sunriseTime: self.currentWeather.sunriseTime,
+            sunsetTime: self.currentWeather.sunsetTime,
             temperature: String(Int(self.currentWeather.temperature)),
             maxTemp: String(Int(self.dailyWeathers[0].temperature.maxTemperature)),
             minTemp: String(Int(self.dailyWeathers[0].temperature.minTemperature)),

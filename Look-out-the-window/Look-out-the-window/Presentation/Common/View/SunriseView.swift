@@ -24,7 +24,9 @@ final class SunriseView: UIView {
         didSet {
             calculateSunPoint(currentTime: currentTime,
                               sunriseTime: sunriseTime,
-                              sunsetTime: sunsetTime)
+                              sunsetTime: sunsetTime,
+                              timeOffset: timeOffset
+            )
             self.setNeedsDisplay()
         }
     }
@@ -35,6 +37,8 @@ final class SunriseView: UIView {
     private var sunriseTime: Int = 0
     /// 일몰 시간 (Unix Timestamp)
     private var sunsetTime: Int = 0
+    /// 타임 오프셋
+    private var timeOffset: Int = 0
     /// 현재 태양이 위치할 좌표
     private lazy var currentSunPoint = CGPoint(x: 0, y: self.bounds.maxY / 1.5 + 10)
     
@@ -50,12 +54,13 @@ final class SunriseView: UIView {
     
     /// 생성자 - 현재 시간, 일출, 일몰 시간을 받아 초기 설정을 수행합니다
     /// ⚠️ 변경 : configure에서 mainLabel, subLabel만 세팅
-    convenience init(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
+    convenience init(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
         self.init(frame: .zero)
         self.currentTime = currentTime
         self.sunriseTime = sunriseTime
         self.sunsetTime = sunsetTime
-        configure(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime)
+        self.timeOffset = timeOffset
+        configure(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime, timeOffset: timeOffset)
     }
     
     /// 기본 생성자
@@ -86,13 +91,17 @@ final class SunriseView: UIView {
     ///   - sunriseTime: 일출 시간
     ///   - sunsetTime: 일몰 시간
     /// ⚠️ 변경 : mainLabel, subLabel만 세팅 (일출/일몰 시간 포맷)
-    func configure(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
+    func configure(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
         self.currentTime = currentTime
         self.sunriseTime = sunriseTime
         self.sunsetTime = sunsetTime
+        self.timeOffset = timeOffset
+        
+        let sunriseTimeUnix = Date(timeIntervalSince1970: TimeInterval(sunriseTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
+        let sunsetTimeUnix = Date(timeIntervalSince1970: TimeInterval(sunsetTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
 
-        let sunriseString = sunriseTime.to12HourInt()
-        let sunsetString = sunsetTime.to12HourInt()
+        let sunriseString = Int(sunriseTimeUnix).to12HourInt(timeOffset: timeOffset)
+        let sunsetString = Int(sunsetTimeUnix).to12HourInt(timeOffset: timeOffset)
 
         if currentTime < sunriseTime {
             mainLabel.text = sunriseString
@@ -106,25 +115,34 @@ final class SunriseView: UIView {
         }
 
         setSunPathPoints()
-        calculateSunPoint(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime)
+//        calculateSunPoint(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime, timeOffset: timeOffset)
         self.setNeedsDisplay()
     }
 
     /// 현재 시간에 해당하는 태양 위치 좌표를 계산합니다
-    private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
-        let current = TimeInterval(currentTime)
-        guard let (startUnix, _) = currentTime.getUnixRange(unixTime: current) else { return }
-        
+    private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
+        let current = Date(timeIntervalSince1970: TimeInterval(currentTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
+        guard let (startUnix, endUnix) = currentTime.getUnixRange(unixTime: current, timeOffset: timeOffset) else { return }
+        print("시작시간: \(Date(timeIntervalSince1970: startUnix))")
+        print("현재시간: \(Date(timeIntervalSince1970: current))")
+        print("종료시간: \(Date(timeIntervalSince1970: endUnix))")
+//        let sunriseUnix = TimeInterval(sunriseTime)
+        let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime))
+        let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime))
+        print("일출: \(sunrise)")
+        print("일몰: \(sunset)")
         let startInteger = 0
         let endInteger = 86399
-        let currentInteger = currentTime - Int(startUnix)
-        let sunriseIntegrer = sunriseTime - Int(startUnix)
-        let sunsetInteger = sunsetTime - Int(startUnix)
+        let currentInteger = Int(current) - Int(startUnix)
+        let sunriseInteger = Int(sunrise.timeIntervalSince1970) - Int(startUnix)
+        let sunsetInteger = Int(sunset.timeIntervalSince1970) - Int(startUnix)
+//        let sunriseInteger = Int(sunriseDate.timeIntervalSince1970) - Int(startUnix)
+//        let sunsetInteger = Int(sunsetDate.timeIntervalSince1970) - Int(startUnix)
         
-        if (startInteger..<sunriseIntegrer).contains(currentInteger) {
-            let offset = Int(Double(currentInteger) / Double(sunriseIntegrer) * 100)
+        if (startInteger..<sunriseInteger).contains(currentInteger) {
+            let offset = Int(Double(currentInteger) / Double(sunriseInteger) * 100)
             self.currentSunPoint = dawnPoints[offset]
-        } else if (sunriseIntegrer..<sunsetInteger).contains(currentInteger) {
+        } else if (sunriseInteger..<sunsetInteger).contains(currentInteger) {
             let offset = Int(Double(currentInteger) / Double(sunsetInteger) * 100)
             self.currentSunPoint = dayPoints[offset]
         } else if (sunsetInteger...endInteger).contains(currentInteger) {

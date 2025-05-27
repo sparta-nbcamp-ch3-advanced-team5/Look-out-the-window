@@ -93,6 +93,7 @@ extension WeatherDetailViewModel {
                     lng: currentWeather.lng,
                     currentTime: currentWeather.currentTime,
                     currentMomentValue: currentWeather.currentMomentValue,
+                    timeOffset: currentWeather.timeOffset,
                     sunriseTime: currentWeather.sunriseTime,
                     sunsetTime: currentWeather.sunsetTime,
                     temperature: currentWeather.temperature,

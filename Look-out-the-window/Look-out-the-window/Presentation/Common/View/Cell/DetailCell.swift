@@ -91,9 +91,10 @@ final class DetailCell: UICollectionViewCell {
                 let times = model.value.components(separatedBy: "/")
                 let sunriseUTC = Int(times.first ?? "0") ?? 0
                 let sunsetUTC = Int(times.dropFirst().first ?? "0") ?? 0
+                let timeOffset = Int(times.last ?? "0") ?? 0
                 
-                let sunriseStr = sunriseUTC.to12HourInt()
-                let sunsetStr = sunsetUTC.to12HourInt()
+                let sunriseStr = sunriseUTC.to12HourInt(timeOffset: timeOffset)
+                let sunsetStr = sunsetUTC.to12HourInt(timeOffset: timeOffset)
                 
                 let currentUTC = Int(Date().timeIntervalSince1970)
                 
@@ -101,7 +102,8 @@ final class DetailCell: UICollectionViewCell {
                 sunriseSunsetView.configure(
                     currentTime: currentUTC,
                     sunriseTime: sunriseUTC,
-                    sunsetTime: sunsetUTC
+                    sunsetTime: sunsetUTC,
+                    timeOffset: timeOffset
                 )
                 containerView.addSubview(sunriseSunsetView)
                 sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
