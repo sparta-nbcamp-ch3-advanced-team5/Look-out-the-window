@@ -25,10 +25,6 @@ final class WeatherDetailViewController: UIViewController {
     private var previousPage = 0
     private var weatherInfoList = [CurrentWeather]()
     private var contentViewWidthConstraint: Constraint?
-    private let riveViewModel = RiveViewModel(
-        fileName: "LoadingSun",
-        stateMachineName: "State Machine 1",
-    )
     
     var currentPage: Int
     weak var pageChangeDelegate: PageChange?
@@ -40,13 +36,8 @@ final class WeatherDetailViewController: UIViewController {
     private let dimView = UIView()
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
-    /// Rive 로딩 인디케이터
-    private lazy var loadingRiveView: RiveView = {
-        let view = riveViewModel.createRiveView()
-        view.preferredFramesPerSecond = 10
-        view.isUserInteractionEnabled = false
-        return view
-    }()
+    
+    private lazy var mainLoadingIndicator = MainLoadingIndicator()
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
     
@@ -116,7 +107,6 @@ final class WeatherDetailViewController: UIViewController {
         
         navigationItem.hidesBackButton = true
         
-        riveViewModel.play()
         bindViewModel()
         setupUI()
         bindUIEvents()
@@ -146,7 +136,7 @@ private extension WeatherDetailViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(loadingRiveView, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
+        view.addSubviews(mainLoadingIndicator, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         horizontalScrollView.addSubview(horizontalScrollContentView)
@@ -154,7 +144,7 @@ private extension WeatherDetailViewController {
     
     func setConstraints() {
         
-        loadingRiveView.snp.makeConstraints {
+        mainLoadingIndicator.snp.makeConstraints {
             $0.center.equalToSuperview()
             $0.width.height.equalTo(50)
         }
@@ -269,9 +259,9 @@ private extension WeatherDetailViewController {
                 // UI 생성
                 self.reloadUI(with: weather)
                 // 로딩 인디케이터 정지
-                self.riveViewModel.pause()
+                mainLoadingIndicator.riveViewModel.pause()
                 // 로딩 정지 후 hidden 변경
-                self.loadingRiveView.isHidden = true
+                mainLoadingIndicator.isHidden = true
                 self.bottomHStackView.isHidden = false
                 self.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
