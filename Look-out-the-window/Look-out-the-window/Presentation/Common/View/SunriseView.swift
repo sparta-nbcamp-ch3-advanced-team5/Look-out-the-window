@@ -60,7 +60,6 @@ final class SunriseView: UIView {
         self.sunriseTime = sunriseTime
         self.sunsetTime = sunsetTime
         self.timeOffset = timeOffset
-        configure(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime, timeOffset: timeOffset)
     }
     
     /// 기본 생성자
@@ -115,7 +114,6 @@ final class SunriseView: UIView {
         }
 
         setSunPathPoints()
-//        calculateSunPoint(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime, timeOffset: timeOffset)
         self.setNeedsDisplay()
     }
 
@@ -123,21 +121,15 @@ final class SunriseView: UIView {
     private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
         let current = Date(timeIntervalSince1970: TimeInterval(currentTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
         guard let (startUnix, endUnix) = currentTime.getUnixRange(unixTime: current, timeOffset: timeOffset) else { return }
-        print("시작시간: \(Date(timeIntervalSince1970: startUnix))")
-        print("현재시간: \(Date(timeIntervalSince1970: current))")
-        print("종료시간: \(Date(timeIntervalSince1970: endUnix))")
-//        let sunriseUnix = TimeInterval(sunriseTime)
-        let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime))
-        let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime))
-        print("일출: \(sunrise)")
-        print("일몰: \(sunset)")
+        
+        let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime)).addingTimeInterval(TimeInterval(timeOffset))
+        let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime)).addingTimeInterval(TimeInterval(timeOffset))
+        
         let startInteger = 0
         let endInteger = 86399
         let currentInteger = Int(current) - Int(startUnix)
         let sunriseInteger = Int(sunrise.timeIntervalSince1970) - Int(startUnix)
         let sunsetInteger = Int(sunset.timeIntervalSince1970) - Int(startUnix)
-//        let sunriseInteger = Int(sunriseDate.timeIntervalSince1970) - Int(startUnix)
-//        let sunsetInteger = Int(sunsetDate.timeIntervalSince1970) - Int(startUnix)
         
         if (startInteger..<sunriseInteger).contains(currentInteger) {
             let offset = Int(Double(currentInteger) / Double(sunriseInteger) * 100)

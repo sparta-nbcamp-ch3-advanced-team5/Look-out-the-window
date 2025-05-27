@@ -108,7 +108,7 @@ extension CurrentWeather {
 
         let detailModels: [DetailModel] = [
             DetailModel(title: .uvIndex, value: self.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)"),
+            DetailModel(title: .sunriseSunset, value: "\(self.currentTime)/\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)"),
             DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)"),
             DetailModel(title: .rainSnow, value: "-"),
             DetailModel(title: .feelsLike, value: self.tempFeelLike),

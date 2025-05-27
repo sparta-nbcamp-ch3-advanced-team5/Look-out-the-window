@@ -89,18 +89,17 @@ final class DetailCell: UICollectionViewCell {
         case .sunriseSunsetView:
             if model.title == .sunriseSunset {
                 let times = model.value.components(separatedBy: "/")
-                let sunriseUTC = Int(times.first ?? "0") ?? 0
-                let sunsetUTC = Int(times.dropFirst().first ?? "0") ?? 0
-                let timeOffset = Int(times.last ?? "0") ?? 0
+                let currentTime = Int(times[0]) ?? 0
+                let sunriseUTC = Int(times[1]) ?? 0
+                let sunsetUTC = Int(times[2]) ?? 0
+                let timeOffset = Int(times[3]) ?? 0
                 
                 let sunriseStr = sunriseUTC.to12HourInt(timeOffset: timeOffset)
                 let sunsetStr = sunsetUTC.to12HourInt(timeOffset: timeOffset)
                 
-                let currentUTC = Int(Date().timeIntervalSince1970)
-                
                 let sunriseSunsetView = SunriseView()
                 sunriseSunsetView.configure(
-                    currentTime: currentUTC,
+                    currentTime: currentTime,
                     sunriseTime: sunriseUTC,
                     sunsetTime: sunsetUTC,
                     timeOffset: timeOffset
