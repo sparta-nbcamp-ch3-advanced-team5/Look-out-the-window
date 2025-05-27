@@ -129,53 +129,6 @@ extension WeatherDetailViewModel {
             .disposed(by: self.disposeBag)
     }
     
-    func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
-        let formattedHourlyModels = weather.hourlyModel
-            .prefix(24)
-            .map { model in
-                HourlyModel(
-                    hour: model.hour.to24HourInt(),
-                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
-                    weatherInfo: model.weatherInfo
-                )
-            }
-        let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
-        
-        let formattedDailyModels = weather.dailyModel.map { model in
-            DailyModel(
-                unixTime: model.unixTime,
-                day: String(model.day.prefix(1)),
-                high: Double(model.high)?.roundedString ?? model.high,
-                low: Double(model.low)?.roundedString ?? model.low,
-                weatherInfo: model.weatherInfo,
-                maxTemp: model.maxTemp,
-                minTemp: model.minTemp,
-                temperature: model.temperature
-            )
-        }
-        
-        let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-        
-        let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: weather.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
-            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
-            DetailModel(title: .rainSnow, value: "-"),
-            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
-            DetailModel(title: .humidity, value: weather.humidity),
-            DetailModel(title: .visibility, value: weather.visibility),
-            DetailModel(title: .clouds, value: weather.clouds)
-        ]
-        
-        let detailItems = detailModels.map { MainSectionItem.detail($0) }
-        
-        return [
-            MainSection(items: hourlyItems),
-            MainSection(items: dailyItems),
-            MainSection(items: detailItems)
-        ]
-    }
-    
     func updateCurrentWeather() {
         guard let currentWeather = latestWeather else {
             print("저장할 날씨 데이터가 없습니다.")
