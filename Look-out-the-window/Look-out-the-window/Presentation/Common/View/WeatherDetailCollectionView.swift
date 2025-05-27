@@ -71,7 +71,7 @@ private extension WeatherDetailCollectionView {
     }
     
     func setAppearance() {
-        self.backgroundColor = .mainBackground
+        self.backgroundColor = .clear
     }
     
     func registerCells() {

@@ -87,7 +87,8 @@ private extension WeatherDetailScrollView {
         
         weatherDetailCollectionView.snp.makeConstraints {
             $0.top.equalTo(backgroundView.riveView.snp.bottom)
-            $0.leading.trailing.bottom.equalToSuperview()
+            $0.bottom.equalToSuperview()
+            $0.horizontalEdges.equalToSuperview().inset(20)
         }
     }
     
