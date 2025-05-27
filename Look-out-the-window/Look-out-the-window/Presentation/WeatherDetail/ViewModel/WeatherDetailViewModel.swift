@@ -80,6 +80,8 @@ extension WeatherDetailViewModel {
         networkManager.fetch(urlRequest: urlRequest!)
             .subscribe(with: self, onSuccess: { (owner, response: WeatherResponseDTO)  in
                 
+                print(response.description)
+                
                 let currentWeather = response.toCurrentWeather()
                 let weatherInfo = CurrentWeather(
                     address: self.currentLocation.value?.administrativeArea ?? "",
@@ -136,7 +138,6 @@ extension WeatherDetailViewModel {
         }
         coreDataManager.updateWeather(for: currentWeather.address, with: currentWeather)
     }
-    
 }
 
 // MARK: - 디버깅 용으로 임의로 만들었습니다

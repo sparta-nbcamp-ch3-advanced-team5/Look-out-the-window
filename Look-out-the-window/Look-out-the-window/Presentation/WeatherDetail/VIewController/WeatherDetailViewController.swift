@@ -26,7 +26,9 @@ final class WeatherDetailViewController: UIViewController {
     private var weatherInfoList = [CurrentWeather]()
     private var contentViewWidthConstraint: Constraint?
     
+    /// 현재 WeatherDetailView 페이지
     var currentPage: Int
+    
     weak var pageChangeDelegate: PageChange?
     
     private lazy var locationManager = CLLocationManager()
@@ -102,7 +104,7 @@ final class WeatherDetailViewController: UIViewController {
         
         // CLLocationManagerDelegate 프로토콜 연결
         locationManager.delegate = self
-        
+                
         navigationItem.hidesBackButton = true
         
         bindViewModel()
@@ -256,8 +258,8 @@ private extension WeatherDetailViewController {
             .subscribe(onNext: { [weak self] (weather) in
                 guard let self else { return }
                 self.weatherInfoList.append(weather)
-                // UI 생성
-                self.reloadUI(with: weather)
+                // WeatherDetailView 추가 생성
+                self.addNewWeatherDetailView(with: weather)
                 // 로딩 인디케이터 정지
                 mainLoadingIndicator.riveViewModel.pause()
                 // 로딩 정지 후 hidden 변경
@@ -320,7 +322,7 @@ private extension WeatherDetailViewController {
         return clampedValue
     }
     
-    func reloadUI(with weather: CurrentWeather) {
+    func addNewWeatherDetailView(with weather: CurrentWeather) {
         let index = weatherInfoList.count - 1
         
         if index == 0 {
@@ -340,6 +342,10 @@ private extension WeatherDetailViewController {
             backgroundView.riveViewModel.play()
             applyGradientBackground(time: Double(weather.currentTime))
         }
+    }
+    
+    func reloadWeatherDetailView(with weather: CurrentWeather) {
+        
     }
     
     // BackgroundView 추가
