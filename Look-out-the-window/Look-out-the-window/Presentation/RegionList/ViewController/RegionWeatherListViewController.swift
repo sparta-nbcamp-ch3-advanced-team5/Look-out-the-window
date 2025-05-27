@@ -32,6 +32,9 @@ final class RegionWeatherListViewController: UIViewController {
     }
 
     // MARK: - UI Components
+    private let dimView = UIView()
+
+    private let gradientLayer = CAGradientLayer()
 
     // TODO: 아래로 당겨서 업데이트
     private let searchController: UISearchController
@@ -98,6 +101,7 @@ private extension RegionWeatherListViewController {
         setViewHierarchy()
         setConstraints()
         bind()
+        applyGradientBackground()
     }
 
     func setAppearance() {
@@ -120,13 +124,28 @@ private extension RegionWeatherListViewController {
     }
 
     func setViewHierarchy() {
-        self.view.addSubview(regionListView)
+        self.view.addSubviews(dimView, regionListView)
     }
 
     func setConstraints() {
         regionListView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+        
+        dimView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
+    
+    /// Gradient, 밝기 설정
+    func applyGradientBackground() {
+        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        gradientLayer.frame = view.bounds
+        dimView.backgroundColor = .black.withAlphaComponent(0.3)
+        // 배경이니 제일 하단에 위치하도록
+        view.layer.insertSublayer(gradientLayer, at: 0)
     }
 
     func bind() {
@@ -172,7 +191,6 @@ private extension RegionWeatherListViewController {
 
 
         // MARK: - 근호님 코드
-        // 현재 index값 안받아와짐
         regionListView.getTableView.rx.itemSelected
             .asDriver()
             .drive(with: self) { owner, indexPath in
@@ -180,8 +198,7 @@ private extension RegionWeatherListViewController {
                 print("선택된 indexPath.row: \(indexPath.row)")
                 
                 let detailVC = WeatherDetailViewController(
-                    viewModel: WeatherDetailViewModel(),
-                    currentPage: indexPath.row // 인덱스 전달
+                    viewModel: WeatherDetailViewModel(currentPage: indexPath.row),
                 )
                 owner.navigationController?.pushViewController(detailVC, animated: false)
                 

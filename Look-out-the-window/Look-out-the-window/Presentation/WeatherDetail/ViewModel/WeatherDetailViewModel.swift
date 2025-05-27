@@ -22,6 +22,8 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     private let coreDataManager = CoreDataManager.shared
     private var latestWeather: CurrentWeather?
     
+    /// 현재 WeatherDetailView 페이지
+    var currentPage: Int
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -45,7 +47,9 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Initializer
     
-    init() {
+    init(currentPage: Int) {
+        self.currentPage = currentPage
+        
         // URLRequset 설정
         self.urlRequest = APIEndpoints.getURLRequest(APIEndpoints.weather, parameters: WeatherParameters(
             lat: currentLocation.value?.lat ?? 0.0,
@@ -59,7 +63,7 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                     owner.getCurrentWeatherData()
                 case .pullToRefresh:
                     owner.getCurrentWeatherData()
-                    owner.saveToCoreData()
+                    owner.updateCurrentWeather()
                 }
             }.disposed(by: disposeBag)
     }
@@ -79,6 +83,8 @@ extension WeatherDetailViewModel {
     func getCurrentWeatherData() {
         networkManager.fetch(urlRequest: urlRequest!)
             .subscribe(with: self, onSuccess: { (owner, response: WeatherResponseDTO)  in
+                
+                print(response.description)
                 
                 let currentWeather = response.toCurrentWeather()
                 let weatherInfo = CurrentWeather(
@@ -118,7 +124,9 @@ extension WeatherDetailViewModel {
                 print("현재 시간: \(weatherInfo.currentTime)")
                 print("Moment: \(currentWeather.currentMomentValue)")
                 
+                // 최신 날씨 정보 저장
                 self.latestWeather = weatherInfo
+                
                 owner.state.currentWeather.accept(weatherInfo)
                 
             }, onFailure: { owner, error  in
@@ -127,62 +135,13 @@ extension WeatherDetailViewModel {
             .disposed(by: self.disposeBag)
     }
     
-    func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
-        let formattedHourlyModels = weather.hourlyModel
-            .prefix(24)
-            .map { model in
-                HourlyModel(
-                    hour: model.hour.to24HourInt(),
-                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
-                    weatherInfo: model.weatherInfo
-                )
-            }
-        let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
-        
-        let formattedDailyModels = weather.dailyModel.map { model in
-            DailyModel(
-                unixTime: model.unixTime,
-                day: String(model.day.prefix(1)),
-                high: Double(model.high)?.roundedString ?? model.high,
-                low: Double(model.low)?.roundedString ?? model.low,
-                weatherInfo: model.weatherInfo,
-                maxTemp: model.maxTemp,
-                minTemp: model.minTemp,
-                temperature: model.temperature
-            )
-        }
-        
-        let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-        
-        let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: weather.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
-            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
-            DetailModel(title: .rainSnow, value: "-"),
-            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
-            DetailModel(title: .humidity, value: weather.humidity),
-            DetailModel(title: .visibility, value: weather.visibility),
-            DetailModel(title: .clouds, value: weather.clouds)
-        ]
-        
-        let detailItems = detailModels.map { MainSectionItem.detail($0) }
-        
-        return [
-            MainSection(items: hourlyItems),
-            MainSection(items: dailyItems),
-            MainSection(items: detailItems)
-        ]
-    }
-    
-    func saveToCoreData() {
+    func updateCurrentWeather() {
         guard let currentWeather = latestWeather else {
             print("저장할 날씨 데이터가 없습니다.")
             return
         }
-        // 추후에 updateWeatherData로 변경
-        coreDataManager.saveWeatherData(current: currentWeather)
+        coreDataManager.updateWeather(for: currentWeather.address, with: currentWeather)
     }
-    
 }
 
 // MARK: - 디버깅 용으로 임의로 만들었습니다
