@@ -15,12 +15,12 @@ import SnapKit
 
 /// 지역 리스트 ViewController
 final class RegionWeatherListViewController: UIViewController {
-    
+
     // MARK: - Properties
-    
+
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
-    
-    private let viewModel = RegionWeatherListViewModel()
+
+    public let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
     private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
@@ -28,28 +28,28 @@ final class RegionWeatherListViewController: UIViewController {
         cell.configure(model: item)
         return cell
     }
-    
+
     // MARK: - UI Components
-    
+
     // TODO: 아래로 당겨서 업데이트
     private let searchController: UISearchController
     private let searchResultVC = SearchResultViewController()
-    
+
     private let regionListView = RegionWeatherListView()
-    
+
     // MARK: - Initializer
-    
+
     init() {
         searchController = UISearchController(searchResultsController: searchResultVC)
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -57,6 +57,7 @@ final class RegionWeatherListViewController: UIViewController {
         configureDataSource()
         setupUI()
     }
+    
 }
 
 // MARK: - UI Methods
@@ -69,7 +70,7 @@ private extension RegionWeatherListViewController {
         setConstraints()
         bind()
     }
-    
+
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
         
@@ -82,23 +83,23 @@ private extension RegionWeatherListViewController {
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.obscuresBackgroundDuringPresentation = true
     }
-    
+
     func setDelegates() {
         searchController.searchBar.delegate = searchResultVC
-        
+
         searchResultVC.delegate = self
     }
-    
+
     func setViewHierarchy() {
         self.view.addSubview(regionListView)
     }
-    
+
     func setConstraints() {
         regionListView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }
-    
+
     func bind() {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherListSectionRelay
@@ -116,8 +117,8 @@ private extension RegionWeatherListViewController {
             }.disposed(by: disposeBag)
 
         viewModel.action.onNext(.viewDidLoad)
-        
-        
+
+
         // View ➡️ ViewController
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
@@ -127,9 +128,19 @@ private extension RegionWeatherListViewController {
 //            .drive(with: self) { owner, model in
 //                // TODO: Main 화면 present
 //                owner.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
-//                dump(model)
-//                os_log(.debug, log: owner.log, "Main 화면 present")
-//            }.disposed(by: disposeBag)
+                dump(model)
+                // 주형: index 아이템 클릭시 주소 저장
+                if let address = model.address {
+                     UserDefaults.standard.set(address, forKey: "LastViewedWeatherAddress")
+                 }
+
+                 if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
+                     let viewModel = WeatherDetailViewModel(entity: entity)
+                     let detailVC = WeatherDetailViewController(viewModel: viewModel)
+                     owner.navigationController?.pushViewController(detailVC, animated: true)
+                 }
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
         
         
         // MARK: - 근호님 코드
