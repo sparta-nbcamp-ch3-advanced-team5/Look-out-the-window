@@ -62,14 +62,14 @@ enum DetailType {
 }
 
 // MARK: - 각 섹션 DataModel
-struct HourlyModel {
+struct HourlyModel: Hashable {
     let hour: Int
     let temperature: String
     // weatherState
     let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
 }
 
-struct DailyModel {
+struct DailyModel: Hashable {
     // 요일, 하늘상태(이미지 -> String), 최저 - 최고 온도
     let unixTime: Int
     let day: String

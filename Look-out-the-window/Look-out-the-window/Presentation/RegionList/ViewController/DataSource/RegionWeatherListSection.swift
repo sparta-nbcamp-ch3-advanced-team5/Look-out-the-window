@@ -9,12 +9,22 @@ import Foundation
 
 import RxDataSources
 
+enum RegionWeatherListSectionHeader: String {
+    case currLocation = "현 위치 날씨"
+    case savedRegionList = "저장된 지역 날씨"
+}
+
 struct RegionWeatherListSection {
+    let header: RegionWeatherListSectionHeader
     var items: [CurrentWeather]
 }
 
-extension RegionWeatherListSection: SectionModelType {
+extension RegionWeatherListSection: AnimatableSectionModelType {
     typealias Item = CurrentWeather
+    
+    var identity: String {
+        return header.rawValue
+    }
     
     init(original: RegionWeatherListSection, items: [CurrentWeather]) {
         self = original

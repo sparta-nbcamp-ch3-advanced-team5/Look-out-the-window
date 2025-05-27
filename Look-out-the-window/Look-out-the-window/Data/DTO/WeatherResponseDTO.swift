@@ -173,7 +173,7 @@ extension WeatherResponseDTO {
         }
     }
     
-    func toCurrentWeather(address: String? = nil, isCurrLocation: Bool = false) -> CurrentWeather {
+    func toCurrentWeather(address: String = "", isCurrLocation: Bool = false) -> CurrentWeather {
         return CurrentWeather(
             address: address,
             lat: lat,

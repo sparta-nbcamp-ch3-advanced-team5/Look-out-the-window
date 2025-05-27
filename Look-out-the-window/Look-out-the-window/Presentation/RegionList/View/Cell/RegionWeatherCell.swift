@@ -11,8 +11,8 @@ import RiveRuntime
 import SnapKit
 import Then
 
-/// 지역 날씨 리스트 `UICollectionViewCell`
-final class RegionWeatherCell: UICollectionViewCell {
+/// 지역 날씨 리스트 `UITableViewCell`
+final class RegionWeatherCell: UITableViewCell {
     
     // MARK: - Properties
     
@@ -79,7 +79,7 @@ final class RegionWeatherCell: UICollectionViewCell {
     }
     
     private let lastUpdateLabel = UILabel().then {
-        $0.text = "업데이트: -/- -:--"
+        $0.text = "업데이트 -.--. XX -:--"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
     }
@@ -92,8 +92,9 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     // MARK: - Initializer
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
         setupUI()
     }
     
@@ -105,6 +106,8 @@ final class RegionWeatherCell: UICollectionViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        self.contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 10, left: 0, bottom: 10, right: 0))
+        self.backgroundView?.frame = self.contentView.frame
         setGradient()
     }
     
@@ -116,11 +119,17 @@ final class RegionWeatherCell: UICollectionViewCell {
         lowTempLabel.text = "L: \(model.minTemp)°"
         locationIndicatorImageView.isHidden = !model.isCurrLocation
         addressLabel.text = model.address
+        // TODO: 애니메이션 싱크?
         riveViewModel = RiveViewModel(fileName: model.rive)
         riveViewModel.setView(riveView)
         weatherLabel.text = model.skyInfo
-        lastUpdateLabel.text = "업데이트 \(model.currentTime.convertUnixToHourMinuteAndMark())"
-        // TODO: M/d a h:mm 포맷 반영
+        let date = Date(timeIntervalSince1970: TimeInterval(model.currentTime))
+        let customFormat = Date.FormatStyle()
+            .month(.defaultDigits)
+            .day(.twoDigits)
+            .hour(.defaultDigits(amPM: .omitted))
+            .minute(.defaultDigits)
+        lastUpdateLabel.text = "업데이트 \(date.formatted(customFormat))"
     }
 }
 
@@ -187,7 +196,7 @@ private extension RegionWeatherCell {
     }
     
     func setGradient() {
-        self.backgroundView = RegionWeatherCellBGView(frame: self.frame)
+        self.backgroundView = RoundedTrapezoidView(frame: self.bounds)
         
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = self.bounds

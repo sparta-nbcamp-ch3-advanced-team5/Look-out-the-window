@@ -23,11 +23,8 @@ final class RegionWeatherListViewController: UIViewController {
     private let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
     
-//    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
-//    private let itemSpacing: CGFloat = 30
-    
-    private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
+    private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
         cell.configure(model: item)
         return cell
     }
@@ -56,8 +53,9 @@ final class RegionWeatherListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        configureTableView()
+        configureDataSource()
         setupUI()
-        configureCollectionView()
     }
 }
 
@@ -75,8 +73,10 @@ private extension RegionWeatherListViewController {
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
         
+        self.navigationItem.title = "날씨"
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
+        self.navigationController?.navigationBar.prefersLargeTitles = true
         
         searchController.searchBar.placeholder = "도시 또는 우편번호 검색"
         searchController.hidesNavigationBarDuringPresentation = true
@@ -103,27 +103,40 @@ private extension RegionWeatherListViewController {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherListSectionRelay
             .asDriver(onErrorJustReturn: [])
-            .drive(regionListView.getCollectionView.rx.items(dataSource: dataSource))
+            .drive(regionListView.getTableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
         
         // ViewController ➡️ ViewModel
+        regionListView.getTableView.rx.itemDeleted
+            .subscribe(with: self) { owner, indexPath in
+                owner.viewModel.action.onNext(.itemDeleted(indexPath: indexPath))
+            } onError: { owner, error in
+                os_log(.error, log: owner.log, "itemDeleted: \(error.localizedDescription)")
+            }.disposed(by: disposeBag)
+
         viewModel.action.onNext(.viewDidLoad)
         
         
         // View ➡️ ViewController
-//        regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
-//            .asDriver()
-//            .drive(with: self) { owner, model in
-//                // TODO: Main 화면 present
-//                dump(model)
-//                os_log(.debug, log: owner.log, "Main 화면 present")
-//            }.disposed(by: disposeBag)
+        regionListView.getTableView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
         
+        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
+            .asDriver()
+            .drive(with: self) { owner, model in
+                // TODO: Main 화면 present
+//                owner.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
+                dump(model)
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
+        
+        
+        // MARK: - 근호님 코드
         // 현재 index값 안받아와짐
         Observable.zip(
-            regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self),
-            regionListView.getCollectionView.rx.itemSelected
+            regionListView.getTableView.rx.modelSelected(CurrentWeather.self),
+            regionListView.getTableView.rx.itemSelected
         )
         .asDriver(onErrorDriveWith: .empty())
         .drive(with: self) { owner, tuple in
@@ -144,11 +157,52 @@ private extension RegionWeatherListViewController {
     }
 }
 
-// MARK: - UICollectionView Methods
+// MARK: - UITableView Methods
 
 private extension RegionWeatherListViewController {
-    func configureCollectionView() {
-        regionListView.getCollectionView.register(RegionWeatherCell.self, forCellWithReuseIdentifier: RegionWeatherCell.identifier)
+    func configureDataSource() {
+        dataSource.canEditRowAtIndexPath = { dataSource, indexPath in
+            do {
+                if let model = try dataSource.model(at: indexPath) as? CurrentWeather,
+                   model.isCurrLocation {
+                    return false
+                }
+                return true
+            } catch {
+                os_log(.error, log: self.log, "canEditRowAtIndexPath: \(error.localizedDescription)")
+                return false
+            }
+        }
+    }
+    
+    func configureTableView() {
+        regionListView.getTableView.register(RegionWeatherCell.self, forCellReuseIdentifier: RegionWeatherCell.identifier)
+    }
+}
+
+extension RegionWeatherListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 220
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return .leastNonzeroMagnitude
     }
 }
 
