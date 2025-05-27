@@ -111,6 +111,7 @@ extension WeatherDetailViewModel {
                     hourlyModel: currentWeather.hourlyModel,
                     dailyModel: currentWeather.dailyModel,
                     isCurrLocation: true,
+                    isUserSaved: false,
                     rainPerHour: currentWeather.rainPerHour,
                     snowPerHour: currentWeather.snowPerHour
                 )

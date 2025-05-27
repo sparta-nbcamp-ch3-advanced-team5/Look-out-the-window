@@ -164,6 +164,11 @@ private extension RegionWeatherListViewController {
                 os_log(.error, log: owner.log, "itemDeleted: \(error.localizedDescription)")
             }.disposed(by: disposeBag)
 
+        Observable<Int>.interval(.seconds(900), scheduler: MainScheduler.asyncInstance)  // 15분 간격
+            .subscribe(with: self) { owner, _ in
+                owner.viewModel.action.onNext(.update)
+            }.disposed(by: disposeBag)
+        
         viewModel.action.onNext(.viewDidLoad)
 
 
@@ -260,7 +265,20 @@ extension RegionWeatherListViewController: UITableViewDelegate {
 // MARK: - SearchResultViewControllerDelegate
 
 extension RegionWeatherListViewController: SearchResultViewControllerDelegate {
-    func cellDidTapped() {
-        searchController.searchBar.resignFirstResponder()
+    func localSearchResultDidArrived(location: LocationModel) {
+        let savedRegionList = viewModel.state.regionWeatherListSectionRelay.value[0].items
+        let isSavedLocation = savedRegionList.filter({ $0.address == location.toAddress() }).isEmpty ? false : true
+        let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: isSavedLocation)
+        registerVC.delegate = self
+        let naviVC = UINavigationController(rootViewController: registerVC)
+        self.present(naviVC, animated: true)
+    }
+}
+
+// MARK: - RegisterViewControllerDelegate
+
+extension RegionWeatherListViewController: RegisterViewControllerDelegate {
+    func modalWillDismissed() {
+        viewModel.action.onNext(.regionRegistered)
     }
 }

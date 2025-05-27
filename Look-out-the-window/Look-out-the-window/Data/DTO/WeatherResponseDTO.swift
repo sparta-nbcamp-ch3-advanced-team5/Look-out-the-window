@@ -183,7 +183,7 @@ extension WeatherResponseDTO {
         }
     }
     
-    func toCurrentWeather(address: String? = nil, isCurrLocation: Bool = false) -> CurrentWeather {
+    func toCurrentWeather(address: String? = nil, isCurrLocation: Bool = false, isUserSaved: Bool = false) -> CurrentWeather {
         
         let dailyHigh = (dailyWeathers.map { $0.temperature.maxTemperature }).max()
         let dailyMin = (dailyWeathers.map { $0.temperature.minTemperature }).min()
@@ -214,6 +214,7 @@ extension WeatherResponseDTO {
             hourlyModel: self.hourlyWeathers.map{ $0.toHourlyModel() },
             dailyModel: self.dailyWeathers.map{ $0.toDailyModel(maxTemp: dailyHigh, minTemp: dailyMin, temperature: temperature) },
             isCurrLocation: isCurrLocation,
+            isUserSaved: isUserSaved,
             rainPerHour: self.currentWeather.rain?.hour ?? 0.0,
             snowPerHour: self.currentWeather.snow?.hour ?? 0.0
         )

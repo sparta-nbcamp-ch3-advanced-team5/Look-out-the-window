@@ -253,6 +253,7 @@ extension WeatherDataEntity {
             hourlyModel: self.sortedHourlyArray.map { $0.toModel() },
             dailyModel: self.sortedDailyArray.map { $0.toModel() },
             isCurrLocation: self.isCurrLocation,
+            isUserSaved: self.isUserSaved,
             rainPerHour: self.rainPerHour,
             snowPerHour: self.snowPerHour
         )
