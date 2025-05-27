@@ -15,6 +15,7 @@ final class DailyCell: UICollectionViewCell {
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 20, weight: .semibold)
         $0.textColor = .white
+        $0.textAlignment = .left
     }
     
     private let weatherIcon = UIImageView().then {

@@ -9,6 +9,14 @@ import UIKit
 import SnapKit
 import Then
 
+/*
+ HeaderView 수정
+ DailySeciton Indicator 추가
+ Progress Bar gradient 추가
+ DetailCell 나머지 view 처리
+ 일출/일몰 (후순위)
+ */
+
 final class DetailCell: UICollectionViewCell {
     static let id = "DetailCell"
     
