@@ -164,6 +164,11 @@ private extension RegionWeatherListViewController {
                 os_log(.error, log: owner.log, "itemDeleted: \(error.localizedDescription)")
             }.disposed(by: disposeBag)
 
+        Observable<Int>.interval(.seconds(900), scheduler: MainScheduler.asyncInstance)  // 15분 간격
+            .subscribe(with: self) { owner, _ in
+                owner.viewModel.action.onNext(.update)
+            }.disposed(by: disposeBag)
+        
         viewModel.action.onNext(.viewDidLoad)
 
 

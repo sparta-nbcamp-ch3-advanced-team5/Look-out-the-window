@@ -29,6 +29,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
         case viewDidLoad
         case regionRegistered
         case itemDeleted(indexPath: IndexPath)
+        case update
     }
     var action: AnyObserver<Action> {
         return state.actionSubject.asObserver()
@@ -59,7 +60,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                     }
                 }
                 
-                // 10분 이상 지났고, 현 위치가 nil이 아니면 API 호출을 통한 업데이트 실시
+                // 10분 이상 지났거나, 현 위치가 nil이 아니면 API 호출을 통한 업데이트 실시
                 guard let request = APIEndpoints.getURLRequest(
                     .weather,
                     parameters: WeatherParameters(
@@ -92,6 +93,9 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                                     owner.totalWeatherListFromCoreData[index].isCurrLocation = false
                                     CoreDataManager.shared.updateWeather(for: owner.totalWeatherListFromCoreData[index].address, with: owner.totalWeatherListFromCoreData[index])
                                 }
+                                // 별도로 추가
+                                owner.totalWeatherListFromCoreData.append(currLocationResponse)
+                                CoreDataManager.shared.saveWeatherData(current: currLocationResponse)
                             }
                         } else {
                             // 기존에 isCurrLocation이 true였던 항목이 없으면 별도로 추가
@@ -119,6 +123,8 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                 case let .itemDeleted(indexPath):
                     owner.deleteRegionWeather(indexPath: indexPath)
                 case .regionRegistered:
+                    owner.fetchAndUpdateRegionWeatherList()
+                case .update:
                     owner.fetchAndUpdateRegionWeatherList()
                 }
             }.disposed(by: disposeBag)
