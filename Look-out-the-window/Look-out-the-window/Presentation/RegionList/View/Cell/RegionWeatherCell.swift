@@ -130,7 +130,6 @@ final class RegionWeatherCell: UITableViewCell {
             .hour(.defaultDigits(amPM: .omitted))
             .minute(.defaultDigits)
         lastUpdateLabel.text = "업데이트 \(date.formatted(customFormat))"
-        // TODO: M/d a h:mm 포맷 반영
     }
 }
 

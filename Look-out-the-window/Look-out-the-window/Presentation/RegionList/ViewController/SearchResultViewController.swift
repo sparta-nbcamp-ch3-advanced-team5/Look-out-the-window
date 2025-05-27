@@ -92,7 +92,7 @@ private extension SearchResultViewController {
         viewModel.state.localSearchResult.asDriver(onErrorJustReturn: LocationModel())
             .drive(with: self) { owner, location in
                 // TODO: - Register 화면 present
-                dump(location)
+//                self.navigationController?.present(RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isCurrLocation: false), animated: true)
                 os_log(.debug, log: owner.log, "Register 화면 present")
             }.disposed(by: disposeBag)
         

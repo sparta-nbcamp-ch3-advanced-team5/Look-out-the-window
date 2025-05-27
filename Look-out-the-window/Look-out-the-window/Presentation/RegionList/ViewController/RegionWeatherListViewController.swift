@@ -162,7 +162,9 @@ extension RegionWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return UIView()
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -170,7 +172,9 @@ extension RegionWeatherListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        return UIView()
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
