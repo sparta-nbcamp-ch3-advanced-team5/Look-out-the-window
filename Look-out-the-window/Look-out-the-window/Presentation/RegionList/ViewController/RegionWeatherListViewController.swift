@@ -25,6 +25,14 @@ final class RegionWeatherListViewController: UIViewController {
     
     private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
+    private var initialAppLoaded = false
+
+
+    //    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
+    //    private let itemSpacing: CGFloat = 30
+
+    private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
         cell.configure(model: item)
         return cell
     }
@@ -57,7 +65,37 @@ final class RegionWeatherListViewController: UIViewController {
         configureDataSource()
         setupUI()
     }
-    
+
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        guard !initialAppLoaded else { return }
+
+        // 저장된 주소가 있다면 해당 셀로 자동 진입
+        // coredata 임시 추가로 화면 전환 확인 완료
+        if let savedAddress = UserDefaults.standard.string(forKey: "LastViewedWeatherAddress"),
+           let entity = CoreDataManager.shared.fetchWeather(for: savedAddress) {
+            let viewModel = WeatherDetailViewModel(entity: entity)
+            let detailVC = WeatherDetailViewController(viewModel: viewModel)
+            navigationController?.pushViewController(detailVC, animated: false)
+            initialAppLoaded = true
+
+            // 없으면 첫 번째 셀로 자동 진입 여기 수정
+        }
+        guard let first = viewModel.state.regionWeatherListSectionRelay.value.first?.items.first,
+              let address = first.address,
+              let entity = CoreDataManager.shared.fetchWeather(for: address)
+        else {
+            initialAppLoaded = true
+            return
+        }
+
+        let viewModel = WeatherDetailViewModel(entity: entity)
+        let detailVC = WeatherDetailViewController(viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: false)
+        initialAppLoaded = true
+    }
 }
 
 // MARK: - UI Methods
