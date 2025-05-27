@@ -24,9 +24,6 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     private var currLocationWeather = [CurrentWeather]()
     private var weatherListFromCoreData = [CurrentWeather]()
     
-    /// Mock Data
-//    private var oldWeatherList = mockCurrentWeatherList
-    
     // MARK: - Action (ViewController ➡️ ViewModel)
     
     enum Action {
@@ -75,14 +72,19 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                         
                         // API 날씨 데이터(현 위치)가 weatherListFromCoreData에 있는지 확인
                         if let currLocationindex = owner.weatherListFromCoreData.firstIndex(where: { $0.address == currLocation.toAddress() }) {
-                            // 있으면 currLocationWeather 데이터 삭제
-                            owner.currLocationWeather = []
-                            // weatherListFromCoreData의 모든 isCurrLocation false로 초기화
-                            for index in owner.weatherListFromCoreData.indices {
-                                owner.weatherListFromCoreData[index].isCurrLocation = false
+                            // 이전 현 위치 데이터의 isCurrLocation을 false로 변경
+                            let oldCurrLocationWeather = owner.weatherListFromCoreData.filter { $0.isCurrLocation == true }
+                            oldCurrLocationWeather.forEach {
+                                var updated = $0
+                                updated.isCurrLocation = false
+                                CoreDataManager.shared.updateWeather(for: $0.address, with: updated)
                             }
-                            // 현 위치에 해당하는 날씨 데이터의 isCurrLocation 최신화
+                            
+                            // 현 위치에 해당하는 CoreData 날씨 데이터의 isCurrLocation 최신화
                             owner.weatherListFromCoreData[currLocationindex].isCurrLocation = true
+                            let currLocationWeather = owner.weatherListFromCoreData[currLocationindex]
+                            CoreDataManager.shared.updateWeather(for: currLocationWeather.address, with: currLocationWeather)
+                            owner.currLocationWeather = []
                             
                         } else {
                             // 없으면 currLocationWeather에 저장
@@ -90,16 +92,10 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                         }
                         
                         // isCurrLocation == true로 sort
-                        
-                        // CoreData 저장
-                        // TODO: CoreData에 Update하는 메서드 없음
-                        CoreDataManager.shared.deleteAll()
-                        owner.weatherListFromCoreData.forEach {
-                            CoreDataManager.shared.saveWeatherData(current: $0)  // TODO: NSBatchInsertRequest
-                        }
+                        let sortedWeatherList = owner.weatherListFromCoreData.sorted(by: owner.isCurrLocationSort)
                         
                         // UI에 표시
-                        owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: owner.currLocationWeather + owner.weatherListFromCoreData)])
+                        owner.state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: owner.currLocationWeather + sortedWeatherList)])
                         os_log(.debug, log: owner.log, "현 위치 날씨 updated \(currLocationResponse.address)")
                     } onFailure: { owner, error in
                         os_log(.error, log: owner.log, "NetworkManager error: \(error.localizedDescription)")
@@ -186,16 +182,11 @@ private extension RegionWeatherListViewModel {
     }
     
     func deleteRegionWeather(indexPath: IndexPath) {
-        weatherListFromCoreData.remove(at: indexPath.row)
+        let deletedRegion = weatherListFromCoreData.remove(at: indexPath.row)
         let sortedWeatherList = weatherListFromCoreData.sorted(by: isCurrLocationSort)
         state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: sortedWeatherList)])
         
-        // TODO: 특정 모델만 삭제하는 기능이 없음(엔티티를 넘겨줘야 함)
-        // 임시 방편으로 전체 삭제 후 저장(순서 보장 X)
-        CoreDataManager.shared.deleteAll()
-        weatherListFromCoreData.forEach {
-            CoreDataManager.shared.saveWeatherData(current: $0)  // TODO: NSBatchInsertRequest
-        }
+        CoreDataManager.shared.deleteWeather(for: deletedRegion.address)
     }
     
     /// `isCurrLocation == true`인 날씨 데이터부터 먼저 보여주기 위한 정렬 메서드
