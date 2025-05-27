@@ -34,6 +34,7 @@ final class WeatherDetailViewController: UIViewController {
     private lazy var locationManager = CLLocationManager()
     
     // MARK: - UI Components
+    
     /// 밝기관련 뷰 시간에 따라 어두워짐.
     private let dimView = UIView()
     /// 배경 Gradient
@@ -273,7 +274,10 @@ private extension WeatherDetailViewController {
                 self.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
     }
-    
+}
+
+// MARK: - 뷰 관련 메서드
+private extension WeatherDetailViewController {
     /// 초기 내장된 backgroundViews 생성 (향후 CoreData 로드 시 사용, 현재 비활성화)
     func setInitalBackgroundViews(currentPage: Int) {
         
@@ -402,6 +406,19 @@ private extension WeatherDetailViewController {
         self.currentPage = currentPage + 1
         print(self.currentPage)
     }
+}
+
+// MARK: - PullToRefresh
+extension WeatherDetailViewController: PullToRefresh {
+    
+    // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
+    func updateAndSave() {
+        viewModel.action.onNext(.pullToRefresh)
+    }
+}
+
+// MARK: - CLLocationManager 관련
+extension WeatherDetailViewController: CLLocationManagerDelegate {
     
     // 사용자에게 권한 요청을 하기 위해 iOS 위치 서비스 활성화 여부 체크
     func checkDeviceLocationAuthorization() {
@@ -461,18 +478,7 @@ private extension WeatherDetailViewController {
         alert.addAction(cancel)
         present(alert, animated: true)
     }
-}
-
-extension WeatherDetailViewController: PullToRefresh {
     
-    // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
-    func updateAndSave() {
-        viewModel.action.onNext(.pullToRefresh)
-    }
-}
-
-
-extension WeatherDetailViewController: CLLocationManagerDelegate {
     // 위치 권한 허용 O
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
@@ -493,3 +499,6 @@ extension WeatherDetailViewController: CLLocationManagerDelegate {
         checkDeviceLocationAuthorization()
     }
 }
+
+// MARK: -
+
