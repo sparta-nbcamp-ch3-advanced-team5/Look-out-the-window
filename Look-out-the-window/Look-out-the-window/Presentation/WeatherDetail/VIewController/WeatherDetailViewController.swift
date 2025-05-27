@@ -257,9 +257,14 @@ private extension WeatherDetailViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] (weather) in
                 guard let self else { return }
-                self.weatherInfoList.append(weather)
-                // WeatherDetailView 추가 생성
-                self.addNewWeatherDetailView(with: weather)
+                if self.weatherInfoList.indices.contains(self.currentPage) {
+                    self.weatherInfoList[self.currentPage] = weather
+                    self.reloadWeatherDetailView(with: weather)
+                } else {
+                    self.weatherInfoList.append(weather)
+                    // WeatherDetailView 추가 생성
+                    self.addNewWeatherDetailView(with: weather)
+                }
                 // 로딩 인디케이터 정지
                 mainLoadingIndicator.riveViewModel.pause()
                 // 로딩 정지 후 hidden 변경
@@ -345,7 +350,12 @@ private extension WeatherDetailViewController {
     }
     
     func reloadWeatherDetailView(with weather: CurrentWeather) {
+        guard currentPage < weatherDetailViewList.count else { return }
         
+        let weatherDetailView = weatherDetailViewList[currentPage]
+        
+        // 이 안에서 weather를 다시 넣고 UI 갱신
+        weatherDetailView.updateWeather(newWeather: weather)
     }
     
     // BackgroundView 추가
