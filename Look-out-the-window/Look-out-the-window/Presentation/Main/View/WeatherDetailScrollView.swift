@@ -72,7 +72,7 @@ final class WeatherDetailScrollView: UIView {
     private lazy var topLoadingIndicatorView = LoadingIndicatorView()
     
     
-    init(frame: CGRect, weather: WeatherInfo) {
+    init(frame: CGRect, weather: CurrentWeather) {
         self.backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
         super.init(frame: frame)
         
