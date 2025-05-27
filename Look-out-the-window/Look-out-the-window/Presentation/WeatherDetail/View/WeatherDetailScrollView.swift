@@ -77,6 +77,7 @@ private extension WeatherDetailScrollView {
         setViewHierarchy()
         setConstraints()
         setRxDataSource(weatherDetailCollectionView: weatherDetailCollectionView)
+        layoutIfNeeded()
     }
     
     func setViewHierarchy() {
