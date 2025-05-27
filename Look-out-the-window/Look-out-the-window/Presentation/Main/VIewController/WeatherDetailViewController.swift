@@ -225,43 +225,14 @@ private extension WeatherDetailViewController {
             })
             .disposed(by: disposeBag)
         
+        // 첫번째 페이지 이동, 권환 허용
         locationButton.rx.tap
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                let mockWeather = CurrentWeather(
-                    address: "서울시",
-                    lat: 37.4979,
-                    lng: 127.0276,
-                    currentTime: Int(Date().timeIntervalSince1970),
-                    currentMomentValue: 0.1,
-                    sunriseTime: 1684924800,
-                    sunsetTime: 1684978800,
-                    temperature: "23",
-                    maxTemp: "26",
-                    minTemp: "17",
-                    tempFeelLike: "22",
-                    skyInfo: "맑음",
-                    pressure: "1013 hPa",
-                    humidity: "60%",
-                    clouds: "30%",
-                    uvi: "5 (보통)",
-                    visibility: "10 km",
-                    windSpeed: "3.4 m/s",
-                    windDeg: "북동풍",
-                    rive: "Sunny",
-                    hourlyModel: [
-                        HourlyModel(hour: 13, temperature: "23", weatherInfo: "Sunny"),
-                        HourlyModel(hour: 14, temperature: "24", weatherInfo: "Cloudy")
-                    ],
-                    dailyModel: [
-//                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26", low: "17", weatherInfo: "Sunny"),
-//                        DailyModel(unixTime: 1685011200, day: "내일", high: "25", low: "18", weatherInfo: "Cloudy")
-                    ],
-                    isCurrLocation: true
-                )
-                self.weatherInfoList.append(mockWeather)
-                self.reloadUI(with: mockWeather)
+                self.currentPage = 0
+                self.pageController.currentPage = 0
+                handlePageChanged(to: 0)
             })
             .disposed(by: disposeBag)
         
