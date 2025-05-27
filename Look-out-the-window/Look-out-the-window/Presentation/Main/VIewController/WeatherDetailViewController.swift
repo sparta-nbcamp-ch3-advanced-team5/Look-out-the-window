@@ -221,18 +221,7 @@ private extension WeatherDetailViewController {
             }
             .subscribe(onNext: { [weak self] currentPage in
                 guard let self else { return }
-                // 페이징 후 스크롤 상단, 추후 메인 뷰 리팩토링 하면 스와이프 시에도 아마 적용 가능
-                //                verticalScrollView.scrollsToTop = true
-                // 이전 페이지 정지, 현재 페이지 재생
-                weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
-                weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
-                
-                let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
-                self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
-                
-                // 이전 페이지 업데이트
-                self.previousPage = currentPage
+                handlePageChanged(to: currentPage)
             })
             .disposed(by: disposeBag)
         
@@ -401,6 +390,25 @@ private extension WeatherDetailViewController {
         )
         
         return weatherDetailScrollView.backgroundView
+    }
+    
+    // 페이징 후 스크롤 이동 및 배경 처리 등
+    func handlePageChanged(to currentPage: Int) {
+        // 페이징 후 스크롤 상단
+//        verticalScrollView.scrollsToTop = true 후에 delegate로 처리
+        // 이전 페이지 정지, 현재 페이지 재생
+        weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
+        weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
+        
+        let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
+        self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+        self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
+        
+        // 이전 페이지 업데이트
+        self.previousPage = currentPage
+        // 현재 페이지 업데이트
+        self.currentPage = currentPage + 1
+        print(self.currentPage)
     }
 }
 
