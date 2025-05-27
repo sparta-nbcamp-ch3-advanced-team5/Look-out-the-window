@@ -37,15 +37,15 @@ final class WeatherDetailScrollView: UIView {
         }
     }
     private lazy var verticalScrollContentView = UIView()
-    var backgroundView: BackgroundTopInfoView
+    var backgroundTopInfoView: BackgroundTopInfoView
     private lazy var weatherDetailCollectionView = WeatherDetailCollectionView()
     private lazy var topLoadingIndicatorView = LoadingIndicatorView()
     
     
     init(frame: CGRect, weather: CurrentWeather) {
         self.weather = weather
-        self.backgroundView = BackgroundTopInfoView(frame: .zero)
-        self.backgroundView.configure(model: weather)
+        self.backgroundTopInfoView = BackgroundTopInfoView(frame: .zero)
+        self.backgroundTopInfoView.configure(model: weather)
         super.init(frame: frame)
         
         setupUI()
@@ -69,7 +69,7 @@ private extension WeatherDetailScrollView {
     func setViewHierarchy() {
         addSubview(verticalScrollView)
         verticalScrollView.addSubviews(topLoadingIndicatorView, verticalScrollContentView)
-        verticalScrollContentView.addSubviews(backgroundView, weatherDetailCollectionView)
+        verticalScrollContentView.addSubviews(backgroundTopInfoView, weatherDetailCollectionView)
     }
     
     func setConstraints() {
@@ -89,13 +89,13 @@ private extension WeatherDetailScrollView {
             $0.height.equalTo(UIScreen.main.bounds.height * 2.8)
         }
         
-        backgroundView.snp.makeConstraints {
+        backgroundTopInfoView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
             $0.height.equalTo(UIScreen.main.bounds.height * 0.5)
         }
         
         weatherDetailCollectionView.snp.makeConstraints {
-            $0.top.equalTo(backgroundView.loadingRiveView.snp.bottom)
+            $0.top.equalTo(backgroundTopInfoView.loadingRiveView.snp.bottom)
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview().inset(20)
         }

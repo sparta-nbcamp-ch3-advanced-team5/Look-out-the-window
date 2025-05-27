@@ -198,7 +198,7 @@ private extension WeatherDetailViewController {
                 // scrollView 내부 콘첸트가 수평으로 얼마나 스크롤 됐는지 / scrollView가 화면에 차지하는 너비
                 let page = Int(round(horizontalScrollView.contentOffset.x / horizontalScrollView.frame.width))
                 // 페이징 직전 페이지 rive 중지
-                weatherDetailViewList[currentPage].backgroundView.riveViewModel.pause()
+                weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.pause()
                 return page
             }
             .do(onNext: { [weak self] page in
@@ -206,7 +206,7 @@ private extension WeatherDetailViewController {
                 self.applyGradientBackground(time: Double(self.weatherInfoList[page].currentTime))
                 
                 // 페이징 후 페이지 rive 재생
-                weatherDetailViewList[page].backgroundView.riveViewModel.play()
+                weatherDetailViewList[page].backgroundTopInfoView.riveViewModel.play()
             })
             .bind(to: pageController.rx.currentPage)
             .disposed(by: disposeBag)
@@ -284,7 +284,7 @@ private extension WeatherDetailViewController {
             pageController.currentPage = currentPage
             
             // 첫번째 뷰 rive play
-            weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
+            weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.play()
         }
     }
     
@@ -360,7 +360,7 @@ private extension WeatherDetailViewController {
             offset: UIScreen.main.bounds.width * CGFloat(weatherInfoList.count)
         )
         
-        return weatherDetailScrollView.backgroundView
+        return weatherDetailScrollView.backgroundTopInfoView
     }
     
     // 페이징 후 스크롤 이동 및 배경 처리 등
@@ -368,8 +368,8 @@ private extension WeatherDetailViewController {
         // 페이징 후 스크롤 상단
         pageChangeDelegate?.scrollToTop()
         // 이전 페이지 정지, 현재 페이지 재생
-        weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
-        weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
+        weatherDetailViewList[previousPage].backgroundTopInfoView.riveViewModel.pause()
+        weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.play()
         
         let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
         self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
