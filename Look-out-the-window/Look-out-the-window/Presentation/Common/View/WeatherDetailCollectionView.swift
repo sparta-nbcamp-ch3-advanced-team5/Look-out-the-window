@@ -34,18 +34,24 @@ final class WeatherDetailCollectionView: UICollectionView {
         },
         configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
             if indexPath.section == 0 {
-                let header = collectionView.dequeueReusableSupplementaryView(
+                guard let header = collectionView.dequeueReusableSupplementaryView(
                     ofKind: UICollectionView.elementKindSectionHeader,
                     withReuseIdentifier: MainHeaderView.id,
                     for: indexPath
-                )
+                ) as? MainHeaderView else {
+                    return UICollectionReusableView()
+                }
+                header.bind(icon: SectionHeaderInfo.hourly.icon, title: SectionHeaderInfo.hourly.title)
                 return header
             } else if indexPath.section == 1 {
-                let header = collectionView.dequeueReusableSupplementaryView(
+                guard let header = collectionView.dequeueReusableSupplementaryView(
                     ofKind: UICollectionView.elementKindSectionHeader,
                     withReuseIdentifier: MainHeaderView.id,
                     for: indexPath
-                )
+                ) as? MainHeaderView else {
+                    return UICollectionReusableView()
+                }
+                header.bind(icon: SectionHeaderInfo.daily.icon, title: SectionHeaderInfo.daily.title)
                 return header
             }
             return UICollectionReusableView()
