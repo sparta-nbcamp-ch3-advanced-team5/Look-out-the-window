@@ -217,7 +217,8 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
         
         let detailModels: [DetailModel] = [
             DetailModel(title: .uvIndex, value: weather.uvi),
-            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
+//            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
+            DetailModel(title: .sunriseSunset, value: "\(weather.currentTime)/\(weather.sunriseTime)/\(weather.sunsetTime)/\(weather.timeOffset)"),
             DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
             DetailModel(title: .rainSnow, value: "-"),
             DetailModel(title: .feelsLike, value: weather.tempFeelLike),
