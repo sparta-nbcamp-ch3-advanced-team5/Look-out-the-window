@@ -82,4 +82,13 @@ extension Int {
         let hour = calendar.component(.hour, from: date) // 0~23
         return hour == 0 ? 24 : hour // 0시 -> 24시
     }
+    
+    func to12HourInt() -> String {
+        let date = self.convertUnixTimeToDate()
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ko_KR")
+        dateFormatter.dateFormat = "a h:mm"
+        return dateFormatter.string(from: date)
+    }
+
 }
