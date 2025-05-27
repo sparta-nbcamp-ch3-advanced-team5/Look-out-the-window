@@ -112,7 +112,7 @@ private extension WeatherDetailScrollView {
         weatherDetailCollectionView.snp.makeConstraints {
             $0.top.equalTo(backgroundTopInfoView.loadingRiveView.snp.bottom)
             $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.horizontalEdges.equalToSuperview()
         }
     }
     
