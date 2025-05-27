@@ -110,12 +110,6 @@ final class WeatherDetailViewController: UIViewController {
         bindViewModel()
         setupUI()
         bindUIEvents()
-        
-        /// 임시 테스팅 레이아웃
-        view.addSubview(bottomInfoView)
-        bottomInfoView.snp.makeConstraints { $0.edges.equalToSuperview() }
-        
-        viewModel.getCurrentWeatherData() // ViewModel에서 네트워크 요청
     }
 }
 
