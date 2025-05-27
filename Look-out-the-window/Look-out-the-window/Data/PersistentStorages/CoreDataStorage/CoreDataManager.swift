@@ -95,7 +95,7 @@ final class CoreDataManager {
         let request: NSFetchRequest<WeatherDataEntity> = WeatherDataEntity.fetchRequest()
 
         // hour.hour < unix 값이라 String값으로 변환 메서드 작성 불러온 값을 변환
-        // NSSet unix 값으로 들어오면 정렬하기
+        // NSSet unix 값으로 들어오면 정렬하기 line 163
 
         do {
             let result = try context.fetch(request)
