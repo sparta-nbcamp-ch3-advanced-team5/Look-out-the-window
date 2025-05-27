@@ -394,11 +394,6 @@ private extension WeatherDetailViewController {
             $0.height.equalToSuperview()
             $0.width.equalTo(view.snp.width)
             $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-            
-            // 마지막 뷰에만 trailing 추가
-            if index == weatherInfoList.count - 1 {
-                $0.trailing.equalToSuperview()
-            }
         }
         
         self.contentViewWidthConstraint?.update(
