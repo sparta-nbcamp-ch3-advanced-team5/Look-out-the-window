@@ -59,7 +59,7 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                     owner.getCurrentWeatherData()
                 case .pullToRefresh:
                     owner.getCurrentWeatherData()
-                    owner.saveToCoreData()
+                    owner.updateCurrentWeather()
                 }
             }.disposed(by: disposeBag)
     }
@@ -118,7 +118,9 @@ extension WeatherDetailViewModel {
                 print("현재 시간: \(weatherInfo.currentTime)")
                 print("Moment: \(currentWeather.currentMomentValue)")
                 
+                // 최신 날씨 정보 저장
                 self.latestWeather = weatherInfo
+                
                 owner.state.currentWeather.accept(weatherInfo)
                 
             }, onFailure: { owner, error  in
@@ -174,13 +176,12 @@ extension WeatherDetailViewModel {
         ]
     }
     
-    func saveToCoreData() {
+    func updateCurrentWeather() {
         guard let currentWeather = latestWeather else {
             print("저장할 날씨 데이터가 없습니다.")
             return
         }
-        // 추후에 updateWeatherData로 변경
-        coreDataManager.saveWeatherData(current: currentWeather)
+        coreDataManager.updateWeather(for: currentWeather.address, with: currentWeather)
     }
     
 }
