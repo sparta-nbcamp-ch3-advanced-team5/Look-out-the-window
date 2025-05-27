@@ -45,6 +45,7 @@ final class WeatherDetailScrollView: UIView {
     init(frame: CGRect, weather: CurrentWeather) {
         self.weather = weather
         self.backgroundView = BackgroundTopInfoView(frame: .zero)
+        self.backgroundView.configure(model: weather)
         super.init(frame: frame)
         
         setupUI()

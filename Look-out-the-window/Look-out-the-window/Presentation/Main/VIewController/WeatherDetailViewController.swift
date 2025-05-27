@@ -405,6 +405,7 @@ private extension WeatherDetailViewController {
             }
         }
     }
+    
     // 사용자 위치 권한 상태 확인 -> 권한 요청
     func checkCurrentLocationAuthorization(status: CLAuthorizationStatus) {
         let status = locationManager.authorizationStatus
