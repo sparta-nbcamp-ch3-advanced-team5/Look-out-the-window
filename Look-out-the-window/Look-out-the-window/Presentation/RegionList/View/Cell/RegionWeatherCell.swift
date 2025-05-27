@@ -79,7 +79,7 @@ final class RegionWeatherCell: UITableViewCell {
     }
     
     private let lastUpdateLabel = UILabel().then {
-        $0.text = "업데이트 -.--. XX -:--"
+        $0.text = "업데이트 5. 27. 오후 12:11"
         $0.textColor = .secondaryLabel
         $0.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
     }
@@ -127,8 +127,9 @@ final class RegionWeatherCell: UITableViewCell {
         let customFormat = Date.FormatStyle()
             .month(.defaultDigits)
             .day(.twoDigits)
-            .hour(.defaultDigits(amPM: .omitted))
+            .hour(.defaultDigits(amPM: .abbreviated))
             .minute(.defaultDigits)
+            .locale(Locale(identifier: "ko_KR"))
         lastUpdateLabel.text = "업데이트 \(date.formatted(customFormat))"
     }
 }
@@ -177,8 +178,8 @@ private extension RegionWeatherCell {
         
         tempLocationStackView.snp.makeConstraints {
             $0.leading.equalTo(currTempLabel)
+            $0.trailing.equalTo(weatherLastUpdateStackView.snp.leading)
             $0.bottom.equalToSuperview().inset(20)
-            $0.width.greaterThanOrEqualTo(180)
         }
         
         highLowTempStackView.snp.makeConstraints {
@@ -192,6 +193,7 @@ private extension RegionWeatherCell {
         weatherLastUpdateStackView.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(20)
             $0.bottom.equalTo(tempLocationStackView)
+            $0.width.equalTo(130)
         }
     }
     

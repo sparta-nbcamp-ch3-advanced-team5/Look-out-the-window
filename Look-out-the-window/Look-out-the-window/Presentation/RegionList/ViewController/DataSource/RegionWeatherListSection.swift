@@ -10,8 +10,7 @@ import Foundation
 import RxDataSources
 
 enum RegionWeatherListSectionHeader: String {
-    case currLocation = "현 위치 날씨"
-    case savedRegionList = "저장된 지역 날씨"
+    case regionList = "지역 날씨 리스트"
 }
 
 struct RegionWeatherListSection {

@@ -22,7 +22,7 @@ extension NSMutableAttributedString {
     static func makeAttributedString(text: String, highlightedParts: [(range: NSRange, color: UIColor, font: UIFont)]) -> NSMutableAttributedString {
         let attributedString = NSMutableAttributedString(string: text)
         highlightedParts.forEach { part in
-            attributedString.addAttribute(.font, value: part.color, range: part.range)
+            attributedString.addAttribute(.foregroundColor, value: part.color, range: part.range)
             attributedString.addAttribute(.font, value: part.font, range: part.range)
         }
         return attributedString
