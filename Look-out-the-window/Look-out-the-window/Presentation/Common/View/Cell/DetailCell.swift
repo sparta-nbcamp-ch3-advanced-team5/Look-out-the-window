@@ -54,7 +54,6 @@ final class DetailCell: UICollectionViewCell {
     }
     
     func bind(model: DetailModel) {
-        print("DetailCell - bind메서드")
         // 헤더 아이콘, 타이틀 세팅
         let config = UIImage.SymbolConfiguration.preferringMulticolor()
         cellIcon.image = UIImage(systemName: model.title.icon, withConfiguration: config)

@@ -186,7 +186,7 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
             .map { model in
                 HourlyModel(
                     hour: model.hour.to24HourInt(),
-                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    temperature: "\(model.temperature.noDecimalString)°",
                     weatherInfo: model.weatherInfo
                 )
             }
@@ -197,8 +197,8 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
             DailyModel(
                 unixTime: model.unixTime,
                 day: String(model.day.prefix(1)),
-                high: Double(model.high)?.roundedString ?? model.high,
-                low: Double(model.low)?.roundedString ?? model.low,
+                high: String(model.high.noDecimalString),
+                low: String(model.low.noDecimalString),
                 weatherInfo: model.weatherInfo,
                 maxTemp: model.maxTemp,
                 minTemp: model.minTemp,
