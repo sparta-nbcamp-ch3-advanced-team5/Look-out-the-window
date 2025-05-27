@@ -30,6 +30,8 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     private let networkManager = NetworkManager()
     private let currentLocation = CoreLocationManager.shared.currLocationRelay
     
+    var weatherInfoList = [WeatherInfo]()
+    
     // MARK: - Action (ViewController ➡️ ViewModel)
     
     enum Action {
