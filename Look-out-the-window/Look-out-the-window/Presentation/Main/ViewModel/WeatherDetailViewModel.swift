@@ -29,6 +29,7 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     private let urlRequest: URLRequest?
     private let networkManager = NetworkManager()
     private let currentLocation = CoreLocationManager.shared.currLocationRelay
+    private let coreDataManager = CoreDataManager.shared
     
     var weatherInfoList = [WeatherInfo]()
     
@@ -36,6 +37,7 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     
     enum Action {
         case getCurrentWeather
+        case loadFromCoreData
     }
     var action: AnyObserver<Action> {
         return state.actionSubject.asObserver()
@@ -48,6 +50,8 @@ final class WeatherDetailViewModel: ViewModelProtocol {
         private(set) var actionSubject = PublishSubject<Action>()
         /// 현재 날씨
         private(set) var currentWeather = PublishSubject<WeatherInfo>()
+        /// CoreData에서 Load
+        private(set) var coreDataWeatherList = PublishSubject<[WeatherInfo]>()
     }
     var state = State()
     
@@ -65,6 +69,8 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                 switch action {
                 case .getCurrentWeather:
                     owner.getCurrentWeatherData()
+                case .loadFromCoreData:
+                    owner.loadFromCoreData()
                 }
             }.disposed(by: disposeBag)
     }
@@ -102,5 +108,23 @@ private extension WeatherDetailViewModel {
                 print("에러 발생: \(error)")
             })
             .disposed(by: disposeBag)
+    }
+    
+    func loadFromCoreData() {
+        let dataList = coreDataManager.fetchWeatherData()
+
+        let convertedList = dataList.map {
+            WeatherInfo(
+                address: $0.address ?? "",
+                temperature: $0.temperature ?? "",
+                skyInfo: $0.skyInfo ?? "",
+                maxTemp: $0.maxTemp ?? "",
+                minTemp: $0.minTemp ?? "",
+                rive: $0.rive ?? "",
+                currentTime: $0.currentMomentValue
+            )
+        }
+        
+        self.state.coreDataWeatherList.onNext(convertedList)
     }
 }

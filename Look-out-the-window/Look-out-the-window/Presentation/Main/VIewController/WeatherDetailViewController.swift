@@ -19,7 +19,6 @@ final class WeatherDetailViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private var previousPage = 0
     private var weatherInfoList = [WeatherInfo]()
-    
     private var contentViewWidthConstraint: Constraint?
     
     var currentPage: Int
@@ -234,6 +233,16 @@ private extension WeatherDetailViewController {
     
     func bindViewModel() {
         viewModel.action.onNext(.getCurrentWeather)
+        
+        // coreData에서 정보 받아오기
+        viewModel.state.coreDataWeatherList
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (weatherList) in
+                guard let self else { return }
+                self.weatherInfoList = weatherList
+                self.reloadUI(with: weatherList[currentPage])
+                self.loadingIndicatorView.stopAnimating()
+            }).disposed(by: disposeBag)
         
         // 초기 설정값 불러오기
         viewModel.state.currentWeather
