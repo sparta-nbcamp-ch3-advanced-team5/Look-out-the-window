@@ -41,14 +41,14 @@ extension Int {
     /// - Parameter unixTime: 기준이 되는 유닉스 시간 (초 단위).
     /// - Returns: 해당 날짜의 시작 시각과 끝 시각의 유닉스 시간 범위를 튜플로 반환합니다.
     func getUnixRange(unixTime: TimeInterval, timeOffset: Int) -> (startUnix: TimeInterval, endUnix: TimeInterval)? {
-        let current = Date(timeIntervalSince1970: unixTime).addingTimeInterval(TimeInterval(timeOffset))
+        let current = Int(unixTime) + timeOffset
         
-        let startOffset = Int(current.timeIntervalSince1970) % 86400
-        let startUnix = current.addingTimeInterval(TimeInterval(-startOffset))
+        let startOffset = current % 86400
+        let startUnix = current - startOffset
         
-        let endUnix = startUnix.addingTimeInterval(86399)
+        let endUnix = startUnix + 86399
         
-        return (startUnix: startUnix.timeIntervalSince1970, endUnix: endUnix.timeIntervalSince1970)
+        return (startUnix: TimeInterval(startUnix), endUnix: TimeInterval(endUnix))
     }
     /// 유닉스 타임스탬프(Int)를 "h:mm a" 형식의 문자열로 변환합니다.
     /// - Returns: 오전/오후 표시가 포함된 시간 문자열 (예: "8:15 AM").
