@@ -59,6 +59,20 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                 }
             }.disposed(by: disposeBag)
     }
+
+    init(entity: WeatherDataEntity) {
+            self.urlRequest = nil
+            let weatherInfo = WeatherInfo(
+                address: entity.address ?? "--",
+                temperature: entity.temperature ?? "--",
+                skyInfo: entity.skyInfo ?? "--",
+                maxTemp: entity.maxTemp ?? "--",
+                minTemp: entity.minTemp ?? "--",
+                rive: entity.rive ?? "",
+                currentTime: entity.currentMomentValue
+            )
+            state.currentWeather.onNext(weatherInfo)
+        }
 }
 
 //MARK: - Extension Private Methods
