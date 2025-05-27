@@ -120,7 +120,7 @@ final class SunriseView: UIView {
     /// 현재 시간에 해당하는 태양 위치 좌표를 계산합니다
     private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
         let current = Date(timeIntervalSince1970: TimeInterval(currentTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
-        guard let (startUnix, endUnix) = currentTime.getUnixRange(unixTime: current, timeOffset: timeOffset) else { return }
+        guard let (startUnix, _) = currentTime.getUnixRange(unixTime: current, timeOffset: timeOffset) else { return }
         
         let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime)).addingTimeInterval(TimeInterval(timeOffset))
         let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime)).addingTimeInterval(TimeInterval(timeOffset))
