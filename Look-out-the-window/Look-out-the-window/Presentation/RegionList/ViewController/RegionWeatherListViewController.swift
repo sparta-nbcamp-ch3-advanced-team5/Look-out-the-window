@@ -191,7 +191,6 @@ private extension RegionWeatherListViewController {
 
 
         // MARK: - 근호님 코드
-        // 현재 index값 안받아와짐
         regionListView.getTableView.rx.itemSelected
             .asDriver()
             .drive(with: self) { owner, indexPath in
@@ -199,8 +198,7 @@ private extension RegionWeatherListViewController {
                 print("선택된 indexPath.row: \(indexPath.row)")
                 
                 let detailVC = WeatherDetailViewController(
-                    viewModel: WeatherDetailViewModel(),
-                    currentPage: indexPath.row // 인덱스 전달
+                    viewModel: WeatherDetailViewModel(currentPage: indexPath.row),
                 )
                 owner.navigationController?.pushViewController(detailVC, animated: false)
                 
