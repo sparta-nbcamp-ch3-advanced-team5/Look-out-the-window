@@ -122,14 +122,14 @@ private extension RegionWeatherListViewController {
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
-            .asDriver()
-            .drive(with: self) { owner, model in
-                // TODO: Main 화면 present
+//        regionListView.getTableView.rx.itemSelected
+//            .asDriver()
+//            .drive(with: self) { owner, model in
+//                // TODO: Main 화면 present
 //                owner.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
-                dump(model)
-                os_log(.debug, log: owner.log, "Main 화면 present")
-            }.disposed(by: disposeBag)
+//                dump(model)
+//                os_log(.debug, log: owner.log, "Main 화면 present")
+//            }.disposed(by: disposeBag)
         
         
         // MARK: - 근호님 코드

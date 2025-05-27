@@ -21,6 +21,7 @@ final class SearchResultCell: UITableViewCell {
     
     private let addressLabel = UILabel().then {
         $0.text = "몬트리올, QC 캐나다"
+        $0.textColor = .secondaryLabel
         $0.numberOfLines = 1
     }
     
