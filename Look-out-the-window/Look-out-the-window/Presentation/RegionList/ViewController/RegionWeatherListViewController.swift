@@ -261,7 +261,9 @@ extension RegionWeatherListViewController: UITableViewDelegate {
 
 extension RegionWeatherListViewController: SearchResultViewControllerDelegate {
     func localSearchResultDidArrived(location: LocationModel) {
-        let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: false)
+        let savedRegionList = viewModel.state.regionWeatherListSectionRelay.value[0].items
+        let isSavedLocation = savedRegionList.filter({ $0.address == location.toAddress() }).isEmpty ? false : true
+        let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: isSavedLocation)
         registerVC.delegate = self
         let naviVC = UINavigationController(rootViewController: registerVC)
         self.present(naviVC, animated: true)

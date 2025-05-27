@@ -58,6 +58,8 @@ struct CurrentWeather: Hashable {
     let dailyModel: [DailyModel]
     /// 현재 위치를 나타내는 데이터인지 판별하는 변수
     var isCurrLocation: Bool
+    /// 사용자가 CoreData에 저장한 지역인지 판별하는 변수
+    var isUserSaved: Bool
     /// 시간당 강수량
     let rainPerHour: Double
     /// 시간당 적설량

@@ -44,7 +44,13 @@ struct LocationModel {
 extension LocationModel {
     func toAddress() -> String {
         let addressComponents = [country, administrativeArea, locality, subLocality]
-        let lastComponents = addressComponents.compactMap { $0 }.filter { !$0.isEmpty }.suffix(2)
+        let lastComponents = addressComponents.compactMap({ $0 }).filter({ !$0.isEmpty }).suffix(2)
+        
+        if let first = lastComponents.first,
+           let last = lastComponents.last,
+           first == last {
+            return first
+        }
         return lastComponents.joined(separator: " ")
     }
 }
