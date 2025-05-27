@@ -21,6 +21,11 @@ final class WeatherDetailViewController: UIViewController {
     private var previousPage = 0
     private var weatherInfoList = [CurrentWeather]()
     private var contentViewWidthConstraint: Constraint?
+    private let riveViewModel = RiveViewModel(
+        fileName: "LoadingSun",
+        stateMachineName: "State Machine 1",
+    )
+
     
     var currentPage: Int
     
@@ -29,6 +34,13 @@ final class WeatherDetailViewController: UIViewController {
     private let dimView = UIView()
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
+    /// Rive 로딩 인디케이터
+    private lazy var loadingRiveView: RiveView = {
+        let view = riveViewModel.createRiveView()
+        view.preferredFramesPerSecond = 10
+        view.isUserInteractionEnabled = false
+        return view
+    }()
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
     
@@ -46,23 +58,22 @@ final class WeatherDetailViewController: UIViewController {
     
     private lazy var bottomSepartorView = UIView().then {
         $0.backgroundColor = .secondaryLabel
+        $0.isHidden = true
     }
     
     private lazy var bottomHStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .fill
+        $0.isHidden = true
     }
     
     private lazy var locationButton = UIButton().then {
-        // 버튼의 SFSymbol 이미지 크기 변경 시 사용
-        //        let config = UIImage.SymbolConfiguration(pointSize: 44, weight: .regular)
         $0.setImage(UIImage(systemName: "location.fill", withConfiguration: nil), for: .normal)
         $0.tintColor = .label
         $0.imageView?.contentMode = .scaleAspectFit
     }
     
     private lazy var listButton = UIButton().then {
-        //        let config = UIImage.SymbolConfiguration(pointSize: 44, weight: .regular)
         $0.setImage(UIImage(systemName: "list.bullet", withConfiguration: nil), for: .normal)
         $0.tintColor = .label
         $0.imageView?.contentMode = .scaleAspectFit
@@ -74,55 +85,6 @@ final class WeatherDetailViewController: UIViewController {
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
     }
-    
-    private lazy var loadingIndicatorView = UIActivityIndicatorView(style: .large).then {
-        $0.hidesWhenStopped = true
-        $0.color = .white
-    }
-    
-    private lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
-        configureCell: { dataSource, collectionView, indexPath, item in
-            switch item {
-            case .hourly(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
-                cell.bind(model: model, isFirst: indexPath.item == 0)
-                return cell
-            case .daily(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
-                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast)
-                return cell
-            case .detail(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
-                cell.bind(model: model)
-                return cell
-            }
-        },
-        configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
-            if indexPath.section == 0 {
-                guard let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                ) as? MainHeaderView else {
-                    return UICollectionReusableView()
-                }
-                header.bind(icon: SectionHeaderInfo.hourly.icon, title: SectionHeaderInfo.hourly.title)
-                return header
-            } else if indexPath.section == 1 {
-                guard let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                ) as? MainHeaderView else {
-                    return UICollectionReusableView()
-                }
-                header.bind(icon: SectionHeaderInfo.daily.icon, title: SectionHeaderInfo.daily.title)
-                return header
-            }
-            return UICollectionReusableView()
-        }
-    )
     
     // MARK: - Initializers
     init(viewModel: WeatherDetailViewModel, currentPage: Int) {
@@ -144,7 +106,7 @@ final class WeatherDetailViewController: UIViewController {
         }
         
         navigationItem.hidesBackButton = true
-        loadingIndicatorView.startAnimating()
+        riveViewModel.play()
         bindViewModel()
         setupUI()
         bindUIEvents()
@@ -174,13 +136,19 @@ private extension WeatherDetailViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, horizontalScrollView, bottomSepartorView, bottomHStackView, loadingIndicatorView)
+        view.addSubviews(loadingRiveView, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         horizontalScrollView.addSubview(horizontalScrollContentView)
     }
     
     func setConstraints() {
+        
+        loadingRiveView.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+        
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
@@ -218,10 +186,6 @@ private extension WeatherDetailViewController {
         
         listButton.snp.makeConstraints {
             $0.width.height.equalTo(44)
-        }
-        
-        loadingIndicatorView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
         }
     }
     
@@ -335,7 +299,11 @@ private extension WeatherDetailViewController {
                 // UI 생성
                 self.reloadUI(with: weather)
                 // 로딩 인디케이터 정지
-                self.loadingIndicatorView.stopAnimating()
+                self.riveViewModel.pause()
+                // 로딩 정지 후 hidden 변경
+                self.loadingRiveView.isHidden = true
+                self.bottomHStackView.isHidden = false
+                self.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
     }
     
