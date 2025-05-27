@@ -24,6 +24,7 @@ final class WeatherDetailScrollView: UIView {
     
     private var totalMinTemp = 0
     private var totalMaxTemp = 0
+    private var isPulling = false
     
     weak var pullToRefreshDelegate: PullToRefresh?
     
@@ -57,6 +58,7 @@ final class WeatherDetailScrollView: UIView {
 
 private extension WeatherDetailScrollView {
     func setupUI() {
+        topLoadingIndicatorView.isHidden = true
         setViewHierarchy()
         setConstraints()
         setRxDataSource(weatherDetailCollectionView: weatherDetailCollectionView)
@@ -100,25 +102,32 @@ private extension WeatherDetailScrollView {
     
     func bindUIEvents() {
         verticalScrollView.rx.contentOffset
-            .skip(10)
+            .distinctUntilChanged()
             .observe(on: MainScheduler.asyncInstance)
             .subscribe(with: self) { owner, offset in
                 if offset.y < -60 && !owner.verticalScrollView.isDragging {
+                    // 스와이프 중인지 체크, isPulling이 false일 때 작동
+                    guard !owner.isPulling else { return }
+                    owner.isPulling = true
+                    
                     UIView.animate(withDuration: 0.2) {
                         owner.verticalScrollView.contentInset.top = 150
                     }
+                    owner.topLoadingIndicatorView.isHidden = false
                     owner.topLoadingIndicatorView.play()
-                    
-                    self.pullToRefreshDelegate?.updateAndSave()
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         UIView.animate(withDuration: 0.2) {
                             owner.verticalScrollView.contentInset.top = 0
                         }
                         owner.topLoadingIndicatorView.pause()
+                        owner.topLoadingIndicatorView.isHidden = true
+                        owner.pullToRefreshDelegate?.updateAndSave()
+                        owner.isPulling = false
                     }
                 }
-            }.disposed(by: disposeBag)
+            }
+            .disposed(by: disposeBag)
     }
     
     func setMainSections() {

@@ -194,6 +194,7 @@ extension WeatherResponseDTO: CustomStringConvertible {
             print("저장할 날씨 데이터가 없습니다.")
             return
         }
+        // 추후에 updateWeatherData로 변경
         coreDataManager.saveWeatherData(current: currentWeather, latitude: currentWeather.lat, longitude: currentWeather.lng)
     }
 }
