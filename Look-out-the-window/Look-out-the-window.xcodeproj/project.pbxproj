@@ -29,7 +29,6 @@
 		5B8DBC432DDC214600F53723 /* Exceptions for "Look-out-the-window" folder in "Look-out-the-window" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Presentation/Register/ViewController/.gitkeep,
 				Resources/Info.plist,
 			);
 			target = 5B8DBC302DDC214400F53723 /* Look-out-the-window */;

@@ -67,3 +67,52 @@ extension CurrentWeather: IdentifiableType, Equatable {
         return address
     }
 }
+
+extension CurrentWeather {
+    func toMainSections() -> [MainSection] {
+        let formattedHourlyModels = self.hourlyModel
+            .prefix(24) // 앞에서 24개만 사용
+            .map { model in
+                HourlyModel(
+                    hour: model.hour.to24HourInt(),
+                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    weatherInfo: model.weatherInfo
+                )
+            }
+        let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
+        
+        // DailyModel 포맷팅
+        let formattedDailyModels = self.dailyModel.map { model in
+            DailyModel(
+                unixTime: model.unixTime,
+                day: String(model.day.prefix(1)),
+                high: Double(model.high)?.roundedString ?? model.high,
+                low: Double(model.low)?.roundedString ?? model.low,
+                weatherInfo: model.weatherInfo,
+                maxTemp: model.minTemp,
+                minTemp: model.maxTemp
+            )
+        }
+        
+        // dailyItems 생성 (이 값들을 dataSource에도 전달)
+        let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
+
+        let detailModels: [DetailModel] = [
+            DetailModel(title: .uvIndex, value: self.uvi),
+            DetailModel(title: .sunriseSunset, value: "\(self.sunriseTime)/\(self.sunsetTime)"),
+            DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)"),
+            DetailModel(title: .rainSnow, value: "-"),
+            DetailModel(title: .feelsLike, value: self.tempFeelLike),
+            DetailModel(title: .humidity, value: self.humidity),
+            DetailModel(title: .visibility, value: self.visibility),
+            DetailModel(title: .clouds, value: self.clouds)
+        ]
+        let detailItems = detailModels.map { MainSectionItem.detail($0) }
+        
+        return [
+            MainSection(items: hourlyItems),
+            MainSection(items: dailyItems),
+            MainSection(items: detailItems)
+        ]
+    }
+}
