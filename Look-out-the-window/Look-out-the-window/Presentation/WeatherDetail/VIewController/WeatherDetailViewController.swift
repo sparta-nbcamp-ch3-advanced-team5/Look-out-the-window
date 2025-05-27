@@ -41,8 +41,6 @@ final class WeatherDetailViewController: UIViewController {
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
     
-    private let bottomInfoView = WeatherDetailCollectionView()
-    
     /// 네트워크 데이터 바인딩용 Relay
     private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
     
@@ -345,6 +343,7 @@ private extension WeatherDetailViewController {
         horizontalScrollContentView.addSubview(weatherDetailScrollView)
         
         weatherDetailScrollView.snp.makeConstraints {
+            $0.verticalEdges.equalToSuperview()
             $0.height.equalToSuperview()
             $0.width.equalTo(view.snp.width)
             $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
