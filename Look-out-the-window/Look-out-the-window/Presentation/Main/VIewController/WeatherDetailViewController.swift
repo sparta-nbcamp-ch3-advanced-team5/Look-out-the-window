@@ -12,6 +12,7 @@ import SnapKit
 import Then
 import RiveRuntime
 import RxCocoa
+import RxDataSources
 
 final class WeatherDetailViewController: UIViewController {
     
@@ -30,6 +31,11 @@ final class WeatherDetailViewController: UIViewController {
     private let gradientLayer = CAGradientLayer()
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
+    
+    private let bottomInfoView = BottomInfoView()
+    
+    /// 네트워크 데이터 바인딩용 Relay
+    private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
     
     private lazy var horizontalScrollView = UIScrollView().then {
         $0.isPagingEnabled = true
@@ -74,6 +80,50 @@ final class WeatherDetailViewController: UIViewController {
         $0.color = .white
     }
     
+    private lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
+        configureCell: { dataSource, collectionView, indexPath, item in
+            switch item {
+            case .hourly(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
+                cell.bind(model: model, isFirst: indexPath.item == 0)
+                return cell
+            case .daily(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
+                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
+                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast)
+                return cell
+            case .detail(let model):
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
+                cell.bind(model: model)
+                return cell
+            }
+        },
+        configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
+            if indexPath.section == 0 {
+                guard let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: UICollectionView.elementKindSectionHeader,
+                    withReuseIdentifier: MainHeaderView.id,
+                    for: indexPath
+                ) as? MainHeaderView else {
+                    return UICollectionReusableView()
+                }
+                header.bind(icon: SectionHeaderInfo.hourly.icon, title: SectionHeaderInfo.hourly.title)
+                return header
+            } else if indexPath.section == 1 {
+                guard let header = collectionView.dequeueReusableSupplementaryView(
+                    ofKind: UICollectionView.elementKindSectionHeader,
+                    withReuseIdentifier: MainHeaderView.id,
+                    for: indexPath
+                ) as? MainHeaderView else {
+                    return UICollectionReusableView()
+                }
+                header.bind(icon: SectionHeaderInfo.daily.icon, title: SectionHeaderInfo.daily.title)
+                return header
+            }
+            return UICollectionReusableView()
+        }
+    )
+    
     // MARK: - Initializers
     init(viewModel: WeatherDetailViewModel, currentPage: Int) {
         self.viewModel = viewModel
@@ -93,6 +143,13 @@ final class WeatherDetailViewController: UIViewController {
         bindViewModel()
         setupUI()
         bindUIEvents()
+        
+        /// 임시 테스팅 레이아웃
+        view.addSubview(bottomInfoView)
+        bottomInfoView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        
+        setRxDataSource()
+        viewModel.getCurrentWeatherData() // ViewModel에서 네트워크 요청
     }
 }
 
@@ -376,5 +433,17 @@ private extension WeatherDetailViewController {
         )
         
         return weatherDetailScrollView.backgroundView
+    }
+}
+
+extension WeatherDetailViewController: UICollectionViewDelegate {
+    private func setRxDataSource() {
+        
+        bottomInfoView.collectionView.rx.setDelegate(self)
+            .disposed(by: disposeBag)
+        
+        viewModel.state.sections
+            .bind(to: bottomInfoView.collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
     }
 }

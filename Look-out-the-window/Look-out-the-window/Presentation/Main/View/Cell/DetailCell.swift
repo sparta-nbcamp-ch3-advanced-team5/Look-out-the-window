@@ -9,6 +9,21 @@ import UIKit
 import SnapKit
 import Then
 
+/*
+ 
+ HeaderView 수정
+ Progress Bar gradient 추가
+ 
+ ------------ 위쪽 TODO: - 완 ------------------
+ 
+ DetailCell 나머지 view 처리 (일부 완료 - 하단의문구 어떻게 해야할지 고민 중....)
+ 
+ ------------- 아래쪽 TODO: - 후순위 --------------------
+ DailySeciton Indicator 추가 (모델 수정이 필요해 보여서 일단 후순위)
+ 일출/일몰 (후순위)
+ 
+ */
+
 final class DetailCell: UICollectionViewCell {
     static let id = "DetailCell"
     
@@ -32,7 +47,7 @@ final class DetailCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -61,29 +76,39 @@ final class DetailCell: UICollectionViewCell {
             let components = model.value.components(separatedBy: " ")
             let speed = Double(components.first?.replacingOccurrences(of: "m/s", with: "") ?? "0") ?? 0
             let degree = Double(components.last ?? "0") ?? 0
-            print("#########    Component  ###########")
-            print(components)
-            print("#########       speeed       ###########")
-            print(speed)
-            print("######    degree   ##############")
-            print(degree)
-            print("####################")
+            
             let windView = WindView()
-            windView.bind(degree: CGFloat(degree - 90), speed: speed) // -90도 보정!
+            // radius 60 기준이 140 (cell 너비 - 20) / 2
+            windView.bind(degree: degree - 90, speed: speed)
             containerView.addSubview(windView)
             windView.snp.makeConstraints {
                 $0.edges.equalToSuperview()
+                $0.height.equalTo(windView.snp.width) // 정사각형 보장
             }
             
         case .sunriseSunsetView:
-            let sunriseSunsetView = SunriseView()
-            // 예시: model.value = "1748204130/1748256182"
-            let times = model.value.components(separatedBy: "/")
-            let sunrise = Int(times.first ?? "0") ?? 0
-            let sunset = Int(times.last ?? "0") ?? 0
-            //sunriseSunsetView.bind(sunrise: sunrise, sunset: sunset)
-            containerView.addSubview(sunriseSunsetView)
-            sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+            if model.title == .sunriseSunset {
+                let times = model.value.components(separatedBy: "/")
+                let sunriseUTC = Int(times.first ?? "0") ?? 0
+                let sunsetUTC = Int(times.dropFirst().first ?? "0") ?? 0
+                
+                let sunriseStr = sunriseUTC.to12HourInt()
+                let sunsetStr = sunsetUTC.to12HourInt()
+                
+                let currentUTC = Int(Date().timeIntervalSince1970)
+                
+                let sunriseSunsetView = SunriseView()
+                sunriseSunsetView.configure(
+                    currentTime: currentUTC,
+                    sunriseTime: sunriseUTC,
+                    sunsetTime: sunsetUTC
+                )
+                containerView.addSubview(sunriseSunsetView)
+                sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+                sunriseSunsetView.mainLabel.text = sunriseStr
+                sunriseSunsetView.subLabel.text = "일몰: \(sunsetStr)"
+            }
             
         case .detailCellView:
             let detailView = DetailCellView()
@@ -127,7 +152,7 @@ private extension DetailCell {
     
     func setConstraints() {
         cellIcon.snp.makeConstraints{
-            $0.top.equalToSuperview().offset(8)
+            $0.top.equalToSuperview().offset(6)
             $0.leading.equalToSuperview().offset(4)
             $0.size.equalTo(16)
         }

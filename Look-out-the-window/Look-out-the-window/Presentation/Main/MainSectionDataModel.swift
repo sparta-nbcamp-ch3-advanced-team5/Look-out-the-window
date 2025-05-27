@@ -61,6 +61,27 @@ enum DetailType {
     }
 }
 
+/// Header
+enum SectionHeaderInfo: Int, CaseIterable {
+    case hourly
+    case daily
+
+    var icon: String {
+        switch self {
+        case .hourly: return "clock"
+        case .daily: return "calendar"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .hourly: return "시간별 예보"
+        case .daily: return "일별 예보"
+        }
+    }
+}
+
+
 // MARK: - 각 섹션 DataModel
 struct HourlyModel: Hashable {
     let hour: Int
@@ -76,6 +97,9 @@ struct DailyModel: Hashable {
     let high: String
     let low: String
     let weatherInfo: String // Asset네이밍 변환받아 전달받을 예정
+    let maxTemp: Int
+    let minTemp: Int
+//    let temperature: String // 현재 온도
 }
 
 struct DetailModel {

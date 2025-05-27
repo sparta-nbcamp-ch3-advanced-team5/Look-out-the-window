@@ -40,8 +40,44 @@ final class DetailCellView: UIView {
     }
     
     func bind(model: DetailModel) {
-        mainValueLabel.text = model.value
+        switch model.title {
+        case .feelsLike:
+            mainValueLabel.text = "\(model.value)°"
+            subTitleLabel.text = "체감온도"
+            bottomLabel.text = ""
+        case .humidity:
+            mainValueLabel.text = "\(model.value)%"
+            subTitleLabel.text = "습도"
+            bottomLabel.text = ""
+        case .uvIndex:
+            mainValueLabel.text = model.value
+            subTitleLabel.text = "자외선지수"
+            bottomLabel.text = "UV 정보는 실시간으로 변동될 수 있습니다."
+        case .visibility:
+            if let meter = Double(model.value) {
+                let km = meter / 1000.0
+                // 소수점 한 자리까지 표시 (예: "10.0 Km")
+                mainValueLabel.text = String(format: "%.1f Km", km)
+            } else {
+                mainValueLabel.text = "\(model.value) m"
+            }
+            subTitleLabel.text = "가시거리"
+            bottomLabel.text = ""
+        case .rainSnow:
+            mainValueLabel.text = model.value
+            subTitleLabel.text = "강수량/적설량"
+            bottomLabel.text = "최근 24시간 기준"
+        case .clouds:
+            mainValueLabel.text = "\(model.value)%"
+            subTitleLabel.text = "구름량"
+            bottomLabel.text = ""
+        default:
+            mainValueLabel.text = model.value
+            subTitleLabel.text = ""
+            bottomLabel.text = ""
+        }
     }
+
 }
 
 private extension DetailCellView {
