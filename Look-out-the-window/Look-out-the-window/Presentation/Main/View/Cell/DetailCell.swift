@@ -32,7 +32,7 @@ final class DetailCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -62,7 +62,6 @@ final class DetailCell: UICollectionViewCell {
             let speed = Double(components.first?.replacingOccurrences(of: "m/s", with: "") ?? "0") ?? 0
             let degree = Double(components.last ?? "0") ?? 0
             
-            // 여기서 WindView 인스턴스 생성!
             let windView = WindView()
             // radius 60 기준이 140 (cell 너비 - 20) / 2
             windView.bind(degree: degree - 90, speed: speed)
@@ -73,14 +72,28 @@ final class DetailCell: UICollectionViewCell {
             }
             
         case .sunriseSunsetView:
-            let sunriseSunsetView = SunriseView()
-            // 예시: model.value = "1748204130/1748256182"
-            let times = model.value.components(separatedBy: "/")
-            let sunrise = Int(times.first ?? "0") ?? 0
-            let sunset = Int(times.last ?? "0") ?? 0
-            //sunriseSunsetView.bind(sunrise: sunrise, sunset: sunset)
-            containerView.addSubview(sunriseSunsetView)
-            sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+            if model.title == .sunriseSunset {
+                let times = model.value.components(separatedBy: "/")
+                let sunriseUTC = Int(times.first ?? "0") ?? 0
+                let sunsetUTC = Int(times.dropFirst().first ?? "0") ?? 0
+                
+                let sunriseStr = sunriseUTC.to12HourInt()
+                let sunsetStr = sunsetUTC.to12HourInt()
+                
+                let currentUTC = Int(Date().timeIntervalSince1970)
+                
+                let sunriseSunsetView = SunriseView()
+                sunriseSunsetView.configure(
+                    currentTime: currentUTC,
+                    sunriseTime: sunriseUTC,
+                    sunsetTime: sunsetUTC
+                )
+                containerView.addSubview(sunriseSunsetView)
+                sunriseSunsetView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
+                sunriseSunsetView.mainLabel.text = sunriseStr
+                sunriseSunsetView.subLabel.text = "일몰: \(sunsetStr)"
+            }
             
         case .detailCellView:
             let detailView = DetailCellView()

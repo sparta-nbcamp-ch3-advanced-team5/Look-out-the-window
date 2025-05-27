@@ -38,23 +38,18 @@ final class SunriseView: UIView {
     /// 현재 태양이 위치할 좌표
     private lazy var currentSunPoint = CGPoint(x: 0, y: self.bounds.maxY / 1.5 + 10)
     
-    /// 일출 시간 라벨
-    private let sunriseLabel = UILabel().then {
+    /// ⚠️ 변경 : 라벨 2개로 축소, 명칭 변경
+    let mainLabel = UILabel().then {
         $0.textColor = .white
-        $0.font = .systemFont(ofSize: 32, weight: .regular)
+        $0.font = .systemFont(ofSize: 32, weight: .bold)
+    }
+    let subLabel = UILabel().then {
+        $0.textColor = .white
+        $0.font = .systemFont(ofSize: 16, weight: .medium)
     }
     
-    /// AM/PM 등 시간 마크 라벨
-    private let timeMarkLabel = UILabel().then {
-        $0.textColor = .white
-        $0.font = .systemFont(ofSize: 20, weight: .regular)
-    }
-    /// 일몰 시간 라벨
-    private let sunsetLabel = UILabel().then {
-        $0.textColor = .white
-        $0.font = .systemFont(ofSize: 18, weight: .regular)
-    }
     /// 생성자 - 현재 시간, 일출, 일몰 시간을 받아 초기 설정을 수행합니다
+    /// ⚠️ 변경 : configure에서 mainLabel, subLabel만 세팅
     convenience init(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
         self.init(frame: .zero)
         self.currentTime = currentTime
@@ -62,6 +57,7 @@ final class SunriseView: UIView {
         self.sunsetTime = sunsetTime
         configure(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime)
     }
+    
     /// 기본 생성자
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -89,14 +85,31 @@ final class SunriseView: UIView {
     ///   - currentTime: 현재 시간
     ///   - sunriseTime: 일출 시간
     ///   - sunsetTime: 일몰 시간
+    /// ⚠️ 변경 : mainLabel, subLabel만 세팅 (일출/일몰 시간 포맷)
     func configure(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
-        let sunriseString = sunriseTime.convertUnixToHourMinuteAndMark()
-        let sunriseArr = sunriseString.components(separatedBy: " ")
-        let sunsetString = sunsetTime.convertUnixToHourMinuteAndMark().components(separatedBy: " ").reversed().joined(separator: " ")
-        self.sunriseLabel.text = sunriseArr[0]
-        self.timeMarkLabel.text = sunriseArr[1]
-        self.sunsetLabel.text = "일몰: \(sunsetString)"
+        self.currentTime = currentTime
+        self.sunriseTime = sunriseTime
+        self.sunsetTime = sunsetTime
+
+        let sunriseString = sunriseTime.to12HourInt()
+        let sunsetString = sunsetTime.to12HourInt()
+
+        if currentTime < sunriseTime {
+            mainLabel.text = sunriseString
+            subLabel.text = "일몰: \(sunsetString)"
+        } else if currentTime < sunsetTime {
+            mainLabel.text = sunriseString
+            subLabel.text = "일몰: \(sunsetString)"
+        } else {
+            mainLabel.text = sunsetString
+            subLabel.text = "일출: \(sunriseString)"
+        }
+
+        setSunPathPoints()
+        calculateSunPoint(currentTime: currentTime, sunriseTime: sunriseTime, sunsetTime: sunsetTime)
+        self.setNeedsDisplay()
     }
+
     /// 현재 시간에 해당하는 태양 위치 좌표를 계산합니다
     private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int) {
         let current = TimeInterval(currentTime)
@@ -182,23 +195,18 @@ final class SunriseView: UIView {
 private extension SunriseView {
     /// 서브뷰를 추가하고 레이아웃을 구성합니다.
     func setupUI() {
-        self.addSubviews(sunriseLabel, timeMarkLabel, sunsetLabel)
+        self.addSubviews(mainLabel, subLabel)
         configureLayout()
     }
     /// Auto Layout 제약을 설정합니다.
-    /// - sunriseLabel: 좌상단에 위치
-    /// - timeMarkLabel: sunriseLabel 오른쪽에 위치
-    /// - sunsetLabel: 좌하단에 위치
     func configureLayout() {
-        sunriseLabel.snp.makeConstraints {
-            $0.leading.top.equalToSuperview().inset(5)
+        mainLabel.snp.makeConstraints {
+            $0.top.equalToSuperview().offset(24)
+            $0.leading.equalToSuperview().offset(8)
         }
-        timeMarkLabel.snp.makeConstraints {
-            $0.leading.equalTo(sunriseLabel.snp.trailing)
-            $0.top.equalToSuperview().inset(16)
-        }
-        sunsetLabel.snp.makeConstraints {
-            $0.leading.bottom.equalToSuperview().inset(5)
+        subLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(8)
+            $0.bottom.equalToSuperview().inset(2)
         }
     }
     
