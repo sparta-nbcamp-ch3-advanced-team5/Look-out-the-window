@@ -28,6 +28,13 @@ final class MainLoadingIndicator: UIView {
         super.init(frame: frame)
         
         riveViewModel.play()
+        
+        addSubview(loadingRiveView)
+        
+        loadingRiveView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
     }
     
     required init?(coder: NSCoder) {
