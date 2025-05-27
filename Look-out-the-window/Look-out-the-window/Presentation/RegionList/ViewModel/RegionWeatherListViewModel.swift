@@ -55,7 +55,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                 // 현 위치가 CoreData에 존재하거나, currLocationWeather(메모리)에 존재하는 경우
                 if owner.weatherListFromCoreData.contains(where: { $0.address == currLocation.toAddress() })
                     || owner.currLocationWeather.contains(where: { $0.address == currLocation.toAddress() }) {
-                    // 10분마다 API 호출
+                    // 매 10분마다 API 호출
                     if Int(Date().timeIntervalSince1970) % 600 != 0 {
                         return
                     }
@@ -129,8 +129,6 @@ private extension RegionWeatherListViewModel {
     func fetchAndUpdateRegionWeatherList() {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String else { return }
         
-        // TODO: CoreData에서 지역 데이터 가져옴
-        // TODO: CoreData 타임스탬프 확인
         // - CoreData에서 현재 위치 데이터 있는지 확인
         // - 없으면
         //   - 현재 위치가 nil이 아니면 현재 위치로 셀 새로 생성
@@ -190,8 +188,9 @@ private extension RegionWeatherListViewModel {
     }
     
     func deleteRegionWeather(indexPath: IndexPath) {
-        let deletedRegion = weatherListFromCoreData.remove(at: indexPath.row)
-        let sortedWeatherList = weatherListFromCoreData.sorted(by: isCurrLocationSort)
+        var showingWeatherList = state.regionWeatherListSectionRelay.value[0].items
+        let deletedRegion = showingWeatherList.remove(at: indexPath.row)
+        let sortedWeatherList = showingWeatherList.sorted(by: isCurrLocationSort)
         state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: sortedWeatherList)])
         
         CoreDataManager.shared.deleteWeather(for: deletedRegion.address)
