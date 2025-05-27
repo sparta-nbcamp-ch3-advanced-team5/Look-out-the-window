@@ -303,8 +303,8 @@ private extension WeatherDetailViewController {
                         HourlyModel(hour: 14, temperature: "24", weatherInfo: "Cloudy")
                     ],
                     dailyModel: [
-                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26", low: "17", weatherInfo: "Sunny"),
-                        DailyModel(unixTime: 1685011200, day: "내일", high: "25", low: "18", weatherInfo: "Cloudy")
+//                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26", low: "17", weatherInfo: "Sunny"),
+//                        DailyModel(unixTime: 1685011200, day: "내일", high: "25", low: "18", weatherInfo: "Cloudy")
                     ],
                     isCurrLocation: true
                 )
