@@ -112,13 +112,35 @@ private extension RegionWeatherListViewController {
         
         
         // View ➡️ ViewController
-        regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
-            .asDriver()
-            .drive(with: self) { owner, model in
-                // TODO: Main 화면 present
-                dump(model)
-                os_log(.debug, log: owner.log, "Main 화면 present")
-            }.disposed(by: disposeBag)
+//        regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self)
+//            .asDriver()
+//            .drive(with: self) { owner, model in
+//                // TODO: Main 화면 present
+//                dump(model)
+//                os_log(.debug, log: owner.log, "Main 화면 present")
+//            }.disposed(by: disposeBag)
+        
+        // 현재 index값 안받아와짐
+        Observable.zip(
+            regionListView.getCollectionView.rx.modelSelected(CurrentWeather.self),
+            regionListView.getCollectionView.rx.itemSelected
+        )
+        .asDriver(onErrorDriveWith: .empty())
+        .drive(with: self) { owner, tuple in
+            let (model, indexPath) = tuple
+            
+            print("선택된 indexPath.row: \(indexPath.row)")
+            
+            let detailVC = WeatherDetailViewController(
+                viewModel: WeatherDetailViewModel(),
+                currentPage: indexPath.row // 인덱스 전달
+            )
+            owner.navigationController?.pushViewController(detailVC, animated: false)
+            
+            dump(model)
+            os_log(.debug, log: owner.log, "Main 화면 present")
+        }
+        .disposed(by: disposeBag)
     }
 }
 

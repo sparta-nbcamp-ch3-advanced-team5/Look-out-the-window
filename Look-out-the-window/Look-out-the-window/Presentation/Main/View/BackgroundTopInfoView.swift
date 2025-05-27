@@ -14,7 +14,7 @@ import RiveRuntime
 /// 상단 날씨 요약 정보, Rive 날씨 아이콘
 final class BackgroundTopInfoView: UIView {
     
-    private(set) var weatherInfo: WeatherInfo
+    private(set) var weatherInfo: CurrentWeather
     private(set) var riveViewModel: RiveViewModel
     
     // MARK: - UI Components
@@ -62,7 +62,7 @@ final class BackgroundTopInfoView: UIView {
     
     
     // MARK: - Initializer
-    init(frame: CGRect, weatherInfo: WeatherInfo) {
+    init(frame: CGRect, weatherInfo: CurrentWeather) {
         self.weatherInfo = weatherInfo
         // riveViewModel 생성, stateMachineName: Rive 파일의 애니메이션 네임
         // 자동재생 false

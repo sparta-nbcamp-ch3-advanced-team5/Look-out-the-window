@@ -18,9 +18,10 @@ final class WeatherDetailViewController: UIViewController {
     private let viewModel: WeatherDetailViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
-    private var weatherInfoList = [WeatherInfo]()
-    
+    private var weatherInfoList = [CurrentWeather]()
     private var contentViewWidthConstraint: Constraint?
+    
+    var currentPage: Int
     
     // MARK: - UI Components
     /// 밝기관련 뷰 시간에 따라 어두워짐.
@@ -62,7 +63,7 @@ final class WeatherDetailViewController: UIViewController {
     }
     
     private lazy var pageController = UIPageControl().then {
-        $0.numberOfPages = weatherInfoList.count
+        $0.numberOfPages = viewModel.weatherInfoList.count
         $0.currentPage = 0
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
@@ -74,8 +75,9 @@ final class WeatherDetailViewController: UIViewController {
     }
     
     // MARK: - Initializers
-    init(viewModel: WeatherDetailViewModel) {
+    init(viewModel: WeatherDetailViewModel, currentPage: Int) {
         self.viewModel = viewModel
+        self.currentPage = currentPage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -86,6 +88,7 @@ final class WeatherDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        navigationItem.hidesBackButton = true
         loadingIndicatorView.startAnimating()
         bindViewModel()
         setupUI()
@@ -98,7 +101,7 @@ private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        //        setInitalBackgroundViews()
+        setInitalBackgroundViews(currentPage: currentPage)
     }
     
     //    func setAppearance() {
@@ -175,7 +178,7 @@ private extension WeatherDetailViewController {
             }
             .do(onNext: { [weak self] page in
                 guard let self else { return }
-                self.applyGradientBackground(time: self.weatherInfoList[page].currentTime)
+                self.applyGradientBackground(time: Double(self.weatherInfoList[page].currentTime))
                 
                 // 페이징 후 페이지 rive 재생
                 weatherDetailViewList[page].backgroundView.riveViewModel.play()
@@ -201,32 +204,59 @@ private extension WeatherDetailViewController {
                 
                 let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
                 self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: self.weatherInfoList[currentPage].currentTime)
+                self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
                 
                 // 이전 페이지 업데이트
                 self.previousPage = currentPage
             })
             .disposed(by: disposeBag)
-    
-        // MARK: - Test
-        // 테스트로 왼쪽 하단 위치 버튼 클릭 시 날씨 추가
+        
         locationButton.rx.tap
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                let mockWeather = WeatherInfo(address: "지역1", temperature: "15", skyInfo: "비", maxTemp: "16", minTemp: "14", rive: "Rainy", currentTime: 0.3)
+                let mockWeather = CurrentWeather(
+                    address: "서울시 강남구",
+                    lat: 37.4979,
+                    lng: 127.0276,
+                    currentTime: Int(Date().timeIntervalSince1970),
+                    currentMomentValue: 0.3,
+                    sunriseTime: 1684924800,
+                    sunsetTime: 1684978800,
+                    temperature: "23°C",
+                    maxTemp: "26°C",
+                    minTemp: "17°C",
+                    tempFeelLike: "22°C",
+                    skyInfo: "맑음",
+                    pressure: "1013 hPa",
+                    humidity: "60%",
+                    clouds: "30%",
+                    uvi: "5 (보통)",
+                    visibility: "10 km",
+                    windSpeed: "3.4 m/s",
+                    windDeg: "북동풍",
+                    rive: "일출",
+                    hourlyModel: [
+                        HourlyModel(hour: 13, temperature: "23°C", weatherInfo: "sun.max"),
+                        HourlyModel(hour: 14, temperature: "24°C", weatherInfo: "cloud.sun")
+                    ],
+                    dailyModel: [
+                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26°C", low: "17°C", weatherInfo: "sun.max"),
+                        DailyModel(unixTime: 1685011200, day: "내일", high: "25°C", low: "18°C", weatherInfo: "cloud.sun")
+                    ],
+                    isCurrLocation: true
+                )
                 self.weatherInfoList.append(mockWeather)
                 self.reloadUI(with: mockWeather)
             })
             .disposed(by: disposeBag)
         
+        // 리스트 페이지로 이동
         listButton.rx.tap
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                let mockWeather = WeatherInfo(address: "지역2", temperature: "20", skyInfo: "천둥", maxTemp: "18", minTemp: "14", rive: "Thunderbolt", currentTime: 0.5)
-                self.weatherInfoList.append(mockWeather)
-                self.reloadUI(with: mockWeather)
+                navigationController?.popViewController(animated: false)
             })
             .disposed(by: disposeBag)
     }
@@ -248,7 +278,7 @@ private extension WeatherDetailViewController {
     }
     
     /// 초기 내장된 backgroundViews 생성 (향후 CoreData 로드 시 사용, 현재 비활성화)
-    func setInitalBackgroundViews() {
+    func setInitalBackgroundViews(currentPage: Int) {
         
         if !weatherDetailViewList.isEmpty {
             for (index, weather) in weatherInfoList.enumerated() {
@@ -262,8 +292,10 @@ private extension WeatherDetailViewController {
                 }
             }
             
+            pageController.currentPage = currentPage
+            
             // 첫번째 뷰 rive play
-            weatherDetailViewList[0].backgroundView.riveViewModel.play()
+            weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
         }
     }
     
@@ -298,7 +330,7 @@ private extension WeatherDetailViewController {
         return clampedValue
     }
     
-    func reloadUI(with weather: WeatherInfo) {
+    func reloadUI(with weather: CurrentWeather) {
         let index = weatherInfoList.count - 1
         
         if index == 0 {
@@ -316,12 +348,12 @@ private extension WeatherDetailViewController {
         // 첫 번째 뷰일 경우 재생 및 배경 적용
         if index == 0 {
             backgroundView.riveViewModel.play()
-            applyGradientBackground(time: weather.currentTime)
+            applyGradientBackground(time: Double(weather.currentTime))
         }
     }
     
     // BackgroundView 추가
-    private func setBackgroundView(index: Int, weather: WeatherInfo) -> BackgroundTopInfoView {
+    private func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
         
         let weatherDetailScrollView = WeatherDetailScrollView(frame: .zero, weather: weather)
         weatherDetailViewList.append(weatherDetailScrollView)

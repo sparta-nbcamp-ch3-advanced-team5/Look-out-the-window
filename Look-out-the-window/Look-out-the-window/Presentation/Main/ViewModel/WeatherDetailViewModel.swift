@@ -10,15 +10,6 @@ import Foundation
 import RxRelay
 import RxSwift
 
-struct WeatherInfo {
-    let address: String
-    let temperature: String
-    let skyInfo: String
-    let maxTemp: String
-    let minTemp: String
-    let rive: String
-    let currentTime: Double
-}
 
 
 final class WeatherDetailViewModel: ViewModelProtocol {
@@ -29,6 +20,9 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     private let urlRequest: URLRequest?
     private let networkManager = NetworkManager()
     private let currentLocation = CoreLocationManager.shared.currLocationRelay
+    private let coreDataManager = CoreDataManager.shared
+    
+    var weatherInfoList = [CurrentWeather]()
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
@@ -45,7 +39,7 @@ final class WeatherDetailViewModel: ViewModelProtocol {
         /// ViewController에서 받은 action
         private(set) var actionSubject = PublishSubject<Action>()
         /// 현재 날씨
-        private(set) var currentWeather = PublishSubject<WeatherInfo>()
+        private(set) var currentWeather = PublishRelay<CurrentWeather>()
     }
     var state = State()
     
@@ -76,16 +70,33 @@ private extension WeatherDetailViewModel {
             .subscribe(with: self, onSuccess: { (owner, response: WeatherResponseDTO)  in
                 
                 let currentWeather = response.toCurrentWeather()
-                let weatherInfo = WeatherInfo(
+                let weatherInfo = CurrentWeather(
                     address: self.currentLocation.value?.administrativeArea ?? "",
+                    lat: currentWeather.lat,
+                    lng: currentWeather.lng,
+                    currentTime: currentWeather.currentTime,
+                    currentMomentValue: currentWeather.currentMomentValue,
+                    sunriseTime: currentWeather.sunriseTime,
+                    sunsetTime: currentWeather.sunsetTime,
                     temperature: currentWeather.temperature,
-                    skyInfo: currentWeather.skyInfo,
                     maxTemp: currentWeather.maxTemp,
                     minTemp: currentWeather.minTemp,
+                    tempFeelLike: currentWeather.tempFeelLike,
+                    skyInfo: currentWeather.skyInfo,
+                    pressure: currentWeather.pressure,
+                    humidity: currentWeather.humidity,
+                    clouds: currentWeather.clouds,
+                    uvi: currentWeather.uvi,
+                    visibility: currentWeather.visibility,
+                    windSpeed: currentWeather.windSpeed,
+                    windDeg: currentWeather.windDeg,
                     rive: currentWeather.rive,
-                    currentTime: currentWeather.currentMomentValue
+                    hourlyModel: currentWeather.hourlyModel,
+                    dailyModel: currentWeather.dailyModel,
+                    isCurrLocation: true
                 )
-                print("지역: \(weatherInfo.address)")
+                
+                print("지역: \(String(describing: weatherInfo.address))")
                 print("현재 온도: \(weatherInfo.temperature)")
                 print("현재 날씨: \(weatherInfo.skyInfo)")
                 print("최고 온도: \(weatherInfo.maxTemp)")
@@ -94,7 +105,7 @@ private extension WeatherDetailViewModel {
                 print("현재 시간: \(weatherInfo.currentTime)")
                 print("Moment: \(currentWeather.currentMomentValue)")
                 
-                owner.state.currentWeather.onNext(weatherInfo)
+                owner.state.currentWeather.accept(weatherInfo)
                 
             }, onFailure: { owner, error  in
                 print("에러 발생: \(error)")
