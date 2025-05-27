@@ -161,7 +161,7 @@ private extension WeatherDetailViewController {
         bottomSepartorView.snp.makeConstraints {
             $0.bottom.equalTo(bottomHStackView.snp.top)
             $0.width.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(0.2)
+            $0.height.equalTo(0.3)
         }
         
         bottomHStackView.snp.makeConstraints {
