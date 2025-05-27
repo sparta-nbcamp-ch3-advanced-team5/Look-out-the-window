@@ -10,11 +10,18 @@ import SnapKit
 import Then
 
 /*
+ 
  HeaderView 수정
- DailySeciton Indicator 추가
  Progress Bar gradient 추가
- DetailCell 나머지 view 처리
+ 
+ ------------ 위쪽 TODO: - 완 ------------------
+ 
+ DetailCell 나머지 view 처리 (일부 완료 - 하단의문구 어떻게 해야할지 고민 중....)
+ 
+ ------------- 아래쪽 TODO: - 후순위 --------------------
+ DailySeciton Indicator 추가 (모델 수정이 필요해 보여서 일단 후순위)
  일출/일몰 (후순위)
+ 
  */
 
 final class DetailCell: UICollectionViewCell {
@@ -145,7 +152,7 @@ private extension DetailCell {
     
     func setConstraints() {
         cellIcon.snp.makeConstraints{
-            $0.top.equalToSuperview().offset(8)
+            $0.top.equalToSuperview().offset(6)
             $0.leading.equalToSuperview().offset(4)
             $0.size.equalTo(16)
         }
