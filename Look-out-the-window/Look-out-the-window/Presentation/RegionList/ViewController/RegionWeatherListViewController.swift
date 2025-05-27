@@ -15,48 +15,86 @@ import SnapKit
 
 /// 지역 리스트 ViewController
 final class RegionWeatherListViewController: UIViewController {
-    
+
     // MARK: - Properties
-    
+
     private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
-    
-    private let viewModel = RegionWeatherListViewModel()
+
+    public let viewModel = RegionWeatherListViewModel()
     private let disposeBag = DisposeBag()
-    
+    private var initialAppLoaded = false
+    //init 시점으로 바꾸기
+
     private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
+    private var initialAppLoaded = false
+
+
+    //    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
+    //    private let itemSpacing: CGFloat = 30
+
+    private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
         cell.configure(model: item)
         return cell
     }
-    
+
     // MARK: - UI Components
-    
+
     // TODO: 아래로 당겨서 업데이트
     private let searchController: UISearchController
     private let searchResultVC = SearchResultViewController()
-    
+
     private let regionListView = RegionWeatherListView()
-    
+
     // MARK: - Initializer
-    
+
     init() {
         searchController = UISearchController(searchResultsController: searchResultVC)
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureTableView()
         configureDataSource()
         setupUI()
+
     }
+
+    //MARK: 동환님 데이터 생성이후에 추가 예정
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        guard !initialAppLoaded else { return }
+//
+//        let sections = viewModel.state.regionWeatherListSectionRelay.value
+////      init 시점에 coredata로 가져옴
+//
+//        if let saved = UserDefaults.standard.string(forKey: "LastViewedWeatherAddress"),
+//           let entity = CoreDataManager.shared.fetchWeather(for: saved) {
+//            let vm = WeatherDetailViewModel(entity: entity)
+//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
+//            navigationController?.pushViewController(vc, animated: false)
+//            initialAppLoaded = true
+//            return
+//        }
+//
+//        if let first = sections.first?.items.first,
+//           let entity = CoreDataManager.shared.fetchWeather(for: first.address) {
+//            let vm = WeatherDetailViewModel(entity: entity)
+//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
+//            navigationController?.pushViewController(vc, animated: false)
+//            initialAppLoaded = true
+//        }
+//    }
+
 }
 
 // MARK: - UI Methods
@@ -69,7 +107,7 @@ private extension RegionWeatherListViewController {
         setConstraints()
         bind()
     }
-    
+
     func setAppearance() {
         self.view.backgroundColor = .mainBackground
         
@@ -82,23 +120,23 @@ private extension RegionWeatherListViewController {
         searchController.hidesNavigationBarDuringPresentation = true
         searchController.obscuresBackgroundDuringPresentation = true
     }
-    
+
     func setDelegates() {
         searchController.searchBar.delegate = searchResultVC
-        
+
         searchResultVC.delegate = self
     }
-    
+
     func setViewHierarchy() {
         self.view.addSubview(regionListView)
     }
-    
+
     func setConstraints() {
         regionListView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
     }
-    
+
     func bind() {
         // ViewModel ➡️ ViewController
         viewModel.state.regionWeatherListSectionRelay
@@ -116,22 +154,31 @@ private extension RegionWeatherListViewController {
             }.disposed(by: disposeBag)
 
         viewModel.action.onNext(.viewDidLoad)
-        
-        
+
+
         // View ➡️ ViewController
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
-        
-//        regionListView.getTableView.rx.itemSelected
-//            .asDriver()
-//            .drive(with: self) { owner, model in
-//                // TODO: Main 화면 present
-//                owner.navigationController?.pushViewController(WeatherDetailViewController(viewModel: WeatherDetailViewModel()), animated: true)
-//                dump(model)
-//                os_log(.debug, log: owner.log, "Main 화면 present")
-//            }.disposed(by: disposeBag)
-        
-        
+
+        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
+            .asDriver()
+            .drive(with: self) { owner, model in
+                // TODO: Main 화면 present
+                dump(model)
+
+                // 주형: index 아이템 클릭시 주소 저장
+                UserDefaults.standard.set(model.address, forKey: "LastViewedWeatherAddress")
+                // CoreData에서 해당 주소 날씨 fetch → 상세화면 push
+                if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
+                    let viewModel = WeatherDetailViewModel(entity: entity)
+                    let detailVC = WeatherDetailViewController(viewModel: viewModel, currentPage: 0)
+                    owner.navigationController?.pushViewController(detailVC, animated: true)
+                }
+
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
+
+
         // MARK: - 근호님 코드
         // 현재 index값 안받아와짐
         Observable.zip(

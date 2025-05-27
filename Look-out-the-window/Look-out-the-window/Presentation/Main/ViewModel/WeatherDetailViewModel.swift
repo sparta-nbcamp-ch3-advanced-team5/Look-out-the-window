@@ -59,6 +59,13 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                 }
             }.disposed(by: disposeBag)
     }
+
+    //현재 날씨를 전달하는 릴레이가 CurrentWeather로 바껴서 엔티티 저장을 구조를 변경함
+    init(entity: WeatherDataEntity) {
+        self.urlRequest = nil
+        let model = entity.toCurrentWeatherModel()
+        state.currentWeather.accept(model)
+        }
 }
 
 //MARK: - Extension Private Methods
