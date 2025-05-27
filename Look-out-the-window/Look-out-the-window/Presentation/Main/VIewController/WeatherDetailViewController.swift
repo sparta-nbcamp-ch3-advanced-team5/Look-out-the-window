@@ -138,6 +138,11 @@ final class WeatherDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // 코어데이터 파일 확인 위해 경로 print
+        if let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last {
+            print("Documents Directory: \(documentsDirectoryURL)")
+        }
+        
         navigationItem.hidesBackButton = true
         loadingIndicatorView.startAnimating()
         bindViewModel()
@@ -273,17 +278,17 @@ private extension WeatherDetailViewController {
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
                 let mockWeather = CurrentWeather(
-                    address: "서울시 강남구",
+                    address: "서울시",
                     lat: 37.4979,
                     lng: 127.0276,
                     currentTime: Int(Date().timeIntervalSince1970),
                     currentMomentValue: 0.3,
                     sunriseTime: 1684924800,
                     sunsetTime: 1684978800,
-                    temperature: "23°C",
-                    maxTemp: "26°C",
-                    minTemp: "17°C",
-                    tempFeelLike: "22°C",
+                    temperature: "23",
+                    maxTemp: "26",
+                    minTemp: "17",
+                    tempFeelLike: "22",
                     skyInfo: "맑음",
                     pressure: "1013 hPa",
                     humidity: "60%",
@@ -292,14 +297,14 @@ private extension WeatherDetailViewController {
                     visibility: "10 km",
                     windSpeed: "3.4 m/s",
                     windDeg: "북동풍",
-                    rive: "일출",
+                    rive: "Sunny",
                     hourlyModel: [
-                        HourlyModel(hour: 13, temperature: "23°C", weatherInfo: "sun.max"),
-                        HourlyModel(hour: 14, temperature: "24°C", weatherInfo: "cloud.sun")
+                        HourlyModel(hour: 13, temperature: "23", weatherInfo: "Sunny"),
+                        HourlyModel(hour: 14, temperature: "24", weatherInfo: "Cloudy")
                     ],
                     dailyModel: [
-                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26°C", low: "17°C", weatherInfo: "sun.max"),
-                        DailyModel(unixTime: 1685011200, day: "내일", high: "25°C", low: "18°C", weatherInfo: "cloud.sun")
+                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26", low: "17", weatherInfo: "Sunny"),
+                        DailyModel(unixTime: 1685011200, day: "내일", high: "25", low: "18", weatherInfo: "Cloudy")
                     ],
                     isCurrLocation: true
                 )
