@@ -95,7 +95,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                         // TODO: CoreData에 Update하는 메서드 없음
                         CoreDataManager.shared.deleteAll()
                         owner.weatherListFromCoreData.forEach {
-                            CoreDataManager.shared.saveWeatherData(current: $0, latitude: $0.lat, longitude: $0.lng)  // TODO: NSBatchInsertRequest
+                            CoreDataManager.shared.saveWeatherData(current: $0)  // TODO: NSBatchInsertRequest
                         }
                         
                         // UI에 표시
@@ -135,7 +135,7 @@ private extension RegionWeatherListViewModel {
         //   - 현재 위치가 nil이면 이전 데이터의 위치 데이터를 기반으로 날씨 갱신
         
         // CoreData에서 날씨 데이터 fetch
-        weatherListFromCoreData = CoreDataManager.shared.fetchWeatherData().map { $0.toModel() }
+        weatherListFromCoreData = CoreDataManager.shared.fetchWeatherData().map { $0.toCurrentWeatherModel() }
         // isCurrLocation == true로 sort
         let sortedWeatherList = weatherListFromCoreData.sorted(by: isCurrLocationSort)
         // UI에 표시
@@ -171,7 +171,7 @@ private extension RegionWeatherListViewModel {
                 owner.weatherListFromCoreData = regionWeatherResponseList
                 CoreDataManager.shared.deleteAll()
                 owner.weatherListFromCoreData.forEach {
-                    CoreDataManager.shared.saveWeatherData(current: $0, latitude: $0.lat, longitude: $0.lng)  // TODO: NSBatchInsertRequest
+                    CoreDataManager.shared.saveWeatherData(current: $0)  // TODO: NSBatchInsertRequest
                 }
                 
                 // isCurrLocation == true로 sort
@@ -194,7 +194,7 @@ private extension RegionWeatherListViewModel {
         // 임시 방편으로 전체 삭제 후 저장(순서 보장 X)
         CoreDataManager.shared.deleteAll()
         weatherListFromCoreData.forEach {
-            CoreDataManager.shared.saveWeatherData(current: $0, latitude: $0.lat, longitude: $0.lng)  // TODO: NSBatchInsertRequest
+            CoreDataManager.shared.saveWeatherData(current: $0)  // TODO: NSBatchInsertRequest
         }
     }
     

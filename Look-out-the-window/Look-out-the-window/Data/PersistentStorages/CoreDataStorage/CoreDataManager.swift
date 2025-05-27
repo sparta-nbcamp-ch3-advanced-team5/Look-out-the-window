@@ -252,7 +252,9 @@ extension WeatherDataEntity {
             rive: self.rive ?? "",
             hourlyModel: self.sortedHourlyArray.map { $0.toModel() },
             dailyModel: self.sortedDailyArray.map { $0.toModel() },
-            isCurrLocation: self.isCurrLocation
+            isCurrLocation: self.isCurrLocation,
+            rainPerHour: self.rainPerHour,
+            snowPerHour: self.snowPerHour
         )
     }
 
@@ -275,7 +277,10 @@ extension DailyWeatherEntity {
             day: self.day ?? "--",
             high: self.maxTemp ?? "--",
             low: self.minTemp ?? "--",
-            weatherInfo: self.skyInfo ?? "--"
+            weatherInfo: self.skyInfo ?? "--",
+            maxTemp: Int(self.maxTemp ?? "") ?? 0,
+            minTemp: Int(self.minTemp ?? "") ?? 0,
+            temperature: self.temperature ?? "--"
         )
     }
 }

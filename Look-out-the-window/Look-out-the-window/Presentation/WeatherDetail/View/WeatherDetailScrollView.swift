@@ -169,8 +169,9 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
                 high: Double(model.high)?.roundedString ?? model.high,
                 low: Double(model.low)?.roundedString ?? model.low,
                 weatherInfo: model.weatherInfo,
+                maxTemp: model.maxTemp,
                 minTemp: model.minTemp,
-                maxTemp: model.maxTemp
+                temperature: model.temperature
             )
         }
         // 전체 기간 최저/최고 기온 계산

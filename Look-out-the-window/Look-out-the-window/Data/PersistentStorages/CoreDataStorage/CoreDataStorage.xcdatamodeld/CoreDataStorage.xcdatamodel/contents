@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="23G93" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24F74" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="DailyWeatherEntity" representedClassName="DailyWeatherEntity" syncable="YES" codeGenerationType="class">
         <attribute name="currentTime" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="day" optional="YES" attributeType="String"/>
         <attribute name="maxTemp" optional="YES" attributeType="String"/>
         <attribute name="minTemp" optional="YES" attributeType="String"/>
         <attribute name="skyInfo" optional="YES" attributeType="String"/>
+        <attribute name="temperature" optional="YES" attributeType="String"/>
         <relationship name="weather" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="WeatherDataEntity" inverseName="daily" inverseEntity="WeatherDataEntity"/>
     </entity>
     <entity name="HourlyWeatherEntity" representedClassName="HourlyWeatherEntity" syncable="YES" codeGenerationType="class">
@@ -27,8 +28,10 @@
         <attribute name="maxTemp" optional="YES" attributeType="String"/>
         <attribute name="minTemp" optional="YES" attributeType="String"/>
         <attribute name="pressure" optional="YES" attributeType="String"/>
+        <attribute name="rainPerHour" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="rive" optional="YES" attributeType="String"/>
         <attribute name="skyInfo" optional="YES" attributeType="String"/>
+        <attribute name="snowPerHour" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="sunriseTime" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sunsetTime" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="temperature" optional="YES" attributeType="String"/>
@@ -38,7 +41,7 @@
         <attribute name="visibility" optional="YES" attributeType="String"/>
         <attribute name="windDeg" optional="YES" attributeType="String"/>
         <attribute name="windSpeed" optional="YES" attributeType="String"/>
-        <relationship name="daily" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DailyWeatherEntity" inverseName="weather" inverseEntity="DailyWeatherEntity"/>
-        <relationship name="hourly" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="HourlyWeatherEntity" inverseName="weather" inverseEntity="HourlyWeatherEntity"/>
+        <relationship name="daily" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DailyWeatherEntity" inverseName="weather" inverseEntity="DailyWeatherEntity"/>
+        <relationship name="hourly" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="HourlyWeatherEntity" inverseName="weather" inverseEntity="HourlyWeatherEntity"/>
     </entity>
 </model>

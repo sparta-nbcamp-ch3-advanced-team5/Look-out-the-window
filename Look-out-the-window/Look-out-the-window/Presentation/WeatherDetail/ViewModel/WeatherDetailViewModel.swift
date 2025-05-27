@@ -65,11 +65,11 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     }
 
     //현재 날씨를 전달하는 릴레이가 CurrentWeather로 바껴서 엔티티 저장을 구조를 변경함
-    init(entity: WeatherDataEntity) {
-        self.urlRequest = nil
-        let model = entity.toCurrentWeatherModel()
-        state.currentWeather.accept(model)
-        }
+//    init(entity: WeatherDataEntity) {
+//        self.urlRequest = nil
+//        let model = entity.toCurrentWeatherModel()
+//        state.currentWeather.accept(model)
+//    }
 }
 
 //MARK: - Extension Private Methods
@@ -104,7 +104,9 @@ extension WeatherDetailViewModel {
                     rive: currentWeather.rive,
                     hourlyModel: currentWeather.hourlyModel,
                     dailyModel: currentWeather.dailyModel,
-                    isCurrLocation: true
+                    isCurrLocation: true,
+                    rainPerHour: currentWeather.rainPerHour,
+                    snowPerHour: currentWeather.snowPerHour
                 )
                 
                 print("지역: \(String(describing: weatherInfo.address))")
@@ -145,7 +147,8 @@ extension WeatherDetailViewModel {
                 low: Double(model.low)?.roundedString ?? model.low,
                 weatherInfo: model.weatherInfo,
                 maxTemp: model.maxTemp,
-                minTemp: model.minTemp
+                minTemp: model.minTemp,
+                temperature: model.temperature
             )
         }
         
@@ -170,7 +173,18 @@ extension WeatherDetailViewModel {
             MainSection(items: detailItems)
         ]
     }
+    
+    func saveToCoreData() {
+        guard let currentWeather = latestWeather else {
+            print("저장할 날씨 데이터가 없습니다.")
+            return
+        }
+        // 추후에 updateWeatherData로 변경
+        coreDataManager.saveWeatherData(current: currentWeather)
+    }
+    
 }
+
 // MARK: - 디버깅 용으로 임의로 만들었습니다
 extension WeatherResponseDTO: CustomStringConvertible {
     var description: String {
@@ -186,14 +200,5 @@ extension WeatherResponseDTO: CustomStringConvertible {
         dailyWeathers: \(dailyWeathers.count)개
         -------------------------
         """
-    }
-    
-    func saveToCoreData() {
-        guard let currentWeather = latestWeather else {
-            print("저장할 날씨 데이터가 없습니다.")
-            return
-        }
-        // 추후에 updateWeatherData로 변경
-        coreDataManager.saveWeatherData(current: currentWeather, latitude: currentWeather.lat, longitude: currentWeather.lng)
     }
 }

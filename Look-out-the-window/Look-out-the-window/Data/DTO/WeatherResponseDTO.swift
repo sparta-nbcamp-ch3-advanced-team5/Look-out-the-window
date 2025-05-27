@@ -109,6 +109,16 @@ extension WeatherResponseDTO {
     /// - 주의사항:
     ///   - `weatherState` 배열이 비어 있을 경우 `"currentWeather WeatherState is not exist"` 로그를 출력하고 빈 문자열을 반환합니다.
     func toRiveString() -> String {
+        enum Rive {
+            static let sunny = "Sunny"
+            static let partlyCloudy = "PartlyCloudy"
+            static let cloudy = "Cloudy"
+            static let rainy = "Rainy"
+            static let snow = "Snow"
+            static let thunder = "Thunderbolt"
+            static let fog = "Fog"
+        }
+        
         guard let weatherState = self.currentWeather.weatherState.first else {
             print("ERROR:: currentWeather WeatherState is not exist")
             return ""
@@ -178,6 +188,8 @@ extension WeatherResponseDTO {
         let dailyHigh = (dailyWeathers.map { $0.temperature.maxTemperature }).max()
         let dailyMin = (dailyWeathers.map { $0.temperature.minTemperature }).min()
         
+        let temperature = Int(self.currentWeather.temperature)
+        
         return CurrentWeather(
             address: address ?? "",
             lat: lat,
@@ -200,8 +212,10 @@ extension WeatherResponseDTO {
             windDeg: String(self.currentWeather.windDeg),
             rive: toRiveString(),
             hourlyModel: self.hourlyWeathers.map{ $0.toHourlyModel() },
-            dailyModel: self.dailyWeathers.map{ $0.toDailyModel(maxTemp: dailyHigh, minTemp: dailyMin) },
-            isCurrLocation: isCurrLocation
+            dailyModel: self.dailyWeathers.map{ $0.toDailyModel(maxTemp: dailyHigh, minTemp: dailyMin, temperature: temperature) },
+            isCurrLocation: isCurrLocation,
+            rainPerHour: self.currentWeather.rain?.hour ?? 0.0,
+            snowPerHour: self.currentWeather.snow?.hour ?? 0.0
         )
     }
 }

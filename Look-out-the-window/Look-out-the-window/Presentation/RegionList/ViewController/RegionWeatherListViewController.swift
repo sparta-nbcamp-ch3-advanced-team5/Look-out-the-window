@@ -27,14 +27,6 @@ final class RegionWeatherListViewController: UIViewController {
 
     private let dataSource = RxTableViewSectionedAnimatedDataSource<RegionWeatherListSection>(animationConfiguration: AnimationConfiguration(insertAnimation: .fade, reloadAnimation: .automatic, deleteAnimation: .fade)) { dataSource, tableView, indexPath, item in
         guard let cell = tableView.dequeueReusableCell(withIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UITableViewCell() }
-    private var initialAppLoaded = false
-
-
-    //    private let sectionInset: UIEdgeInsets = .init(top: 0, left: 20, bottom: 0, right: 20)
-    //    private let itemSpacing: CGFloat = 30
-
-    private let dataSource = RxCollectionViewSectionedReloadDataSource<RegionWeatherListSection> { dataSource, collectionView, indexPath, item in
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RegionWeatherCell.identifier, for: indexPath) as? RegionWeatherCell else { return UICollectionViewCell() }
         cell.configure(model: item)
         return cell
     }
@@ -160,47 +152,42 @@ private extension RegionWeatherListViewController {
         regionListView.getTableView.rx.setDelegate(self)
             .disposed(by: disposeBag)
 
-        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
-            .asDriver()
-            .drive(with: self) { owner, model in
-                // TODO: Main 화면 present
-                dump(model)
-
-                // 주형: index 아이템 클릭시 주소 저장
-                UserDefaults.standard.set(model.address, forKey: "LastViewedWeatherAddress")
-                // CoreData에서 해당 주소 날씨 fetch → 상세화면 push
-                if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
-                    let viewModel = WeatherDetailViewModel(entity: entity)
-                    let detailVC = WeatherDetailViewController(viewModel: viewModel, currentPage: 0)
-                    owner.navigationController?.pushViewController(detailVC, animated: true)
-                }
-
-                os_log(.debug, log: owner.log, "Main 화면 present")
-            }.disposed(by: disposeBag)
+//        regionListView.getTableView.rx.modelSelected(CurrentWeather.self)
+//            .asDriver()
+//            .drive(with: self) { owner, model in
+//                // TODO: Main 화면 present
+//                dump(model)
+//
+//                 주형: index 아이템 클릭시 주소 저장
+//                UserDefaults.standard.set(model.address, forKey: "LastViewedWeatherAddress")
+//                // CoreData에서 해당 주소 날씨 fetch → 상세화면 push
+//                if let entity = CoreDataManager.shared.fetchWeather(for: model.address) {
+//                    let viewModel = WeatherDetailViewModel(entity: entity)
+//                    let detailVC = WeatherDetailViewController(viewModel: viewModel, currentPage: 0)
+//                    owner.navigationController?.pushViewController(detailVC, animated: true)
+//                }
+//
+//                os_log(.debug, log: owner.log, "Main 화면 present")
+//            }.disposed(by: disposeBag)
 
 
         // MARK: - 근호님 코드
         // 현재 index값 안받아와짐
-        Observable.zip(
-            regionListView.getTableView.rx.modelSelected(CurrentWeather.self),
-            regionListView.getTableView.rx.itemSelected
-        )
-        .asDriver(onErrorDriveWith: .empty())
-        .drive(with: self) { owner, tuple in
-            let (model, indexPath) = tuple
-            
-            print("선택된 indexPath.row: \(indexPath.row)")
-            
-            let detailVC = WeatherDetailViewController(
-                viewModel: WeatherDetailViewModel(),
-                currentPage: indexPath.row // 인덱스 전달
-            )
-            owner.navigationController?.pushViewController(detailVC, animated: false)
-            
-            dump(model)
-            os_log(.debug, log: owner.log, "Main 화면 present")
-        }
-        .disposed(by: disposeBag)
+        regionListView.getTableView.rx.itemSelected
+            .asDriver()
+            .drive(with: self) { owner, indexPath in
+                
+                print("선택된 indexPath.row: \(indexPath.row)")
+                
+                let detailVC = WeatherDetailViewController(
+                    viewModel: WeatherDetailViewModel(),
+                    currentPage: indexPath.row // 인덱스 전달
+                )
+                owner.navigationController?.pushViewController(detailVC, animated: false)
+                
+                dump(indexPath)
+                os_log(.debug, log: owner.log, "Main 화면 present")
+            }.disposed(by: disposeBag)
     }
 }
 

@@ -101,10 +101,6 @@ final class RegisterViewModel: ViewModelProtocol {
     /// 현재 날씨 정보를 CoreData에 저장
     func saveCurrentWeather() {
         guard let currentWeather = state.currentWeather.value else { return }
-        CoreDataManager.shared.saveWeatherData(
-            current: currentWeather,
-            latitude: currentWeather.lat,
-            longitude: currentWeather.lng
-        )
+        CoreDataManager.shared.saveWeatherData(current: currentWeather)
     }
 }

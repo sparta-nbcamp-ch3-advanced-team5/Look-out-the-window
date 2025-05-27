@@ -41,7 +41,7 @@ final class WeatherDetailViewController: UIViewController {
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
     
-    private let bottomInfoView = BottomInfoView()
+    private let bottomInfoView = WeatherDetailCollectionView()
     
     /// 네트워크 데이터 바인딩용 Relay
     private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
@@ -115,7 +115,6 @@ final class WeatherDetailViewController: UIViewController {
         view.addSubview(bottomInfoView)
         bottomInfoView.snp.makeConstraints { $0.edges.equalToSuperview() }
         
-        setRxDataSource()
         viewModel.getCurrentWeatherData() // ViewModel에서 네트워크 요청
     }
 }

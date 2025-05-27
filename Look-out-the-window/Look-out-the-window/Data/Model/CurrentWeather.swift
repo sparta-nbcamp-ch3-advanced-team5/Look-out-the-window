@@ -58,6 +58,10 @@ struct CurrentWeather: Hashable {
     let dailyModel: [DailyModel]
     /// 현재 위치를 나타내는 데이터인지 판별하는 변수
     var isCurrLocation: Bool
+    /// 시간당 강수량
+    let rainPerHour: Double
+    /// 시간당 적설량
+    let snowPerHour: Double
 }
 
 extension CurrentWeather: IdentifiableType, Equatable {
@@ -90,7 +94,8 @@ extension CurrentWeather {
                 low: Double(model.low)?.roundedString ?? model.low,
                 weatherInfo: model.weatherInfo,
                 maxTemp: model.minTemp,
-                minTemp: model.maxTemp
+                minTemp: model.maxTemp,
+                temperature: model.temperature
             )
         }
         

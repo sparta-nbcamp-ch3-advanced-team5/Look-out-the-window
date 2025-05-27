@@ -18,7 +18,7 @@ final class RegionWeatherCell: UITableViewCell {
     
     static let identifier = "RegionWeatherCell"
     
-    private var riveViewModel = RiveViewModel(fileName: Rive.partlyCloudy)
+    private var riveViewModel = RiveViewModel(fileName: "PartlyCloudy")
     
     // MARK: - UI Components
     
