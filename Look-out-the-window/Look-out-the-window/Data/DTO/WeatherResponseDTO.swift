@@ -179,7 +179,7 @@ extension WeatherResponseDTO {
         let dailyMin = (dailyWeathers.map { $0.temperature.minTemperature }).min()
         
         return CurrentWeather(
-            address: address,
+            address: address ?? "",
             lat: lat,
             lng: lng,
             currentTime: self.currentWeather.currentTime + self.timeZoneOffset - 32400,

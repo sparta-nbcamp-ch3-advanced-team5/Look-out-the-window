@@ -12,7 +12,11 @@ import SnapKit
 import Then
 import RiveRuntime
 import RxCocoa
-import RxDataSources
+import CoreLocation
+
+protocol PageChange: AnyObject {
+    func scrollToTop()
+}
 
 final class WeatherDetailViewController: UIViewController {
     
@@ -23,12 +27,17 @@ final class WeatherDetailViewController: UIViewController {
     private var contentViewWidthConstraint: Constraint?
     
     var currentPage: Int
+    weak var pageChangeDelegate: PageChange?
+    
+    private lazy var locationManager = CLLocationManager()
     
     // MARK: - UI Components
     /// 밝기관련 뷰 시간에 따라 어두워짐.
     private let dimView = UIView()
     /// 배경 Gradient
     private let gradientLayer = CAGradientLayer()
+    
+    private lazy var mainLoadingIndicator = MainLoadingIndicator()
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
     
@@ -46,23 +55,22 @@ final class WeatherDetailViewController: UIViewController {
     
     private lazy var bottomSepartorView = UIView().then {
         $0.backgroundColor = .secondaryLabel
+        $0.isHidden = true
     }
     
     private lazy var bottomHStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .fill
+        $0.isHidden = true
     }
     
     private lazy var locationButton = UIButton().then {
-        // 버튼의 SFSymbol 이미지 크기 변경 시 사용
-        //        let config = UIImage.SymbolConfiguration(pointSize: 44, weight: .regular)
         $0.setImage(UIImage(systemName: "location.fill", withConfiguration: nil), for: .normal)
         $0.tintColor = .label
         $0.imageView?.contentMode = .scaleAspectFit
     }
     
     private lazy var listButton = UIButton().then {
-        //        let config = UIImage.SymbolConfiguration(pointSize: 44, weight: .regular)
         $0.setImage(UIImage(systemName: "list.bullet", withConfiguration: nil), for: .normal)
         $0.tintColor = .label
         $0.imageView?.contentMode = .scaleAspectFit
@@ -74,55 +82,6 @@ final class WeatherDetailViewController: UIViewController {
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
     }
-    
-    private lazy var loadingIndicatorView = UIActivityIndicatorView(style: .large).then {
-        $0.hidesWhenStopped = true
-        $0.color = .white
-    }
-    
-    private lazy var dataSource = RxCollectionViewSectionedReloadDataSource<MainSection>(
-        configureCell: { dataSource, collectionView, indexPath, item in
-            switch item {
-            case .hourly(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyCell
-                cell.bind(model: model, isFirst: indexPath.item == 0)
-                return cell
-            case .daily(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DailyCell", for: indexPath) as! DailyCell
-                let isLast = indexPath.item == (collectionView.numberOfItems(inSection: indexPath.section) - 1)
-                cell.bind(model: model, isFirst: indexPath.item == 0, isBottom: isLast)
-                return cell
-            case .detail(let model):
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DetailCell", for: indexPath) as! DetailCell
-                cell.bind(model: model)
-                return cell
-            }
-        },
-        configureSupplementaryView: { dataSource, collectionView, kind, indexPath -> UICollectionReusableView in
-            if indexPath.section == 0 {
-                guard let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                ) as? MainHeaderView else {
-                    return UICollectionReusableView()
-                }
-                header.bind(icon: SectionHeaderInfo.hourly.icon, title: SectionHeaderInfo.hourly.title)
-                return header
-            } else if indexPath.section == 1 {
-                guard let header = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: UICollectionView.elementKindSectionHeader,
-                    withReuseIdentifier: MainHeaderView.id,
-                    for: indexPath
-                ) as? MainHeaderView else {
-                    return UICollectionReusableView()
-                }
-                header.bind(icon: SectionHeaderInfo.daily.icon, title: SectionHeaderInfo.daily.title)
-                return header
-            }
-            return UICollectionReusableView()
-        }
-    )
     
     // MARK: - Initializers
     init(viewModel: WeatherDetailViewModel, currentPage: Int) {
@@ -138,8 +97,16 @@ final class WeatherDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // 코어데이터 파일 확인 위해 경로 print
+        if let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last {
+            print("Documents Directory: \(documentsDirectoryURL)")
+        }
+        
+        // CLLocationManagerDelegate 프로토콜 연결
+        locationManager.delegate = self
+        
         navigationItem.hidesBackButton = true
-        loadingIndicatorView.startAnimating()
+        
         bindViewModel()
         setupUI()
         bindUIEvents()
@@ -169,13 +136,19 @@ private extension WeatherDetailViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(dimView, horizontalScrollView, bottomSepartorView, bottomHStackView, loadingIndicatorView)
+        view.addSubviews(mainLoadingIndicator, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         horizontalScrollView.addSubview(horizontalScrollContentView)
     }
     
     func setConstraints() {
+        
+        mainLoadingIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+        
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
@@ -214,10 +187,6 @@ private extension WeatherDetailViewController {
         listButton.snp.makeConstraints {
             $0.width.height.equalTo(44)
         }
-        
-        loadingIndicatorView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
     }
     
     func bindUIEvents() {
@@ -253,58 +222,18 @@ private extension WeatherDetailViewController {
             }
             .subscribe(onNext: { [weak self] currentPage in
                 guard let self else { return }
-                // 페이징 후 스크롤 상단, 추후 메인 뷰 리팩토링 하면 스와이프 시에도 아마 적용 가능
-                //                verticalScrollView.scrollsToTop = true
-                // 이전 페이지 정지, 현재 페이지 재생
-                weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
-                weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
-                
-                let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
-                self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-                self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
-                
-                // 이전 페이지 업데이트
-                self.previousPage = currentPage
+                handlePageChanged(to: currentPage)
             })
             .disposed(by: disposeBag)
         
+        // 첫번째 페이지 이동, 권환 허용
         locationButton.rx.tap
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                let mockWeather = CurrentWeather(
-                    address: "서울시 강남구",
-                    lat: 37.4979,
-                    lng: 127.0276,
-                    currentTime: Int(Date().timeIntervalSince1970),
-                    currentMomentValue: 0.3,
-                    sunriseTime: 1684924800,
-                    sunsetTime: 1684978800,
-                    temperature: "23°C",
-                    maxTemp: "26°C",
-                    minTemp: "17°C",
-                    tempFeelLike: "22°C",
-                    skyInfo: "맑음",
-                    pressure: "1013 hPa",
-                    humidity: "60%",
-                    clouds: "30%",
-                    uvi: "5 (보통)",
-                    visibility: "10 km",
-                    windSpeed: "3.4 m/s",
-                    windDeg: "북동풍",
-                    rive: "일출",
-                    hourlyModel: [
-                        HourlyModel(hour: 13, temperature: "23°C", weatherInfo: "sun.max"),
-                        HourlyModel(hour: 14, temperature: "24°C", weatherInfo: "cloud.sun")
-                    ],
-                    dailyModel: [
-                        DailyModel(unixTime: 1684924800, day: "오늘", high: "26°C", low: "17°C", weatherInfo: "sun.max"),
-                        DailyModel(unixTime: 1685011200, day: "내일", high: "25°C", low: "18°C", weatherInfo: "cloud.sun")
-                    ],
-                    isCurrLocation: true
-                )
-                self.weatherInfoList.append(mockWeather)
-                self.reloadUI(with: mockWeather)
+                self.currentPage = 0
+                self.pageController.currentPage = 0
+                handlePageChanged(to: 0)
             })
             .disposed(by: disposeBag)
         
@@ -330,7 +259,11 @@ private extension WeatherDetailViewController {
                 // UI 생성
                 self.reloadUI(with: weather)
                 // 로딩 인디케이터 정지
-                self.loadingIndicatorView.stopAnimating()
+                mainLoadingIndicator.riveViewModel.pause()
+                // 로딩 정지 후 hidden 변경
+                mainLoadingIndicator.isHidden = true
+                self.bottomHStackView.isHidden = false
+                self.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
     }
     
@@ -410,9 +343,10 @@ private extension WeatherDetailViewController {
     }
     
     // BackgroundView 추가
-    private func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
+    func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
         
         let weatherDetailScrollView = WeatherDetailScrollView(frame: .zero, weather: weather)
+        weatherDetailScrollView.pullToRefreshDelegate = self
         weatherDetailViewList.append(weatherDetailScrollView)
         
         horizontalScrollContentView.addSubview(weatherDetailScrollView)
@@ -421,11 +355,6 @@ private extension WeatherDetailViewController {
             $0.height.equalToSuperview()
             $0.width.equalTo(view.snp.width)
             $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
-            
-            // 마지막 뷰에만 trailing 추가
-            if index == weatherInfoList.count - 1 {
-                $0.trailing.equalToSuperview()
-            }
         }
         
         self.contentViewWidthConstraint?.update(
@@ -434,16 +363,113 @@ private extension WeatherDetailViewController {
         
         return weatherDetailScrollView.backgroundView
     }
+    
+    // 페이징 후 스크롤 이동 및 배경 처리 등
+    func handlePageChanged(to currentPage: Int) {
+        // 페이징 후 스크롤 상단
+        pageChangeDelegate?.scrollToTop()
+        // 이전 페이지 정지, 현재 페이지 재생
+        weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
+        weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()
+        
+        let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
+        self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+        self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
+        
+        // 이전 페이지 업데이트
+        self.previousPage = currentPage
+        // 현재 페이지 업데이트
+        self.currentPage = currentPage + 1
+        print(self.currentPage)
+    }
+    
+    // 사용자에게 권한 요청을 하기 위해 iOS 위치 서비스 활성화 여부 체크
+    func checkDeviceLocationAuthorization() {
+        DispatchQueue.global().async {
+            
+            if CLLocationManager.locationServicesEnabled() {
+                
+                let authorization: CLAuthorizationStatus
+                
+                if #available(iOS 14.0, *) {
+                    authorization = self.locationManager.authorizationStatus
+                } else {
+                    authorization = CLLocationManager.authorizationStatus()
+                }
+                DispatchQueue.main.async {
+                    self.checkCurrentLocationAuthorization(status: authorization)
+                }
+            } else {
+                print("위치 서비스 꺼져 있어서, 위치 권한 요청을 할 수 없습니다.")
+                self.showLocationSettingAlert()
+            }
+        }
+    }
+    
+    // 사용자 위치 권한 상태 확인 -> 권한 요청
+    func checkCurrentLocationAuthorization(status: CLAuthorizationStatus) {
+        let status = locationManager.authorizationStatus
+        
+        switch status {
+            
+        case .notDetermined:
+            print("notDetermined - 이 권한에서만 권한 문구를 띄울 수 있음")
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.requestWhenInUseAuthorization() // info.plist에서 허용한 권한관 동일
+        case .denied:
+            print("denied - 설정으로 이동하는 Alert 띄우기")
+            showLocationSettingAlert()
+        case .authorizedWhenInUse:
+            print("authorizationWhenInUse - 정상 로직 실행하면 됨.")
+            locationManager.startUpdatingLocation() // GPS 기능 정상 작동
+        default:
+            print("default - 오류 발생")
+        }
+    }
+    
+    // 설정 이동 Alert
+    func showLocationSettingAlert() {
+        let alert = UIAlertController(title: "위치 정보 이용",
+                                      message: "위치 서비스를 사용할 수 없습니다. 기기의 '설정 > 개인정보 보호'에서 위치 서비스를 켜주세요", preferredStyle: .alert)
+        let goSetting = UIAlertAction(title: "설정으로 이동", style: .default) { _ in
+            if let setting = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(setting)
+            }
+        }
+        let cancel = UIAlertAction(title: "취소", style: .cancel)
+        alert.addAction(goSetting)
+        alert.addAction(cancel)
+        present(alert, animated: true)
+    }
 }
 
-extension WeatherDetailViewController: UICollectionViewDelegate {
-    private func setRxDataSource() {
+extension WeatherDetailViewController: PullToRefresh {
+    
+    // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
+    func updateAndSave() {
+        viewModel.action.onNext(.pullToRefresh)
+    }
+}
+
+
+extension WeatherDetailViewController: CLLocationManagerDelegate {
+    // 위치 권한 허용 O
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        bottomInfoView.collectionView.rx.setDelegate(self)
-            .disposed(by: disposeBag)
-        
-        viewModel.state.sections
-            .bind(to: bottomInfoView.collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
+    }
+    
+    // 위치 권한 허용 X
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+
+    }
+    
+    // iOS 14+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        checkDeviceLocationAuthorization()
+    }
+    
+    // iOS 14 미만
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        checkDeviceLocationAuthorization()
     }
 }

@@ -102,7 +102,7 @@ private extension BackgroundTopInfoView {
     
     func setConstraints() {
         infoStackView.snp.makeConstraints {
-            $0.top.equalTo(self.safeAreaLayoutGuide).inset(30)
+            $0.top.equalTo(self.safeAreaLayoutGuide).inset(10)
             $0.centerX.equalToSuperview()
         }
         
