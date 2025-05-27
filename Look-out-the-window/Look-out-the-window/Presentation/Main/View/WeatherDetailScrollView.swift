@@ -13,6 +13,10 @@ import Then
 import RxSwift
 import RxDataSources
 
+protocol PullToRefresh: AnyObject {
+    func updateAndSave()
+}
+
 final class WeatherDetailScrollView: UIView {
     
     private let disposeBag = DisposeBag()
@@ -20,6 +24,8 @@ final class WeatherDetailScrollView: UIView {
     
     private var totalMinTemp = 0
     private var totalMaxTemp = 0
+    
+    weak var pullToRefreshDelegate: PullToRefresh?
     
     // MARK: - UI Components
     private lazy var verticalScrollView = UIScrollView().then {
@@ -102,6 +108,8 @@ private extension WeatherDetailScrollView {
                         owner.verticalScrollView.contentInset.top = 150
                     }
                     owner.topLoadingIndicatorView.play()
+                    
+                    self.pullToRefreshDelegate?.updateAndSave()
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         UIView.animate(withDuration: 0.2) {

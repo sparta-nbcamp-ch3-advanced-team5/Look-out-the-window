@@ -15,18 +15,20 @@ final class WeatherDetailViewModel: ViewModelProtocol {
     
     // MARK: - Properties
     let disposeBag = DisposeBag()
+    var weatherInfoList = [CurrentWeather]()
     
     private let urlRequest: URLRequest?
     private let networkManager = NetworkManager()
     private let currentLocation = CoreLocationManager.shared.currLocationRelay
     private let coreDataManager = CoreDataManager.shared
+    private var latestWeather: CurrentWeather?
     
-    var weatherInfoList = [CurrentWeather]()
     
     // MARK: - Action (ViewController ➡️ ViewModel)
     
     enum Action {
         case getCurrentWeather
+        case pullToRefresh
     }
     var action: AnyObserver<Action> {
         return state.actionSubject.asObserver()
@@ -56,6 +58,9 @@ final class WeatherDetailViewModel: ViewModelProtocol {
                 switch action {
                 case .getCurrentWeather:
                     owner.getCurrentWeatherData()
+                case .pullToRefresh:
+                    owner.getCurrentWeatherData()
+                    owner.saveToCoreData()
                 }
             }.disposed(by: disposeBag)
     }
@@ -112,6 +117,7 @@ extension WeatherDetailViewModel {
                 print("현재 시간: \(weatherInfo.currentTime)")
                 print("Moment: \(currentWeather.currentMomentValue)")
                 
+                self.latestWeather = weatherInfo
                 owner.state.currentWeather.accept(weatherInfo)
                 
             }, onFailure: { owner, error  in
@@ -181,5 +187,13 @@ extension WeatherResponseDTO: CustomStringConvertible {
         dailyWeathers: \(dailyWeathers.count)개
         -------------------------
         """
+    }
+    
+    func saveToCoreData() {
+        guard let currentWeather = latestWeather else {
+            print("저장할 날씨 데이터가 없습니다.")
+            return
+        }
+        coreDataManager.saveWeatherData(current: currentWeather, latitude: currentWeather.lat, longitude: currentWeather.lng)
     }
 }

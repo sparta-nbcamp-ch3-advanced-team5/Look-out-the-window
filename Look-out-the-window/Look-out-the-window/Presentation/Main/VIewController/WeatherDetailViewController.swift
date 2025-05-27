@@ -25,7 +25,6 @@ final class WeatherDetailViewController: UIViewController {
         fileName: "LoadingSun",
         stateMachineName: "State Machine 1",
     )
-
     
     var currentPage: Int
     
@@ -383,9 +382,10 @@ private extension WeatherDetailViewController {
     }
     
     // BackgroundView 추가
-    private func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
+    func setBackgroundView(index: Int, weather: CurrentWeather) -> BackgroundTopInfoView {
         
         let weatherDetailScrollView = WeatherDetailScrollView(frame: .zero, weather: weather)
+        weatherDetailScrollView.pullToRefreshDelegate = self
         weatherDetailViewList.append(weatherDetailScrollView)
         
         horizontalScrollContentView.addSubview(weatherDetailScrollView)
@@ -409,14 +409,10 @@ private extension WeatherDetailViewController {
     }
 }
 
-extension WeatherDetailViewController: UICollectionViewDelegate {
-    private func setRxDataSource() {
-        
-        bottomInfoView.collectionView.rx.setDelegate(self)
-            .disposed(by: disposeBag)
-        
-        viewModel.state.sections
-            .bind(to: bottomInfoView.collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
+extension WeatherDetailViewController: PullToRefresh {
+    
+    // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
+    func updateAndSave() {
+        viewModel.action.onNext(.pullToRefresh)
     }
 }
