@@ -125,6 +125,8 @@ final class SunriseView: UIView {
         let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime)).addingTimeInterval(TimeInterval(timeOffset))
         let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime)).addingTimeInterval(TimeInterval(timeOffset))
         
+        // sunriseTime, sunsetTime, currentTime이 모두 같은 날 범위 내에 있는지 검증
+        
         let startInteger = 0
         let endInteger = 86399
         let currentInteger = Int(current) - Int(startUnix)

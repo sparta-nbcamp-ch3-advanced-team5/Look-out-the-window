@@ -45,7 +45,7 @@ final class DailyCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

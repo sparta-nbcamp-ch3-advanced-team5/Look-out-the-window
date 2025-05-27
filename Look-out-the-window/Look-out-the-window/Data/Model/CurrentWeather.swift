@@ -83,7 +83,7 @@ extension CurrentWeather {
             .map { model in
                 HourlyModel(
                     hour: model.hour.to24HourInt(),
-                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    temperature: "\(model.temperature.noDecimalString)°",
                     weatherInfo: model.weatherInfo
                 )
             }
@@ -94,11 +94,11 @@ extension CurrentWeather {
             DailyModel(
                 unixTime: model.unixTime,
                 day: String(model.day.prefix(1)),
-                high: Double(model.high)?.roundedString ?? model.high,
-                low: Double(model.low)?.roundedString ?? model.low,
+                high: String(model.high.noDecimalString),
+                low: String(model.low.noDecimalString),
                 weatherInfo: model.weatherInfo,
-                maxTemp: model.minTemp,
-                minTemp: model.maxTemp,
+                maxTemp: model.maxTemp,
+                minTemp: model.minTemp,
                 temperature: model.temperature
             )
         }
@@ -110,7 +110,7 @@ extension CurrentWeather {
             DetailModel(title: .uvIndex, value: self.uvi),
             DetailModel(title: .sunriseSunset, value: "\(self.currentTime)/\(self.sunriseTime)/\(self.sunsetTime)/\(self.timeOffset)"),
             DetailModel(title: .wind, value: "\(self.windSpeed)m/s \(self.windDeg)"),
-            DetailModel(title: .rainSnow, value: "-"),
+            DetailModel(title: .rainSnow, value: "\(self.rainPerHour)mm \n / \(self.snowPerHour)mm"),
             DetailModel(title: .feelsLike, value: self.tempFeelLike),
             DetailModel(title: .humidity, value: self.humidity),
             DetailModel(title: .visibility, value: self.visibility),
