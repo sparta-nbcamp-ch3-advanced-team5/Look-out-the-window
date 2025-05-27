@@ -14,6 +14,10 @@ import RiveRuntime
 import RxCocoa
 import CoreLocation
 
+protocol PageChange: AnyObject {
+    func scrollToTop()
+}
+
 final class WeatherDetailViewController: UIViewController {
     
     private let viewModel: WeatherDetailViewModel
@@ -27,6 +31,7 @@ final class WeatherDetailViewController: UIViewController {
     )
     
     var currentPage: Int
+    weak var pageChangeDelegate: PageChange?
     
     private lazy var locationManager = CLLocationManager()
     
@@ -372,7 +377,7 @@ private extension WeatherDetailViewController {
     // 페이징 후 스크롤 이동 및 배경 처리 등
     func handlePageChanged(to currentPage: Int) {
         // 페이징 후 스크롤 상단
-//        verticalScrollView.scrollsToTop = true 후에 delegate로 처리
+        pageChangeDelegate?.scrollToTop()
         // 이전 페이지 정지, 현재 페이지 재생
         weatherDetailViewList[previousPage].backgroundView.riveViewModel.pause()
         weatherDetailViewList[currentPage].backgroundView.riveViewModel.play()

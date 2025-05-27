@@ -44,7 +44,7 @@ final class WeatherDetailScrollView: UIView {
     
     init(frame: CGRect, weather: CurrentWeather) {
         self.weather = weather
-        self.backgroundView = BackgroundTopInfoView(frame: .zero, weatherInfo: weather)
+        self.backgroundView = BackgroundTopInfoView(frame: .zero)
         super.init(frame: frame)
         
         setupUI()
@@ -94,7 +94,7 @@ private extension WeatherDetailScrollView {
         }
         
         weatherDetailCollectionView.snp.makeConstraints {
-            $0.top.equalTo(backgroundView.riveView.snp.bottom)
+            $0.top.equalTo(backgroundView.loadingRiveView.snp.bottom)
             $0.bottom.equalToSuperview()
             $0.horizontalEdges.equalToSuperview().inset(20)
         }
@@ -199,5 +199,11 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
             MainSection(items: dailyItems),
             MainSection(items: detailItems)
         ]
+    }
+}
+
+extension WeatherDetailScrollView: PageChange {
+    func scrollToTop() {
+        verticalScrollView.scrollsToTop = true
     }
 }
