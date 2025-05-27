@@ -9,5 +9,5 @@ import Foundation
 
 /// `SearchResultViewController` ➡️ `RegionListViewController`
 protocol SearchResultViewControllerDelegate: AnyObject {
-    func cellDidTapped()
+    func localSearchResultDidArrived(location: LocationModel)
 }

@@ -260,7 +260,18 @@ extension RegionWeatherListViewController: UITableViewDelegate {
 // MARK: - SearchResultViewControllerDelegate
 
 extension RegionWeatherListViewController: SearchResultViewControllerDelegate {
-    func cellDidTapped() {
-        searchController.searchBar.resignFirstResponder()
+    func localSearchResultDidArrived(location: LocationModel) {
+        let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: false)
+        registerVC.delegate = self
+        let naviVC = UINavigationController(rootViewController: registerVC)
+        self.present(naviVC, animated: true)
+    }
+}
+
+// MARK: - RegisterViewControllerDelegate
+
+extension RegionWeatherListViewController: RegisterViewControllerDelegate {
+    func modalWillDismissed() {
+        viewModel.action.onNext(.regionRegistered)
     }
 }

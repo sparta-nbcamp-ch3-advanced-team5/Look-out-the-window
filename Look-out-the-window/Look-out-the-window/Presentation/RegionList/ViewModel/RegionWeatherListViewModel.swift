@@ -28,6 +28,7 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
     
     enum Action {
         case viewDidLoad
+        case regionRegistered
         case itemDeleted(indexPath: IndexPath)
     }
     var action: AnyObserver<Action> {
@@ -51,9 +52,14 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
         CoreLocationManager.shared.currLocationRelay
             .compactMap { $0 }
             .subscribe(with: self) { owner, currLocation in
-                // 현 위치가 CoreData에 존재하는 경우 ➡️ 매 시간 정각일때만 API 호출
-                if owner.weatherListFromCoreData.contains(where: { $0.address == currLocation.toAddress() }),
-                   Int(Date().timeIntervalSince1970) % 3600 != 0 { return }
+                // 현 위치가 CoreData에 존재하거나, currLocationWeather(메모리)에 존재하는 경우
+                if owner.weatherListFromCoreData.contains(where: { $0.address == currLocation.toAddress() })
+                    || owner.currLocationWeather.contains(where: { $0.address == currLocation.toAddress() }) {
+                    // 10분마다 API 호출
+                    if Int(Date().timeIntervalSince1970) % 600 != 0 {
+                        return
+                    }
+                }
                 
                 // 현 위치가 nil이 아니면 업데이트
                 guard let request = APIEndpoints.getURLRequest(
@@ -110,6 +116,8 @@ final class RegionWeatherListViewModel: ViewModelProtocol {
                     owner.fetchAndUpdateRegionWeatherList()
                 case let .itemDeleted(indexPath):
                     owner.deleteRegionWeather(indexPath: indexPath)
+                case .regionRegistered:
+                    owner.getRegionWeatherList()
                 }
             }.disposed(by: disposeBag)
     }
@@ -187,6 +195,15 @@ private extension RegionWeatherListViewModel {
         state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: sortedWeatherList)])
         
         CoreDataManager.shared.deleteWeather(for: deletedRegion.address)
+    }
+    
+    func getRegionWeatherList() {
+        // CoreData에서 날씨 데이터 fetch
+        weatherListFromCoreData = CoreDataManager.shared.fetchWeatherData().map { $0.toCurrentWeatherModel() }
+        // isCurrLocation == true로 sort
+        let sortedWeatherList = weatherListFromCoreData.sorted(by: isCurrLocationSort)
+        // UI에 표시
+        state.regionWeatherListSectionRelay.accept([RegionWeatherListSection(header: .regionList, items: sortedWeatherList)])
     }
     
     /// `isCurrLocation == true`인 날씨 데이터부터 먼저 보여주기 위한 정렬 메서드

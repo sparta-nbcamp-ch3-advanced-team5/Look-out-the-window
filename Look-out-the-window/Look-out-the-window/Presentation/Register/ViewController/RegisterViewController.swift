@@ -18,6 +18,8 @@ import RxRelay
 final class RegisterViewController: UIViewController {
     
     // MARK: - Properties
+    
+    weak var delegate: RegisterViewControllerDelegate?
 
     /// Rx 메모리 정리를 위한 DisposeBag
     private let disposeBag = DisposeBag()
@@ -128,6 +130,7 @@ final class RegisterViewController: UIViewController {
         addButton.rx.tap
             .subscribe(with: self) { owner, _ in
                 owner.viewModel.action.onNext(.plusButtonTapped)
+                owner.delegate?.modalWillDismissed()
                 owner.dismiss(animated: true)
             }.disposed(by: disposeBag)
         

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import OSLog
 
 import RxCocoa
 import RxRelay
@@ -17,8 +16,6 @@ import SnapKit
 final class SearchResultViewController: UIViewController {
     
     // MARK: - Properties
-    
-    private lazy var log = OSLog(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: self))
     
     weak var delegate: SearchResultViewControllerDelegate?
     
@@ -77,7 +74,6 @@ private extension SearchResultViewController {
         
         searchResultView.getTableView.rx.modelSelected(SearchResultModel.self)
             .bind(with: self) { owner, model in
-                owner.delegate?.cellDidTapped()
                 owner.viewModel.action.onNext(.localSearch(location: model.address))
             }.disposed(by: disposeBag)
 
@@ -91,11 +87,7 @@ private extension SearchResultViewController {
         
         viewModel.state.localSearchResult.asDriver(onErrorJustReturn: LocationModel())
             .drive(with: self) { owner, location in
-                // TODO: - isSavedLocation 수정
-                let registerVC = RegisterViewController(viewModel: RegisterViewModel(address: location.toAddress(), lat: location.lat, lng: location.lng), isSavedLocation: false)
-                let naviVC = UINavigationController(rootViewController: registerVC)
-                owner.present(naviVC, animated: true)
-                os_log(.debug, log: owner.log, "Register 화면 present")
+                owner.delegate?.localSearchResultDidArrived(location: location)
             }.disposed(by: disposeBag)
         
         
