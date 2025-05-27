@@ -53,8 +53,8 @@ final class WeatherDetailScrollView: UIView {
         self.backgroundTopInfoView.configure(model: weather)
         super.init(frame: frame)
         
-        bindUIEvents()
         bindDataSource()
+        bindUIEvents()
         setupUI()
     }
     
@@ -152,12 +152,12 @@ private extension WeatherDetailScrollView {
         
         // 컬렉션 뷰의 contentSize를 관찰
         weatherDetailCollectionView.rx.observe(CGSize.self, "contentSize")
-            .map { $0 }
+            .compactMap { $0 } // nil 제거
             .distinctUntilChanged() // 높이가 변경될 때만 반응
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] contentSize in
-                guard let self, let size = contentSize else { return }
-                let newHeight = self.backgroundTopInfoView.frame.height + size.height + CGFloat(170)
+                guard let self else { return }
+                let newHeight = self.backgroundTopInfoView.frame.height + contentSize.height + CGFloat(170)
                 self.verticalScrollContentViewHeightConstraint?.update(offset: newHeight)
                 self.layoutIfNeeded() // 제약 조건 업데이트 후 레이아웃 즉시 반영
             })
