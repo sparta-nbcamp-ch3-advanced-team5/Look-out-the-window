@@ -107,6 +107,12 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
         
         navigationItem.hidesBackButton = true
     
+        // UI, 이벤트, 바인딩 먼저
+        setupUI()
+        bindUIEvents()
+        bindViewModel()
+        
+        // 로딩 인디케이터만 보여주기
         mainLoadingIndicator.isHidden = false
         view.addSubview(mainLoadingIndicator)
         view.bringSubviewToFront(mainLoadingIndicator)
@@ -115,18 +121,8 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
             $0.width.height.equalTo(50)
         }
         
-        // 모든 UI 세팅과 바인딩은 1초 후에 실행
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.mainLoadingIndicator.riveViewModel.pause()
-            self.mainLoadingIndicator.isHidden = true
-            
-            self.setupUI()
-            self.bindUIEvents()
-            self.bindViewModel()
-            
-            self.bottomHStackView.isHidden = false
-            self.bottomSepartorView.isHidden = false
-        }
+        bottomHStackView.isHidden = true
+        bottomSepartorView.isHidden = true
     }
 }
 
@@ -289,10 +285,11 @@ private extension WeatherDetailViewController {
                 self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: false)
                 owner.weatherDetailViewList[owner.currentPage].backgroundTopInfoView.riveViewModel.play()
                 
-                // 로딩 인디케이터 정지
+                // 로딩 인디케이터 멈추고 숨김
                 owner.mainLoadingIndicator.riveViewModel.pause()
-                // 로딩 정지 후 hidden 변경
                 owner.mainLoadingIndicator.isHidden = true
+                
+                // 메인 UI 보여주기
                 owner.bottomHStackView.isHidden = false
                 owner.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
