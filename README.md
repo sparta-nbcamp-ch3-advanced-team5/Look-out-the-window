@@ -7,7 +7,7 @@
 
 <br><br>
 ## 🪟 창밖을 보라 🪟
-<img src="https://github.com/user-attachments/assets/80825440-8631-4f48-86cc-d6122e746fd1" width="200"> | <img src="https://github.com/user-attachments/assets/926566a3-d298-48c9-a37b-75330ce88f39" width="200"> | <img src="https://github.com/user-attachments/assets/dd6d1e55-3e88-499d-befe-cb58b799a83d" width="200"> | <img src="https://github.com/user-attachments/assets/e71aa939-a73d-4327-ba1c-cc8fc866234e" width="200"> | <img src="https://github.com/user-attachments/assets/4e606d56-de7e-441a-ada1-1a7c5a10b2a0" width="200"> |
+<img src="https://github.com/user-attachments/assets/cd323a0d-85e5-4b3d-bda4-6cc5b45d8664" width="200"> | <img src="https://github.com/user-attachments/assets/926566a3-d298-48c9-a37b-75330ce88f39" width="200"> | <img src="https://github.com/user-attachments/assets/dd6d1e55-3e88-499d-befe-cb58b799a83d" width="200"> | <img src="https://github.com/user-attachments/assets/e71aa939-a73d-4327-ba1c-cc8fc866234e" width="200"> | <img src="https://github.com/user-attachments/assets/4e606d56-de7e-441a-ada1-1a7c5a10b2a0" width="200"> |
 :---------:|:----------:|:---------:|:---------:|:---------:|
 이민재 | 정근호 | 윤주형 | 고욱현 | 서동환 |
 [GitHub](https://github.com/minjae-L) | [GitHub](https://github.com/eightroutes) | [GitHub](https://github.com/YunJuHyung) | [GitHub](https://github.com/imo2k) | [GitHub](https://github.com/SNMac) |
