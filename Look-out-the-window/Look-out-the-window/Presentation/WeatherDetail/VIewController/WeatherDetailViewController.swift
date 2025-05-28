@@ -20,7 +20,7 @@ protocol PageChange: AnyObject {
 
 final class WeatherDetailViewController: UIViewController, UIViewControllerTransitioningDelegate {
     
-    private let viewModel: WeatherDetailViewModel
+    private let viewModel: RegionWeatherListViewModel
     private let disposeBag = DisposeBag()
     private var previousPage = 0
     private var weatherInfoList = [CurrentWeather]()
@@ -29,6 +29,8 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
     weak var pageChangeDelegate: PageChange?
     
     private lazy var locationManager = CLLocationManager()
+    
+    private var currentPage = 0
     
     // MARK: - UI Components
     
@@ -75,15 +77,16 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
     }
     
     private lazy var pageController = UIPageControl().then {
-        $0.numberOfPages = viewModel.weatherInfoList.count
+        $0.numberOfPages = viewModel.state.regionWeatherListSectionRelay.value.first?.items.count ?? 0
         $0.currentPage = 0
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
     }
     
     // MARK: - Initializers
-    init(viewModel: WeatherDetailViewModel) {
+    init(viewModel: RegionWeatherListViewModel, currentPage: Int) {
         self.viewModel = viewModel
+        self.currentPage = currentPage
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -104,9 +107,9 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
                 
         navigationItem.hidesBackButton = true
         
-        bindViewModel()
         setupUI()
         bindUIEvents()
+        bindViewModel()
     }
 }
 
@@ -115,7 +118,7 @@ private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        setInitalBackgroundViews(currentPage: viewModel.currentPage)
+        setInitalBackgroundViews(currentPage: currentPage)
     }
     
     //    func setAppearance() {
@@ -230,7 +233,7 @@ private extension WeatherDetailViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
-                viewModel.currentPage = 0
+                self.currentPage = 0
                 self.pageController.currentPage = 0
                 handlePageChanged(to: 0)
             })
@@ -248,27 +251,27 @@ private extension WeatherDetailViewController {
     }
     
     func bindViewModel() {
-        viewModel.action.onNext(.getCurrentWeather)
+        viewModel.action.onNext(.viewDidLoad)
         
         // 초기 설정값 불러오기
-        viewModel.state.currentWeather
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (weather) in
-                guard let self else { return }
-                if self.weatherInfoList.indices.contains(viewModel.currentPage) {
-                    self.weatherInfoList[viewModel.currentPage] = weather
-                    self.reloadWeatherDetailView(with: weather)
+        viewModel.state.regionWeatherListSectionRelay
+            .asDriver()
+            .drive(with: self, onNext: { owner, weatherListSections in
+                guard let currentWeather = weatherListSections.first?.items[owner.currentPage] else { return }
+                if owner.weatherInfoList.indices.contains(owner.currentPage) {
+                    owner.weatherInfoList[owner.currentPage] = currentWeather
+                    owner.reloadWeatherDetailView(with: currentWeather)
                 } else {
-                    self.weatherInfoList.append(weather)
+                    owner.weatherInfoList.append(currentWeather)
                     // WeatherDetailView 추가 생성
-                    self.addNewWeatherDetailView(with: weather)
+                    owner.addNewWeatherDetailView(with: currentWeather)
                 }
                 // 로딩 인디케이터 정지
-                mainLoadingIndicator.riveViewModel.pause()
+                owner.mainLoadingIndicator.riveViewModel.pause()
                 // 로딩 정지 후 hidden 변경
-                mainLoadingIndicator.isHidden = true
-                self.bottomHStackView.isHidden = false
-                self.bottomSepartorView.isHidden = false
+                owner.mainLoadingIndicator.isHidden = true
+                owner.bottomHStackView.isHidden = false
+                owner.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
     }
 }
@@ -350,9 +353,9 @@ private extension WeatherDetailViewController {
     }
     
     func reloadWeatherDetailView(with weather: CurrentWeather) {
-        guard viewModel.currentPage < weatherDetailViewList.count else { return }
+        guard currentPage < weatherDetailViewList.count else { return }
         
-        let weatherDetailView = weatherDetailViewList[viewModel.currentPage]
+        let weatherDetailView = weatherDetailViewList[currentPage]
         
         // 이 안에서 weather를 다시 넣고 UI 갱신
         weatherDetailView.updateWeather(newWeather: weather)
@@ -400,8 +403,8 @@ private extension WeatherDetailViewController {
         // 이전 페이지 업데이트
         self.previousPage = currentPage
         // 현재 페이지 업데이트
-        viewModel.currentPage = currentPage + 1
-        print("currentPage: \(viewModel.currentPage)")
+        self.currentPage = currentPage + 1
+        print("currentPage: \(self.currentPage)")
     }
 }
 
@@ -410,7 +413,7 @@ extension WeatherDetailViewController: PullToRefresh {
     
     // pullToRefresh 시 네트워크 재요청 및 코어데이터에 저장
     func updateAndSave() {
-        viewModel.action.onNext(.pullToRefresh)
+        viewModel.action.onNext(.update)
     }
 }
 
