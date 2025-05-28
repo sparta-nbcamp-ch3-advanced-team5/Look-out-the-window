@@ -168,7 +168,7 @@ private extension WeatherDetailScrollView {
     }
     
     func configureMainSectionsAndHeight() {
-        let sections = convertToMainSections(from: weather)
+        let sections = weather.toMainSections()
         sectionsRelay.accept(sections)
     }
 }
@@ -180,60 +180,6 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
         weatherDetailCollectionView.rx.setDelegate(self)
             .disposed(by: disposeBag)
         
-    }
-    
-    func convertToMainSections(from weather: CurrentWeather) -> [MainSection] {
-        let formattedHourlyModels = weather.hourlyModel
-            .prefix(24) // 앞에서 24개만 사용
-            .map { model in
-                HourlyModel(
-                    hour: model.hour.to24HourInt(),
-                    temperature: "\(model.temperature.noDecimalString)°",
-                    weatherInfo: model.weatherInfo
-                )
-            }
-        let hourlyItems = formattedHourlyModels.map { MainSectionItem.hourly($0) }
-        
-        // DailyModel 포맷팅
-        let formattedDailyModels = weather.dailyModel.map { model in
-            DailyModel(
-                unixTime: model.unixTime,
-                day: String(model.day.prefix(1)),
-                high: String(model.high.noDecimalString),
-                low: String(model.low.noDecimalString),
-                weatherInfo: model.weatherInfo,
-                maxTemp: model.maxTemp,
-                minTemp: model.minTemp,
-                temperature: model.temperature
-            )
-        }
-        // 전체 기간 최저/최고 기온 계산
-        let dailyHighs = formattedDailyModels.compactMap { Int($0.high) }
-        let dailyLows = formattedDailyModels.compactMap { Int($0.low) }
-        
-        totalMaxTemp = dailyHighs.max() ?? 0
-        totalMinTemp = dailyLows.min() ?? 0
-        
-        // dailyItems 생성 (이 값들을 dataSource에도 전달)
-        let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
-        
-        let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: weather.uvi, someData: ""),
-            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)", someData: ""),
-            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)", someData: ""),
-            DetailModel(title: .rainSnow, value: "-", someData: ""),
-            DetailModel(title: .feelsLike, value: weather.tempFeelLike, someData: ""),
-            DetailModel(title: .humidity, value: weather.humidity, someData: ""),
-            DetailModel(title: .visibility, value: weather.visibility, someData: ""),
-            DetailModel(title: .clouds, value: weather.clouds, someData: "")
-        ]
-        let detailItems = detailModels.map { MainSectionItem.detail($0) }
-        
-        return [
-            MainSection(items: hourlyItems),
-            MainSection(items: dailyItems),
-            MainSection(items: detailItems)
-        ]
     }
 }
 

@@ -63,6 +63,11 @@ final class RegionWeatherListViewController: UIViewController {
         setupUI()
 
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewModel.action.onNext(.viewDidLoad) // 데이터 로드 이 시점에
+    }
 
     //MARK: 동환님 데이터 생성이후에 추가 예정
 //    override func viewWillAppear(_ animated: Bool) {
@@ -169,7 +174,7 @@ private extension RegionWeatherListViewController {
                 owner.viewModel.action.onNext(.update)
             }.disposed(by: disposeBag)
         
-        viewModel.action.onNext(.viewDidLoad)
+//        viewModel.action.onNext(.viewDidLoad)
 
 
         // View ➡️ ViewController
@@ -202,9 +207,7 @@ private extension RegionWeatherListViewController {
                 
                 print("선택된 indexPath.row: \(indexPath.row)")
                 
-                let detailVC = WeatherDetailViewController(
-                    viewModel: WeatherDetailViewModel(currentPage: indexPath.row)
-                )
+                let detailVC = WeatherDetailViewController(viewModel: owner.viewModel, currentPage: indexPath.row)
                 owner.navigationController?.pushViewController(detailVC, animated: false)
                 
                 dump(indexPath)
