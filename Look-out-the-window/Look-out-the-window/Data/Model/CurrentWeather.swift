@@ -82,7 +82,7 @@ extension CurrentWeather {
             .prefix(24) // 앞에서 24개만 사용
             .map { model in
                 HourlyModel(
-                    hour: model.hour.to24HourInt(),
+                    hour: model.hour.to24HourInt(timeOffset: self.timeOffset),
                     temperature: "\(model.temperature.noDecimalString)°",
                     weatherInfo: model.weatherInfo
                 )

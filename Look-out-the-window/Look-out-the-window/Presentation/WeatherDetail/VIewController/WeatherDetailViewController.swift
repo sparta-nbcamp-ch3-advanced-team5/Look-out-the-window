@@ -77,7 +77,7 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
     }
     
     private lazy var pageController = UIPageControl().then {
-        $0.numberOfPages = viewModel.state.regionWeatherListSectionRelay.value.first?.items.count ?? 0
+        $0.numberOfPages = 0
         $0.currentPage = 0
         $0.currentPageIndicatorTintColor = .white
         $0.pageIndicatorTintColor = .systemGray
@@ -104,7 +104,7 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
         
         // CLLocationManagerDelegate 프로토콜 연결
         locationManager.delegate = self
-                
+        
         navigationItem.hidesBackButton = true
         
         setupUI()
@@ -118,7 +118,7 @@ private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        setInitalBackgroundViews(currentPage: currentPage)
+        //        setInitalBackgroundViews(currentPage: currentPage)
     }
     
     //    func setAppearance() {
@@ -245,7 +245,7 @@ private extension WeatherDetailViewController {
             .subscribe(onNext: { [weak self] in
                 guard let self else { return }
                 navigationController?.topViewController?.transitioningDelegate = self
-                navigationController?.popViewController(animated: true)
+                navigationController?.popViewController(animated: false)
             })
             .disposed(by: disposeBag)
     }
@@ -257,15 +257,26 @@ private extension WeatherDetailViewController {
         viewModel.state.regionWeatherListSectionRelay
             .asDriver()
             .drive(with: self, onNext: { owner, weatherListSections in
-                guard let currentWeather = weatherListSections.first?.items[owner.currentPage] else { return }
-                if owner.weatherInfoList.indices.contains(owner.currentPage) {
-                    owner.weatherInfoList[owner.currentPage] = currentWeather
-                    owner.reloadWeatherDetailView(with: currentWeather)
-                } else {
-                    owner.weatherInfoList.append(currentWeather)
-                    // WeatherDetailView 추가 생성
-                    owner.addNewWeatherDetailView(with: currentWeather)
+                weatherListSections.forEach { section in
+                    section.items.forEach { weather in
+                        if !owner.weatherInfoList.contains(where: { $0.address == weather.address }) {
+                            owner.weatherInfoList.append(weather)
+                            
+                            let index = owner.weatherInfoList.count - 1
+                            
+                            _ = owner.setBackgroundView(index: index, weather: weather)
+                            self.applyGradientBackground(time: Double(self.weatherInfoList[index].currentMomentValue))
+                        }
+                    }
                 }
+                
+                owner.pageController.numberOfPages = owner.weatherInfoList.count
+                owner.pageController.currentPage = owner.currentPage
+                
+                let offsetX = Int(self.horizontalScrollView.frame.width) * (owner.currentPage)
+                self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: false)
+                owner.weatherDetailViewList[owner.currentPage].backgroundTopInfoView.riveViewModel.play()
+                
                 // 로딩 인디케이터 정지
                 owner.mainLoadingIndicator.riveViewModel.pause()
                 // 로딩 정지 후 hidden 변경
@@ -278,79 +289,6 @@ private extension WeatherDetailViewController {
 
 // MARK: - 뷰 관련 메서드
 private extension WeatherDetailViewController {
-    /// 초기 내장된 backgroundViews 생성 (향후 CoreData 로드 시 사용, 현재 비활성화)
-    func setInitalBackgroundViews(currentPage: Int) {
-        
-        if !weatherDetailViewList.isEmpty {
-            for (index, weather) in weatherInfoList.enumerated() {
-                // Background View 추가
-                _ = setBackgroundView(index: index, weather: weather)
-            }
-            
-            if let lastBackgroundView = weatherDetailViewList.last {
-                lastBackgroundView.snp.makeConstraints {
-                    $0.trailing.equalTo(view.snp.trailing)
-                }
-            }
-            
-            pageController.currentPage = currentPage
-            
-            // 첫번째 뷰 rive play
-            weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.play()
-        }
-    }
-    
-    /// Gradient, 밝기 설정
-    func applyGradientBackground(time: Double) {
-        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
-        gradientLayer.frame = view.bounds
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.5))
-        // 배경이니 제일 하단에 위치하도록
-        view.layer.insertSublayer(gradientLayer, at: 0)
-    }
-    
-    /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환.
-    /// - valueMin,valueMax: input 되는 값의 범위.
-    /// - targetMin, targetMax: return 되는 값의 범위.
-    func normalizeAndClamp(
-        _ value: Double,
-        valueMin: Double,
-        valueMax: Double,
-        targetMin: Double,
-        targetMax: Double) -> Double
-    {
-        let ratio = (value - valueMin) / (valueMax - valueMin)
-        
-        let scaledValue = targetMin + ratio * (targetMax - targetMin)
-        
-        let clampedValue = max(targetMin, min(scaledValue, targetMax))
-        
-        return clampedValue
-    }
-    
-    func addNewWeatherDetailView(with weather: CurrentWeather) {
-        let index = weatherInfoList.count - 1
-        
-        if index == 0 {
-            pageController.alpha = 0
-        } else {
-            pageController.alpha = 1
-        }
-        
-        // pageController 업데이트
-        pageController.numberOfPages = weatherInfoList.count
-        
-        // Background View 추가
-        let backgroundView = setBackgroundView(index: index, weather: weather)
-        
-        // 첫 번째 뷰일 경우 재생 및 배경 적용
-        if index == 0 {
-            backgroundView.riveViewModel.play()
-            applyGradientBackground(time: Double(weather.currentTime))
-        }
-    }
     
     func reloadWeatherDetailView(with weather: CurrentWeather) {
         guard currentPage < weatherDetailViewList.count else { return }
@@ -398,13 +336,43 @@ private extension WeatherDetailViewController {
         
         let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
         self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-        self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentTime))
+        self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentMomentValue))
         
         // 이전 페이지 업데이트
         self.previousPage = currentPage
         // 현재 페이지 업데이트
-        self.currentPage = currentPage + 1
+        self.currentPage = currentPage
         print("currentPage: \(self.currentPage)")
+    }
+    
+    /// Gradient, 밝기 설정
+    func applyGradientBackground(time: Double) {
+        gradientLayer.colors = [ UIColor.mainBackground1.cgColor, UIColor.secondaryBackground.cgColor ]
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        gradientLayer.frame = view.bounds
+        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.4))
+        // 배경이니 제일 하단에 위치하도록
+        view.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    /// 특정 값을 주어진 범위(targetMin~targetMax) 사이의 값으로 변환.
+    /// - valueMin,valueMax: input 되는 값의 범위.
+    /// - targetMin, targetMax: return 되는 값의 범위.
+    func normalizeAndClamp(
+        _ value: Double,
+        valueMin: Double,
+        valueMax: Double,
+        targetMin: Double,
+        targetMax: Double) -> Double
+    {
+        let ratio = (value - valueMin) / (valueMax - valueMin)
+        
+        let scaledValue = targetMin + ratio * (targetMax - targetMin)
+        
+        let clampedValue = max(targetMin, min(scaledValue, targetMax))
+        
+        return clampedValue
     }
 }
 
@@ -486,7 +454,7 @@ extension WeatherDetailViewController: CLLocationManagerDelegate {
     
     // 위치 권한 허용 X
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
-
+        
     }
     
     // iOS 14+

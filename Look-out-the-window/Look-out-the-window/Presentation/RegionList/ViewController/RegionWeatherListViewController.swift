@@ -63,6 +63,11 @@ final class RegionWeatherListViewController: UIViewController {
         setupUI()
 
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewModel.action.onNext(.viewDidLoad) // 데이터 로드 이 시점에
+    }
 
     //MARK: 동환님 데이터 생성이후에 추가 예정
 //    override func viewWillAppear(_ animated: Bool) {
@@ -169,7 +174,7 @@ private extension RegionWeatherListViewController {
                 owner.viewModel.action.onNext(.update)
             }.disposed(by: disposeBag)
         
-        viewModel.action.onNext(.viewDidLoad)
+//        viewModel.action.onNext(.viewDidLoad)
 
 
         // View ➡️ ViewController
