@@ -22,18 +22,18 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
     
     private let viewModel: RegionWeatherListViewModel
     private let disposeBag = DisposeBag()
+    
+    private var currentPage = 0
     private var previousPage = 0
     private var weatherInfoList = [CurrentWeather]()
+    // horizontalScrollContentView 제약
     private var contentViewWidthConstraint: Constraint?
-    
-    weak var pageChangeDelegate: PageChange?
     
     private lazy var locationManager = CLLocationManager()
     
-    private var currentPage = 0
+    weak var pageChangeDelegate: PageChange?
     
     // MARK: - UI Components
-    
     /// 밝기관련 뷰 시간에 따라 어두워짐.
     private let dimView = UIView()
     /// 배경 Gradient
@@ -42,10 +42,7 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
     private lazy var mainLoadingIndicator = MainLoadingIndicator()
     
     private lazy var weatherDetailViewList = [WeatherDetailScrollView]()
-    
-    /// 네트워크 데이터 바인딩용 Relay
-    private let sectionsRelay = BehaviorRelay<[MainSection]>(value: [])
-    
+        
     private lazy var horizontalScrollView = UIScrollView().then {
         $0.isPagingEnabled = true
         $0.showsHorizontalScrollIndicator = false
@@ -107,7 +104,7 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
         
         navigationItem.hidesBackButton = true
     
-        // UI, 이벤트, 바인딩 먼저
+        // UI, 이벤트, 바인딩
         setupUI()
         bindUIEvents()
         bindViewModel()
@@ -131,15 +128,7 @@ private extension WeatherDetailViewController {
     func setupUI() {
         setViewHiearchy()
         setConstraints()
-        //        setInitalBackgroundViews(currentPage: currentPage)
     }
-    
-    //    func setAppearance() {
-    //        // 리스트의 초기값으로 첫 화면 설정
-    //        if !weatherInfoList.isEmpty {
-    //            applyGradientBackground(time: Double(weatherInfoList[0].currentTime))
-    //        }
-    //    }
     
     func setViewHiearchy() {
         view.addSubviews(dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
@@ -163,6 +152,7 @@ private extension WeatherDetailViewController {
         horizontalScrollContentView.snp.makeConstraints {
             $0.edges.equalToSuperview()
             $0.height.equalToSuperview()
+            // horizontalScrollContentView 제약조건 저장
             self.contentViewWidthConstraint = $0.width.equalTo(view.snp.width).multipliedBy(CGFloat(weatherInfoList.count)).constraint
         }
         
@@ -273,7 +263,7 @@ private extension WeatherDetailViewController {
                             let index = owner.weatherInfoList.count - 1
                             
                             _ = owner.setBackgroundView(index: index, weather: weather)
-                            self.applyGradientBackground(time: Double(self.weatherInfoList[index].currentMomentValue))
+                            self.applyGradientBackground(time: self.weatherInfoList[index].currentMomentValue)
                         }
                     }
                 }
@@ -300,11 +290,12 @@ private extension WeatherDetailViewController {
 private extension WeatherDetailViewController {
     
     func reloadWeatherDetailView(with weather: CurrentWeather) {
-        guard currentPage < weatherDetailViewList.count else { return }
+        // 범위 초과 방지
+        guard currentPage >= 0, currentPage < weatherDetailViewList.count else { return }
         
         let weatherDetailView = weatherDetailViewList[currentPage]
         
-        // 이 안에서 weather를 다시 넣고 UI 갱신
+        // 최신 weather로 weatherDetailView UI 갱신
         weatherDetailView.updateWeather(newWeather: weather)
     }
     
@@ -327,6 +318,7 @@ private extension WeatherDetailViewController {
             $0.leading.equalToSuperview().offset(CGFloat(index) * UIScreen.main.bounds.width)
         }
         
+        // HorizontalScrollContentView 제약조건 업데이트
         self.contentViewWidthConstraint?.update(
             offset: UIScreen.main.bounds.width * CGFloat(weatherInfoList.count)
         )
@@ -340,12 +332,16 @@ private extension WeatherDetailViewController {
         weatherDetailViewList[previousPage].backgroundTopInfoView.riveViewModel.pause()
         weatherDetailViewList[currentPage].backgroundTopInfoView.riveViewModel.play()
         
+        // pageChangeDelegate 설정
         self.pageChangeDelegate = weatherDetailViewList[currentPage]
+        
         weatherDetailViewList[currentPage].scrollToTop()
         
+        // 레이아웃 조정
         let offsetX = Int(self.horizontalScrollView.frame.width) * currentPage
-        self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-        self.applyGradientBackground(time: Double(self.weatherInfoList[currentPage].currentMomentValue))
+        self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: false)
+        
+        self.applyGradientBackground(time: self.weatherInfoList[currentPage].currentMomentValue)
         
         // 이전 페이지 업데이트
         self.previousPage = currentPage
@@ -360,7 +356,7 @@ private extension WeatherDetailViewController {
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 1)
         gradientLayer.frame = view.bounds
-        dimView.backgroundColor = .black.withAlphaComponent(normalizeAndClamp(time, valueMin: 0.0, valueMax: 0.5, targetMin: 0.0, targetMax: 0.4))
+        dimView.backgroundColor = .black.withAlphaComponent(time)
         // 배경이니 제일 하단에 위치하도록
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
@@ -476,6 +472,3 @@ extension WeatherDetailViewController: CLLocationManagerDelegate {
         checkDeviceLocationAuthorization()
     }
 }
-
-// MARK: -
-
