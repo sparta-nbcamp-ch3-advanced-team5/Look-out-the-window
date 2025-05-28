@@ -15,6 +15,7 @@ final class RoundedBackgroundView: UICollectionReusableView {
         backgroundColor = .systemFill
         layer.cornerRadius = 20
         layer.masksToBounds = true
+        clipsToBounds = true
     }
 
     @available(*, unavailable)

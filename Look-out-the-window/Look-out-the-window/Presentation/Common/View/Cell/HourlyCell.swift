@@ -11,7 +11,6 @@ final class HourlyCell: UICollectionViewCell {
     static let id = "HourlyCell"
     
     private let hourLabel = UILabel().then {
-        $0.text = "9PM"
         $0.textColor = .white
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 16, weight: .bold)
@@ -24,7 +23,6 @@ final class HourlyCell: UICollectionViewCell {
     }
     
     private let tempLabel = UILabel().then {
-        $0.text = "18'C"
         $0.textAlignment = .center
         $0.font = .monospacedDigitSystemFont(ofSize: 18, weight: .bold)
         $0.textColor = .white
@@ -33,6 +31,8 @@ final class HourlyCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
+        clipsToBounds = true
+        contentView.clipsToBounds = true
     }
 
     @available(*, unavailable)

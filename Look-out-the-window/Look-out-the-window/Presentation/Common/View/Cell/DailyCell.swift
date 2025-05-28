@@ -86,33 +86,33 @@ private extension DailyCell {
     }
     
     func setConstraints() {
-        dayLabel.snp.makeConstraints{
+        dayLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
             $0.leading.equalTo(safeAreaLayoutGuide).offset(12)
             $0.width.equalTo(35)
         }
-        
-        weatherIcon.snp.makeConstraints{
+
+        weatherIcon.snp.makeConstraints {
             $0.centerY.equalToSuperview()
             $0.size.equalTo(30)
-            $0.leading.equalTo(dayLabel.snp.trailing).offset(12)
-        }
-        
-        lowTempLabel.snp.makeConstraints{
-            $0.centerY.equalToSuperview()
-            $0.leading.equalTo(weatherIcon.snp.trailing).offset(12)
+            $0.leading.equalTo(dayLabel.snp.trailing).offset(10)
         }
 
-        progressBar.snp.makeConstraints{
-            $0.height.equalTo(5)
+        lowTempLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
-            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(30)
-            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-30)
+            $0.leading.equalTo(weatherIcon.snp.trailing).offset(8)
         }
-        
-        highTempLabel.snp.makeConstraints{
+
+        highTempLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
             $0.trailing.equalTo(safeAreaLayoutGuide).inset(12)
+        }
+
+        progressBar.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.height.equalTo(5)
+            $0.leading.equalTo(lowTempLabel.snp.trailing).offset(12)
+            $0.trailing.equalTo(highTempLabel.snp.leading).offset(-14)
         }
         
         separatorView.snp.makeConstraints {

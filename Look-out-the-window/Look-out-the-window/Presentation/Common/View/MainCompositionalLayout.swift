@@ -30,12 +30,10 @@ struct MainCompositionalLayout {
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
-                section.interGroupSpacing = 8
+                section.interGroupSpacing = 6
                 section.orthogonalScrollingBehavior = .continuous
                 
-                // 기존: leading: 16, trailing: 16
-                // 변경: leading: 26, trailing: 26 (10씩 증가)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 26, bottom: 32, trailing: 26)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 0, bottom: 32, trailing: 0)
                 
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
@@ -47,13 +45,13 @@ struct MainCompositionalLayout {
                     alignment: .top
                 )
                 header.pinToVisibleBounds = false
-                header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+                header.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
                 
                 section.boundarySupplementaryItems = [header]
                 
                 // ✅ Decoration View 적용
                 let decorationItem = NSCollectionLayoutDecorationItem.background(elementKind: "rounded-background")
-                decorationItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 30, trailing: 20)
+                decorationItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 30, trailing: 0)
                 section.decorationItems = [decorationItem]
                 
                 return section
@@ -89,7 +87,7 @@ struct MainCompositionalLayout {
                 
                 // ✅ Decoration View 적용
                 let decorationItem = NSCollectionLayoutDecorationItem.background(elementKind: "rounded-background")
-                decorationItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+                decorationItem.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
                 section.decorationItems = [decorationItem]
                 return section
                 
@@ -120,7 +118,7 @@ struct MainCompositionalLayout {
                 section.interGroupSpacing = 15
                 // 기존: leading: 0, trailing: 0
                 // 변경: leading: 10, trailing: 10 (10씩 증가)
-                section.contentInsets = NSDirectionalEdgeInsets(top: 30, leading: 20, bottom: 0, trailing: 20)
+                section.contentInsets = NSDirectionalEdgeInsets(top: 30, leading: 0, bottom: 0, trailing: 0)
                 
                 return section
             }
