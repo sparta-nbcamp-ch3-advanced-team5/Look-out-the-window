@@ -203,7 +203,7 @@ private extension RegionWeatherListViewController {
                 print("선택된 indexPath.row: \(indexPath.row)")
                 
                 let detailVC = WeatherDetailViewController(
-                    viewModel: WeatherDetailViewModel(currentPage: indexPath.row),
+                    viewModel: WeatherDetailViewModel(currentPage: indexPath.row)
                 )
                 owner.navigationController?.pushViewController(detailVC, animated: false)
                 

@@ -112,7 +112,7 @@ private extension WeatherDetailScrollView {
         weatherDetailCollectionView.snp.makeConstraints {
             $0.top.equalTo(backgroundTopInfoView.loadingRiveView.snp.bottom)
             $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.horizontalEdges.equalToSuperview()
         }
     }
     
@@ -186,7 +186,7 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
             .map { model in
                 HourlyModel(
                     hour: model.hour.to24HourInt(),
-                    temperature: "\(Double(model.temperature)?.roundedString ?? model.temperature)°",
+                    temperature: "\(model.temperature.noDecimalString)°",
                     weatherInfo: model.weatherInfo
                 )
             }
@@ -197,8 +197,8 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
             DailyModel(
                 unixTime: model.unixTime,
                 day: String(model.day.prefix(1)),
-                high: Double(model.high)?.roundedString ?? model.high,
-                low: Double(model.low)?.roundedString ?? model.low,
+                high: String(model.high.noDecimalString),
+                low: String(model.low.noDecimalString),
                 weatherInfo: model.weatherInfo,
                 maxTemp: model.maxTemp,
                 minTemp: model.minTemp,
@@ -216,15 +216,14 @@ extension WeatherDetailScrollView: UICollectionViewDelegate {
         let dailyItems = formattedDailyModels.map { MainSectionItem.daily($0) }
         
         let detailModels: [DetailModel] = [
-            DetailModel(title: .uvIndex, value: weather.uvi),
-//            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)"),
-            DetailModel(title: .sunriseSunset, value: "\(weather.currentTime)/\(weather.sunriseTime)/\(weather.sunsetTime)/\(weather.timeOffset)"),
-            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)"),
-            DetailModel(title: .rainSnow, value: "-"),
-            DetailModel(title: .feelsLike, value: weather.tempFeelLike),
-            DetailModel(title: .humidity, value: weather.humidity),
-            DetailModel(title: .visibility, value: weather.visibility),
-            DetailModel(title: .clouds, value: weather.clouds)
+            DetailModel(title: .uvIndex, value: weather.uvi, someData: ""),
+            DetailModel(title: .sunriseSunset, value: "\(weather.sunriseTime)/\(weather.sunsetTime)", someData: ""),
+            DetailModel(title: .wind, value: "\(weather.windSpeed)m/s \(weather.windDeg)", someData: ""),
+            DetailModel(title: .rainSnow, value: "-", someData: ""),
+            DetailModel(title: .feelsLike, value: weather.tempFeelLike, someData: ""),
+            DetailModel(title: .humidity, value: weather.humidity, someData: ""),
+            DetailModel(title: .visibility, value: weather.visibility, someData: ""),
+            DetailModel(title: .clouds, value: weather.clouds, someData: "")
         ]
         let detailItems = detailModels.map { MainSectionItem.detail($0) }
         

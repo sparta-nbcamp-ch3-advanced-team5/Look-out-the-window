@@ -27,9 +27,9 @@ final class ProgressBarView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // indicator -> currentTemp 인자 추가 (기본 nil)
     func updateProgress(minTemp: Int, maxTemp: Int, totalMinTemp: Int, totalMaxTemp: Int, currentTemp: Int? = nil) {
         layoutIfNeeded()  // 레이아웃 변경사항 즉시 적용
+        
         let totalRange = CGFloat(totalMaxTemp - totalMinTemp)  // 전체 범위
         print("totalRange: \(totalRange)")
         guard totalRange > 0 else { return }
@@ -54,7 +54,12 @@ final class ProgressBarView: UIView {
         // 인디케이터 처리
         if let currentTemp = currentTemp {
             let currentRatio = CGFloat(currentTemp - totalMinTemp) / totalRange
-            let indicatorX = barWidth * currentRatio - 4 // 인디케이터 width의 절반만큼 보정
+            
+            // 인디케이터 위치를 rangeView 범위 내로 제한
+            let endX = barWidth * maxRatio
+            let rawIndicatorX = barWidth * currentRatio - 4 // 인디케이터 width의 절반만큼 보정
+            let indicatorX = max(startX, min(rawIndicatorX, endX - 4)) // -4는 인디케이터 width/2 보정
+            
             indicatorView.isHidden = false
             indicatorView.frame = CGRect(x: indicatorX, y: -3, width: 8, height: baseView.frame.height + 6)
         } else {

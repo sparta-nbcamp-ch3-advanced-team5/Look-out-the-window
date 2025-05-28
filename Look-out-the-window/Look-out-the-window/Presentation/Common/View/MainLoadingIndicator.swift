@@ -13,7 +13,7 @@ final class MainLoadingIndicator: UIView {
     
     let riveViewModel = RiveViewModel(
         fileName: "LoadingSun",
-        stateMachineName: "State Machine 1",
+        stateMachineName: "State Machine 1"
     )
     
     /// Rive 로딩 인디케이터

@@ -45,7 +45,7 @@ final class DailyCell: UICollectionViewCell {
         super.init(frame: frame)
         setupUI()
     }
-
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -59,7 +59,13 @@ final class DailyCell: UICollectionViewCell {
         highTempLabel.text = model.high + "°"
         separatorView.isHidden = isBottom
         
-        progressBar.updateProgress(minTemp: Int(model.low) ?? 0, maxTemp: Int(model.high) ?? 0, totalMinTemp: model.minTemp, totalMaxTemp: model.maxTemp)
+        progressBar.updateProgress(
+                minTemp: Int(model.low) ?? 0,
+                maxTemp: Int(model.high) ?? 0,
+                totalMinTemp: model.minTemp,
+                totalMaxTemp: model.maxTemp,
+                currentTemp: isFirst ? Int(model.temperature) ?? 0 : nil
+            )
     }
 
 }
