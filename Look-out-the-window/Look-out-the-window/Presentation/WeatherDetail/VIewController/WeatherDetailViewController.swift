@@ -106,10 +106,27 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
         locationManager.delegate = self
         
         navigationItem.hidesBackButton = true
+    
+        mainLoadingIndicator.isHidden = false
+        view.addSubview(mainLoadingIndicator)
+        view.bringSubviewToFront(mainLoadingIndicator)
+        mainLoadingIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
         
-        setupUI()
-        bindUIEvents()
-        bindViewModel()
+        // 모든 UI 세팅과 바인딩은 1초 후에 실행
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.mainLoadingIndicator.riveViewModel.pause()
+            self.mainLoadingIndicator.isHidden = true
+            
+            self.setupUI()
+            self.bindUIEvents()
+            self.bindViewModel()
+            
+            self.bottomHStackView.isHidden = false
+            self.bottomSepartorView.isHidden = false
+        }
     }
 }
 
@@ -129,18 +146,13 @@ private extension WeatherDetailViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(mainLoadingIndicator, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
+        view.addSubviews(dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         horizontalScrollView.addSubview(horizontalScrollContentView)
     }
     
     func setConstraints() {
-        
-        mainLoadingIndicator.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.height.equalTo(50)
-        }
         
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
