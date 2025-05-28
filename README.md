@@ -3,7 +3,7 @@
 
 
 # 창밖을 보라(Look-out-the-window)
-자신의 위치를 기반으로 등록 된 킥보드를 사용하고 반납이 가능하며 운영자는 킥보드를 등록할 수 있는 서비스
+원하는 지역의 정확하고 최신화된 날씨정보를 한눈에 볼 수 있는 기능을 제공하는 앱입니다.
 
 <br><br>
 ## 🪟 창밖을 보라 🪟
@@ -30,7 +30,7 @@
 SnapKit | UI Layout | SPM
 Then | UI 선언 | SPM
 RxSwift | 데이터 바인딩을 통한 비동기 데이터 흐름 처리 | SPM
-RxCoCoa | UI 컴포넌트(예: 버튼 `rx.tap`)의 반응형 이벤트 처리 | SPM
+RxCocoa | UI 컴포넌트(예: 버튼 `rx.tap`)의 반응형 이벤트 처리 | SPM
 RxDataSources | `UITableView`, `UICollectionView`의 데이터 처리 | SPM
 RiveRuntime | 날씨 아이콘 표시 | SPM
 Alamofire | 네트워크 API 통신 | SPM
