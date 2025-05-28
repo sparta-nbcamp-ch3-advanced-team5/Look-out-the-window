@@ -117,35 +117,63 @@ final class SunriseView: UIView {
         self.setNeedsDisplay()
     }
 
-    /// 현재 시간에 해당하는 태양 위치 좌표를 계산합니다
     private func calculateSunPoint(currentTime: Int, sunriseTime: Int, sunsetTime: Int, timeOffset: Int) {
-        let current = Date(timeIntervalSince1970: TimeInterval(currentTime)).addingTimeInterval(TimeInterval(timeOffset)).timeIntervalSince1970
-        guard let (startUnix, _) = currentTime.getUnixRange(unixTime: current, timeOffset: timeOffset) else { return }
+        let calendar = Calendar.current
+        let sunriseDate = Date(timeIntervalSince1970: TimeInterval(sunriseTime + timeOffset))
+        let startOfSunriseDay = calendar.startOfDay(for: sunriseDate)
+        let startUnix = Int(startOfSunriseDay.timeIntervalSince1970)
         
-        let sunrise = Date(timeIntervalSince1970: TimeInterval(sunriseTime)).addingTimeInterval(TimeInterval(timeOffset))
-        let sunset = Date(timeIntervalSince1970: TimeInterval(sunsetTime)).addingTimeInterval(TimeInterval(timeOffset))
+        let currentInteger = currentTime + timeOffset - startUnix
+        let sunriseInteger = sunriseTime + timeOffset - startUnix
+        let sunsetInteger = sunsetTime + timeOffset - startUnix
+        let endInteger = max(currentInteger, sunriseInteger, sunsetInteger, 86399)
         
-        // sunriseTime, sunsetTime, currentTime이 모두 같은 날 범위 내에 있는지 검증
+        print("✅ current: \(currentInteger), sunrise: \(sunriseInteger), sunset: \(sunsetInteger), end: \(endInteger)")
         
-        let startInteger = 0
-        let endInteger = 86399
-        let currentInteger = Int(current) - Int(startUnix)
-        let sunriseInteger = Int(sunrise.timeIntervalSince1970) - Int(startUnix)
-        let sunsetInteger = Int(sunset.timeIntervalSince1970) - Int(startUnix)
+        guard sunriseInteger >= 0 else {
+            print("❌ sunriseInteger가 0보다 작음")
+            return
+        }
+        guard sunsetInteger >= 0 else {
+            print("❌ sunsetInteger가 0보다 작음")
+            return
+        }
+        guard currentInteger >= 0 else {
+            print("❌ currentInteger가 0보다 작음")
+            return
+        }
+        guard sunriseInteger <= sunsetInteger else {
+            print("❌ sunrise > sunset")
+            return
+        }
+        guard sunriseInteger <= endInteger else {
+            print("❌ sunrise > end")
+            return
+        }
+        guard sunsetInteger <= endInteger else {
+            print("❌ sunset > end")
+            return
+        }
         
-        if (startInteger..<sunriseInteger).contains(currentInteger) {
-            let offset = Int(Double(currentInteger) / Double(sunriseInteger) * 100)
+        if (0..<sunriseInteger).contains(currentInteger) {
+            let offset = clampOffset(Double(currentInteger) / Double(sunriseInteger), in: dawnPoints)
             self.currentSunPoint = dawnPoints[offset]
         } else if (sunriseInteger..<sunsetInteger).contains(currentInteger) {
-            let offset = Int(Double(currentInteger) / Double(sunsetInteger) * 100)
+            let offset = clampOffset(Double(currentInteger - sunriseInteger) / Double(sunsetInteger - sunriseInteger), in: dayPoints)
             self.currentSunPoint = dayPoints[offset]
         } else if (sunsetInteger...endInteger).contains(currentInteger) {
-            let offset = Int(Double(currentInteger) / Double(endInteger) * 100)
+            let offset = clampOffset(Double(currentInteger - sunsetInteger) / Double(endInteger - sunsetInteger), in: nightPoints)
             self.currentSunPoint = nightPoints[offset]
         } else {
             print("SunriseView ERROR: 범위 없음")
         }
     }
+    
+    private func clampOffset(_ progress: Double, in points: [CGPoint]) -> Int {
+        let raw = Int(progress * Double(points.count - 1))
+        return max(0, min(points.count - 1, raw))
+    }
+    
     /// 새벽, 낮, 밤 구간에 대한 베지어 포인트를 계산하여 저장
     private func setSunPathPoints() {
         let dawnPoint = getDawnPoints()
