@@ -40,7 +40,9 @@ final class WeatherDetailScrollView: UIView {
     }
     private lazy var verticalScrollContentView = UIView()
     var backgroundTopInfoView: BackgroundTopInfoView
-    private lazy var weatherDetailCollectionView = WeatherDetailCollectionView()
+    private lazy var weatherDetailCollectionView = WeatherDetailCollectionView().then {
+        $0.clipsToBounds = true
+    }
     private lazy var topLoadingIndicatorView = LoadingIndicatorView()
     
     // verticalScrollContentView의 높이 제약 조건 저장
@@ -112,7 +114,7 @@ private extension WeatherDetailScrollView {
         weatherDetailCollectionView.snp.makeConstraints {
             $0.top.equalTo(backgroundTopInfoView.loadingRiveView.snp.bottom)
             $0.bottom.equalToSuperview()
-            $0.horizontalEdges.equalToSuperview()
+            $0.directionalHorizontalEdges.equalToSuperview().inset(20)
         }
     }
     

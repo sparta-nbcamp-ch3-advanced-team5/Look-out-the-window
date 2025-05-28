@@ -28,7 +28,9 @@ final class RegisterViewController: UIViewController {
     private let viewModel: RegisterViewModel
     
     /// 날씨 정보를 표시하는 컬렉션 뷰
-    private let detailView = WeatherDetailCollectionView()
+    private let detailView = WeatherDetailCollectionView().then {
+        $0.clipsToBounds = true
+    }
     
     /// 상단 배경 뷰 (현재 날씨 정보 포함)
     private var topInfoView: BackgroundTopInfoView
@@ -195,10 +197,9 @@ private extension RegisterViewController {
             $0.height.equalToSuperview().multipliedBy(0.6)
         }
         detailView.snp.makeConstraints {
-            $0.width.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
+            $0.directionalHorizontalEdges.equalToSuperview().inset(20)
             $0.top.equalTo(topInfoView.loadingRiveView.snp.bottom)
-            $0.height.equalTo(1000) // 초기값
+            $0.height.equalTo(40)
             $0.bottom.equalToSuperview()
         }
     }
