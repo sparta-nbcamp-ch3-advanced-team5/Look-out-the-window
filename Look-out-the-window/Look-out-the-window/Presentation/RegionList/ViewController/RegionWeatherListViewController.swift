@@ -12,6 +12,7 @@ import RxCocoa
 import RxDataSources
 import RxSwift
 import SnapKit
+import RiveRuntime
 
 /// 지역 리스트 ViewController
 final class RegionWeatherListViewController: UIViewController {
@@ -30,7 +31,9 @@ final class RegionWeatherListViewController: UIViewController {
         cell.configure(model: item)
         return cell
     }
-
+    
+    private let mainLoadingIndicator = MainLoadingIndicator()
+    
     // MARK: - UI Components
     private let dimView = UIView()
 
@@ -57,53 +60,54 @@ final class RegionWeatherListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        configureTableView()
-        configureDataSource()
-        setupUI()
-
+        
+        view.addSubview(mainLoadingIndicator)
+        mainLoadingIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+        view.bringSubviewToFront(mainLoadingIndicator)
+        mainLoadingIndicator.isHidden = false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.deferredSetup()
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        viewModel.action.onNext(.viewDidLoad) // 데이터 로드 이 시점에
+        viewModel.action.onNext(.viewDidLoad)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.mainLoadingIndicator.riveViewModel.pause()
+            self.mainLoadingIndicator.isHidden = true
+        }
     }
-
-    //MARK: 동환님 데이터 생성이후에 추가 예정
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        guard !initialAppLoaded else { return }
-//
-//        let sections = viewModel.state.regionWeatherListSectionRelay.value
-////      init 시점에 coredata로 가져옴
-//
-//        if let saved = UserDefaults.standard.string(forKey: "LastViewedWeatherAddress"),
-//           let entity = CoreDataManager.shared.fetchWeather(for: saved) {
-//            let vm = WeatherDetailViewModel(entity: entity)
-//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
-//            navigationController?.pushViewController(vc, animated: false)
-//            initialAppLoaded = true
-//            return
-//        }
-//
-//        if let first = sections.first?.items.first,
-//           let entity = CoreDataManager.shared.fetchWeather(for: first.address) {
-//            let vm = WeatherDetailViewModel(entity: entity)
-//            let vc = WeatherDetailViewController(viewModel: vm, currentPage: 0)
-//            navigationController?.pushViewController(vc, animated: false)
-//            initialAppLoaded = true
-//        }
-//    }
-
 }
 
 // MARK: - UI Methods
 
 private extension RegionWeatherListViewController {
+    
+    func deferredSetup() {
+        self.configureTableView()
+        self.configureDataSource()
+        self.setupUI()
+    }
+    
     func setupUI() {
         setAppearance()
         setDelegates()
         setViewHierarchy()
+        
+        mainLoadingIndicator.isHidden = false
+        view.addSubview(mainLoadingIndicator)
+        view.bringSubviewToFront(mainLoadingIndicator)
+        mainLoadingIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+        
         setConstraints()
         bind()
         applyGradientBackground()

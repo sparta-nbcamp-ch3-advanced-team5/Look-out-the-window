@@ -106,10 +106,23 @@ final class WeatherDetailViewController: UIViewController, UIViewControllerTrans
         locationManager.delegate = self
         
         navigationItem.hidesBackButton = true
-        
+    
+        // UI, 이벤트, 바인딩 먼저
         setupUI()
         bindUIEvents()
         bindViewModel()
+        
+        // 로딩 인디케이터만 보여주기
+        mainLoadingIndicator.isHidden = false
+        view.addSubview(mainLoadingIndicator)
+        view.bringSubviewToFront(mainLoadingIndicator)
+        mainLoadingIndicator.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+        
+        bottomHStackView.isHidden = true
+        bottomSepartorView.isHidden = true
     }
 }
 
@@ -129,18 +142,13 @@ private extension WeatherDetailViewController {
     //    }
     
     func setViewHiearchy() {
-        view.addSubviews(mainLoadingIndicator, dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
+        view.addSubviews(dimView, horizontalScrollView, bottomSepartorView, bottomHStackView)
         bottomHStackView.addArrangedSubviews(locationButton, pageController, listButton)
         
         horizontalScrollView.addSubview(horizontalScrollContentView)
     }
     
     func setConstraints() {
-        
-        mainLoadingIndicator.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.width.height.equalTo(50)
-        }
         
         dimView.snp.makeConstraints {
             $0.edges.equalToSuperview()
@@ -277,10 +285,11 @@ private extension WeatherDetailViewController {
                 self.horizontalScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: false)
                 owner.weatherDetailViewList[owner.currentPage].backgroundTopInfoView.riveViewModel.play()
                 
-                // 로딩 인디케이터 정지
+                // 로딩 인디케이터 멈추고 숨김
                 owner.mainLoadingIndicator.riveViewModel.pause()
-                // 로딩 정지 후 hidden 변경
                 owner.mainLoadingIndicator.isHidden = true
+                
+                // 메인 UI 보여주기
                 owner.bottomHStackView.isHidden = false
                 owner.bottomSepartorView.isHidden = false
             }).disposed(by: disposeBag)
