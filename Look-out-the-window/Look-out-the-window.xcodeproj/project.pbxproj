@@ -14,10 +14,10 @@
 		5B56B1AE2DDC23BC005A2D62 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B1AD2DDC23BC005A2D62 /* SnapKit */; };
 		5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B1B02DDC23FC005A2D62 /* Alamofire */; };
 		5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 5B56B6D32DDC723F005A2D62 /* RiveRuntime */; };
-		5B8DBC4C2DDC21F600F53723 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5B8DBC4B2DDC21F600F53723 /* .gitignore */; };
 		A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59662DDC9E950055EF9C /* Differentiator */; };
 		A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = A52D59682DDC9E950055EF9C /* RxDataSources */; };
-		66DED5A72DDC90C6003316DC /* RxGesture in Frameworks */ = {isa = PBXBuildFile; productRef = 66DED5A62DDC90C6003316DC /* RxGesture */; };
+		F46B02372DE04B5D0012F5B2 /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = F46B02362DE04B5D0012F5B2 /* Differentiator */; };
+		F46B02392DE04B5D0012F5B2 /* RxDataSources in Frameworks */ = {isa = PBXBuildFile; productRef = F46B02382DE04B5D0012F5B2 /* RxDataSources */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,11 +29,6 @@
 		5B8DBC432DDC214600F53723 /* Exceptions for "Look-out-the-window" folder in "Look-out-the-window" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Presentation/RegionList/ViewController/.gitkeep,
-				Presentation/RegionList/ViewModel/.gitkeep,
-				Presentation/Register/View/.gitkeep,
-				Presentation/Register/ViewController/.gitkeep,
-				Presentation/Register/ViewModel/.gitkeep,
 				Resources/Info.plist,
 			);
 			target = 5B8DBC302DDC214400F53723 /* Look-out-the-window */;
@@ -58,15 +53,14 @@
 			files = (
 				5B56B1A82DDC23A5005A2D62 /* RxSwift in Frameworks */,
 				5B56B1A62DDC23A5005A2D62 /* RxRelay in Frameworks */,
-				66DED5A72DDC90C6003316DC /* RxGesture in Frameworks */,
-				665887E02DDD67350082F1BF /* RxDataSources in Frameworks */,
 				5B56B6D42DDC723F005A2D62 /* RiveRuntime in Frameworks */,
 				5B56B1A42DDC23A5005A2D62 /* RxCocoa in Frameworks */,
 				A52D59672DDC9E950055EF9C /* Differentiator in Frameworks */,
+				F46B02392DE04B5D0012F5B2 /* RxDataSources in Frameworks */,
 				5B56B1B12DDC23FC005A2D62 /* Alamofire in Frameworks */,
+				F46B02372DE04B5D0012F5B2 /* Differentiator in Frameworks */,
 				A52D59692DDC9E950055EF9C /* RxDataSources in Frameworks */,
 				5B56B1AB2DDC23B0005A2D62 /* Then in Frameworks */,
-				665887DE2DDD67350082F1BF /* Differentiator in Frameworks */,
 				5B56B1AE2DDC23BC005A2D62 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -120,9 +114,8 @@
 				5B56B6D32DDC723F005A2D62 /* RiveRuntime */,
 				A52D59662DDC9E950055EF9C /* Differentiator */,
 				A52D59682DDC9E950055EF9C /* RxDataSources */,
-				66DED5A62DDC90C6003316DC /* RxGesture */,
-				665887DD2DDD67350082F1BF /* Differentiator */,
-				665887DF2DDD67350082F1BF /* RxDataSources */,
+				F46B02362DE04B5D0012F5B2 /* Differentiator */,
+				F46B02382DE04B5D0012F5B2 /* RxDataSources */,
 			);
 			productName = "Look-out-the-window";
 			productReference = 5B8DBC312DDC214400F53723 /* Look-out-the-window.app */;
@@ -158,9 +151,7 @@
 				5B56B1AC2DDC23BC005A2D62 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				5B56B1AF2DDC23FC005A2D62 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				5B56B6D22DDC723F005A2D62 /* XCRemoteSwiftPackageReference "rive-ios" */,
-				A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */,
-				66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */,
-				665887DC2DDD67350082F1BF /* XCRemoteSwiftPackageReference "RxDataSources" */,
+				F46B02352DE04B5D0012F5B2 /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5B8DBC322DDC214400F53723 /* Products */;
@@ -177,7 +168,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5B8DBC4C2DDC21F600F53723 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,10 +196,13 @@
 				DEVELOPMENT_TEAM = U54KVZDT39;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Look-out-the-window/Resources/Info.plist";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -240,10 +233,13 @@
 				DEVELOPMENT_TEAM = U54KVZDT39;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Look-out-the-window/Resources/Info.plist";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "사용자의 현재 위치를 기반으로 날씨를 제공하기 위해 필요한 권한입니다.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -449,20 +445,12 @@
 				minimumVersion = 6.8.2;
 			};
 		};
-		A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+		F46B02352DE04B5D0012F5B2 /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 5.0.2;
-			};
-		};
-		66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RxSwiftCommunity/RxGesture.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -505,18 +493,21 @@
 		};
 		A52D59662DDC9E950055EF9C /* Differentiator */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
 			productName = Differentiator;
 		};
 		A52D59682DDC9E950055EF9C /* RxDataSources */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A52D59652DDC9E950055EF9C /* XCRemoteSwiftPackageReference "RxDataSources" */;
 			productName = RxDataSources;
 		};
-		66DED5A62DDC90C6003316DC /* RxGesture */ = {
+		F46B02362DE04B5D0012F5B2 /* Differentiator */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 66DED5A52DDC90C6003316DC /* XCRemoteSwiftPackageReference "RxGesture" */;
-			productName = RxGesture;
+			package = F46B02352DE04B5D0012F5B2 /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = Differentiator;
+		};
+		F46B02382DE04B5D0012F5B2 /* RxDataSources */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F46B02352DE04B5D0012F5B2 /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = RxDataSources;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
